@@ -20,7 +20,7 @@ export function showNotiSocket(content: string, type: NotiType, _timer = 1000, t
 }
 
 export function showNotification(from: string, align: string, title: string, content: string, type: NotiType, _timer = 1000) {
-  alert('showNotificationNotImplemented');
+  console.log('showNotificationNotImplemented');
 }
 export function buildQueryString(object: any) {
   const str = [];

@@ -8,6 +8,7 @@ import { CONSTANT } from '@shared/constant';
 import { LoginResponse, ghostLog, handleError } from '@shared/common';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
+import { StorageService } from '@services/storage.service';
 
 const apiUrl = environment.apiUrl + '/v1/auth';
 
@@ -26,7 +27,8 @@ export class AuthService {
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: Object
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private storageService: StorageService
   ) {
     this.loggedInStatus = this.isLogin();
     if (this.loggedInStatus && isPlatformBrowser(this.platformId)) {
@@ -35,7 +37,7 @@ export class AuthService {
   }
 
   isLogin() {
-    return isPlatformBrowser(this.platformId) ? !!localStorage.getItem(CONSTANT.USER_INFO) : false;
+    return !!this.storageService.getItem(CONSTANT.USER_INFO);
   }
 
   login(data: any): Observable<any> {
@@ -138,14 +140,11 @@ export class AuthService {
   }
 
   private saveUserLoginInfo(userInfo: any) {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(CONSTANT.USER_INFO, JSON.stringify(userInfo));
-    }
+    this.storageService.setItem(CONSTANT.USER_INFO, JSON.stringify(userInfo));
   }
+
   private clearUserInfo() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem(CONSTANT.USER_INFO);
-      localStorage.removeItem(CONSTANT.TOKEN);
-    }
+    this.storageService.removeItem(CONSTANT.USER_INFO);
+    this.storageService.removeItem(CONSTANT.TOKEN);
   }
 }

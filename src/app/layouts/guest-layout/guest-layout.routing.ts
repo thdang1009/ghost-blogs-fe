@@ -14,21 +14,21 @@ export const GuestLayoutRoutes: Routes = [
     title: 'Ghost\'s Posts',
     component: PostDetailComponent,
   },
-  // {
-  //   path: 'home',
-  //   title: 'Ghost\'s Blogs',
-  //   component: HomeComponent
-  // },
+  {
+    path: 'home',
+    title: 'Ghost\'s Blogs',
+    component: HomeComponent
+  },
   // {
   //   path: 'reset-password',
   //   title: 'Reset password',
   //   component: ResetPasswordComponent, canActivate: [NotLoginGuard]
   // },
-  // {
-  //   path: 'login',
-  //   title: 'Login',
-  //   component: LoginComponent, canActivate: [NotLoginGuard]
-  // },
+  {
+    path: 'login',
+    title: 'Login',
+    component: LoginComponent, canActivate: [NotLoginGuard]
+  },
   // {
   //   path: 'logout',
   //   title: 'Logout',

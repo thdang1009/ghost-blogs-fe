@@ -12,30 +12,30 @@ declare interface RouteInfo {
   // permission: string;
 }
 export const ROUTES: RouteInfo[] = [
-  {
-    path: 'useful-app/json-beautifier',
-    title: 'JSON Beautifier',
-    icon: 'code',
-    class: ''
-  },
-  {
-    path: 'useful-app/json-excel',
-    title: 'JSON Excel',
-    icon: 'code',
-    class: ''
-  },
-  {
-    path: 'useful-app/text-diff',
-    title: 'Text Diff',
-    icon: 'description',
-    class: ''
-  },
-  {
-    path: 'admin/dashboard',
-    title: 'Amin',
-    icon: 'dashboard',
-    class: ''
-  }
+  // {
+  //   path: 'useful-app/json-beautifier',
+  //   title: 'JSON Beautifier',
+  //   icon: 'code',
+  //   class: ''
+  // },
+  // {
+  //   path: 'useful-app/json-excel',
+  //   title: 'JSON Excel',
+  //   icon: 'code',
+  //   class: ''
+  // },
+  // {
+  //   path: 'useful-app/text-diff',
+  //   title: 'Text Diff',
+  //   icon: 'description',
+  //   class: ''
+  // },
+  // {
+  //   path: 'admin/dashboard',
+  //   title: 'Amin',
+  //   icon: 'dashboard',
+  //   class: ''
+  // }
 ];
 
 @Component({

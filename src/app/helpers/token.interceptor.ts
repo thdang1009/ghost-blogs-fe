@@ -12,15 +12,19 @@ import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { showNoti } from '@shared/common';
 import { CONSTANT } from '@shared/constant';
+import { StorageService } from '../services/storage.service';
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private storageService: StorageService
+  ) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
 
-    const token = localStorage.getItem(CONSTANT.TOKEN);
+    const token = this.storageService.getItem(CONSTANT.TOKEN);
     if (token) {
       request = request.clone({
         setHeaders: {

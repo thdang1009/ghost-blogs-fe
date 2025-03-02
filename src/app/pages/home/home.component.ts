@@ -1,9 +1,11 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce } from '@shared/common';
 import { BookPermission } from '@shared/enum';
 import { AuthService, PostService } from '@services/_index';
 import { Post } from '@models/_index';
+import { isPlatformBrowser } from '@angular/common';
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -31,8 +33,9 @@ export class HomeComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private postService: PostService,
+    private router: Router,
     private activeRoute: ActivatedRoute,
-    private router: Router
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
   }
 
@@ -45,10 +48,11 @@ export class HomeComponent implements OnInit {
     this.hasBackofficePermission = this.authService.isLogin();
     this.activeRoute.queryParams
       .subscribe(params => {
-        const path = window.location.href
-        if (path && path.includes('tag')) {
+        const currentPath = this.router.url;
+        if (currentPath && currentPath.includes('tag')) {
           this.isFilteredByTag = true;
         }
+        console.log('dangth init path', currentPath);
         this.postService.getPublicPosts(params)
           .subscribe(posts => {
             this.allPosts = (posts || []).reverse();
@@ -56,6 +60,7 @@ export class HomeComponent implements OnInit {
             this.posts = this.getMorePosts().filter((post): post is Post => post !== undefined);
           });
       })
+
   }
 
   openPost(post: Post) {
