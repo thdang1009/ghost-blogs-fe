@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:ghost-blogs-fe": "node dist/ghost-blogs-fe/server/server.mjs"
+    "ssr": "rm -rf dist && ng build && node dist/ghost-blogs-fe/server/server.mjs",
+    "serve:ssr:ghost-blogs-fe": "node dist/ghost-blogs-fe/server/server.mjs --port 4500"
   },
   "private": true,
   "dependencies": {
