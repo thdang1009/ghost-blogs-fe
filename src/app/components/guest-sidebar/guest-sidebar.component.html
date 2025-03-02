@@ -1,0 +1,105 @@
+<div class="sidebar-wrapper">
+	<div>
+		<form (ngSubmit)="search()"
+			class="navbar-form">
+			<span class="bmd-form-group">
+				<div class="input-group no-border">
+					<input [(ngModel)]="stringToSearch"
+						[ngModelOptions]="{standalone: true}"
+						type="text"
+						placeholder="{{ _isInPDFView ? 'Search in PDF' : 'Search in all page...' }}"
+						class="form-control">
+					<button type="submit"
+						class="btn btn-white btn-round btn-just-icon">
+						<i class="material-icons">search</i>
+						<div class="ripple-container"></div>
+					</button>
+				</div>
+			</span>
+		</form>
+		<ul class="nav navbar-nav nav-menu-custom">
+			<li class="nav-item dropdown">
+				<a class="nav-link"
+					href="javascript:void(0)"
+					id="navbarDropdownMenuLink2"
+					data-toggle="dropdown"
+					aria-haspopup="true"
+					aria-expanded="false">
+					<i class="material-icons">code</i>
+					<p>
+						<span class="d-lg-none d-md-block">Code Index</span>
+					</p>
+				</a>
+				<div class="dropdown-menu dropdown-menu-right"
+					aria-labelledby="navbarDropdownMenuLink2">
+					<a [routerLink]="['index/js-index']"
+						class="dropdown-item">
+						<i class="fab fa-js"></i>
+						JavaScript
+					</a>
+					<a [routerLink]="['index/node-js-index']"
+						class="dropdown-item">
+						<i class="fab fa-node"></i>
+						NodeJS
+					</a>
+					<a [routerLink]="['index/angular-index']"
+						class="dropdown-item">
+						<i class="fab fa-angular"></i>
+						Angular
+					</a>
+					<a [routerLink]="['index/react-index']"
+						class="dropdown-item">
+						<i class="fab fa-react"></i>
+						React
+					</a>
+					<a [routerLink]="['index/html-index']"
+						class="dropdown-item">
+						<i class="fab fa-html5"></i>
+						Html
+					</a>
+					<a [routerLink]="['index/css-index']"
+						class="dropdown-item">
+						<i class="fab fa-css3"></i>
+						Css
+					</a>
+					<a [routerLink]="['index/git-index']"
+						class="dropdown-item">
+						<i class="fab fa-git"></i>
+						GIT
+					</a>
+					<a [routerLink]="['index/mongodb-index']"
+						class="dropdown-item">
+						<i class="fas fa-code"></i>
+						MongoDB
+					</a>
+					<a [routerLink]="['index/ts-index']"
+						class="dropdown-item">
+						<i class="fas fa-code"></i>
+						TypeScript
+					</a>
+					<a [routerLink]="['index/algorithms-index']"
+						class="dropdown-item">
+						<i class="fas fa-code"></i>
+						Algorithms
+					</a>
+					<a [routerLink]="['index/react-native-index']"
+						class="dropdown-item">
+						<i class="fas fa-code"></i>
+						React Native
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<ul class="nav">
+		<li *ngFor="let menuItem of menuItems"
+			routerLinkActive="active"
+			class="{{menuItem.class}} nav-item">
+			<a [routerLink]="[menuItem.path]"
+				class="dropdown-item">
+				<i class="material-icons">{{menuItem.icon}}</i>
+				<p>{{menuItem.title}}</p>
+			</a>
+		</li>
+	</ul>
+</div>

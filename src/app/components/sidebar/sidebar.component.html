@@ -1,0 +1,103 @@
+<div class="logo">
+	<a [routerLink]="['/home']"
+		class="simple-text">
+		<div class="logo-img">
+			<img loading="lazy"
+				src="/assets/img/ghost.png"
+				alt="Ghost">
+		</div>
+		Ghost Site
+	</a>
+	<a class="hi-user">
+		Hi {{fullName}} ({{permission}})
+	</a>
+</div>
+<div class="sidebar-wrapper">
+	<div *ngIf="isMobileMenu()">
+		<form (ngSubmit)="search()"
+			class="navbar-form">
+			<span class="bmd-form-group">
+				<div class="input-group no-border">
+					<input [(ngModel)]="stringToSearch"
+						[ngModelOptions]="{standalone: true}"
+						type="text"
+						placeholder="{{ _isInPDFView ? 'Search in PDF' : 'Search in all page...' }}"
+						class="form-control">
+					<button type="submit"
+						class="btn btn-white btn-round btn-just-icon">
+						<i class="material-icons">search</i>
+						<div class="ripple-container"></div>
+					</button>
+				</div>
+			</span>
+		</form>
+		<ul class="nav navbar-nav nav-mobile-menu">
+			<li class="nav-item dropdown">
+				<a class="nav-link"
+					href="javascript:void(0)"
+					id="navbarDropdownMenuLink2"
+					data-toggle="dropdown"
+					aria-haspopup="true"
+					aria-expanded="false">
+					<i class="material-icons">person</i>
+					<p>
+						<span class="d-lg-none d-md-block">Account</span>
+					</p>
+				</a>
+				<div class="dropdown-menu dropdown-menu-right"
+					aria-labelledby="navbarDropdownMenuLink2">
+					<a [routerLink]="['/logout']"
+						class="dropdown-item">
+						Logout
+					</a>
+					<a [routerLink]="['/admin/change-password']"
+						class="dropdown-item">
+						Change password
+					</a>
+					<a [routerLink]="['/admin/my-account']"
+						class="dropdown-item">
+						My Account
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<ul class="nav navbar-nav nav-menu-custom">
+		<ng-container *ngFor="let menuItem of menuItems">
+			<li *ngIf="!menuItem.hasChild"
+				routerLinkActive="active"
+				class="{{menuItem.class}} nav-item">
+				<a [routerLink]="[menuItem.path]"
+					class="nav-link">
+					<i class="material-icons">{{menuItem.icon}}</i>
+					<p>{{menuItem.title}}</p>
+				</a>
+			</li>
+			<li *ngIf="menuItem.hasChild && menuItem.children.length"
+				routerLinkActive="active"
+				class="nav-item dropdown">
+				<a class="nav-link"
+					href="javascript:void(0)"
+					id="navbarDropdownMenuLink2"
+					data-toggle="dropdown"
+					aria-haspopup="true"
+					aria-expanded="false">
+					<i class="material-icons">{{menuItem.icon}}</i>
+					<p>
+						<span class="d-md-block">{{menuItem.title}}</span>
+					</p>
+				</a>
+				<div class="dropdown-menu dropdown-menu-right"
+					aria-labelledby="navbarDropdownMenuLink2">
+					<ng-container *ngFor="let child of menuItem.children">
+						<a [routerLink]="[child.path]"
+							class="dropdown-item">
+							<i class="material-icons">{{child.icon}}</i>
+							{{child.title}}
+						</a>
+					</ng-container>
+				</div>
+			</li>
+		</ng-container>
+	</ul>
+</div>

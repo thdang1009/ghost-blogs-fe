@@ -1,12 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { AuthService } from '@services/_index';
 
 @Component({
   selector: 'app-footer',
-  standalone: true,
-  imports: [],
-  templateUrl: './footer.component.html',
-  styleUrl: './footer.component.scss'
+  templateUrl: './footer.component.html'
 })
-export class FooterComponent {
+export class FooterComponent implements OnInit {
+  isLogined = false;
+  isLoadingResults = true;
+  thisYear = (new Date).getFullYear();
+
+  constructor(
+    private authService: AuthService) {
+  }
+
+  ngOnInit() {
+    this.isLogined = this.authService.isLogin();
+  }
 
 }

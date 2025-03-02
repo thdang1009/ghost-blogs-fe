@@ -1,0 +1,16 @@
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+ul li {
+    display: inline-block;
+    margin-left: 15px;
+}
+ul li:first-child {
+    margin-left: 0;
+}
+.github > a {
+    color: #24292f;
+}

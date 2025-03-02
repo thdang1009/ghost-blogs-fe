@@ -1,0 +1,95 @@
+<div class="ghost-wrapper">
+	<div class="header-box">
+		<div class="ghost-box">
+			<div>
+				<a [routerLink]="['/']"
+					aria-current="page"
+					class>
+					<img loading="lazy"
+						width="100px"
+						height="100px"
+						class="top-avatar"
+						alt="ghost"
+						src="assets/img/ghost.png"
+						alt="Ghost">
+				</a>
+			</div>
+			<div>
+				<ng-container *ngIf="!isLogined">
+					<a [routerLink]="['/login']"
+						style="font-weight: bold;">
+						LOGIN
+					</a>
+				</ng-container>
+				<ng-container *ngIf="isLogined && hasBackofficePermission">
+					<a [routerLink]="['/admin/dashboard']"
+						style="font-weight: bold;"
+						class="bold">
+						Go To Admin Site
+					</a>
+				</ng-container>
+			</div>
+			<app-list-badge></app-list-badge>
+		</div>
+	</div>
+	<div class="content-box">
+		<div *ngIf="isFilteredByTag"
+			class="div__back-to-home">
+			<a (click)="backToHome()">
+				← Back to the Blog Home
+			</a>
+		</div>
+		<div *ngFor="let post of posts"
+			class="list-post">
+			<article [ngClass]="{'private-post': post.permission === 'PRIVATE'}"
+				class="post hover-moved">
+				<a [routerLink]="'/blogs/' + post.postReference"
+					[ngStyle]="{
+            'background-image': 'url(' + post.postBackgroundImg + ')'
+          }"
+					(click)="openPost(post)"
+					class="post-thumbnail"></a>
+				<div class="post-content">
+					<h2 class="post-title">
+						<a [routerLink]="'/blogs/' + post.postReference">{{post.title}}</a>
+					</h2>
+					<p>
+						{{post.description}}
+					</p>
+					<span class="post-date">
+						{{post.author}}
+            wrote
+						<!-- write a component here later -->
+						{{post.createdAt | timeAgo }}
+            ({{post.createdAt | date }})
+            with
+            {{post.viewCount | number:'1.0-0' }}
+						<i class="fa fa-eye"
+							aria-hidden="true"></i>
+						|
+							{{post.readTime || 5}} mins read
+					</span>
+					<ng-container *ngIf="post && post.tags.length">
+						<div *ngFor="let tag of post.tags"
+							class="tagging">
+							<a [routerLink]="'/home'"
+								[queryParams]="{ tag: tag.name }"
+								class="tagging__item">
+								#{{tag.name}}
+							</a>
+						</div>
+					</ng-container>
+				</div>
+			</article>
+		</div>
+		<div class="show-more-post-container">
+			<button *ngIf="allPosts.length"
+				[disabled]="isRunning"
+				(click)="showMorePost()"
+				type="button"
+				class="btn btn-info pull-right btn-w100">
+				<a class="show-more-post">Show more post</a>
+			</button>
+		</div>
+	</div>
+</div>

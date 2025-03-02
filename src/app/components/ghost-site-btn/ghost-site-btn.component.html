@@ -1,0 +1,15 @@
+<a class="
+          btn
+          {{commonClass}}
+          {{boldText ? 'font-bold': ''}}
+          {{width}}
+          {{height}}
+          {{type === 'link' ? linkClass : ''}}
+          {{type === 'link' && this.active ? 'text-blue' : 'text-dark'}}
+          
+          {{type === 'btn' ? btnClass : ''}}
+          {{type === 'outline' ? outlineClass : ''}}
+          " [routerLink]="[link]" (click)="callback.emit(false);"
+  [routerLinkActive]="type === 'link' ? '!text-blue' : ''" [style.padding-left]="paddingLeft ? paddingLeft : ''">
+  <ng-content></ng-content>
+</a>
