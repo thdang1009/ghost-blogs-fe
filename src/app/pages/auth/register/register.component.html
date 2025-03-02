@@ -18,7 +18,7 @@
 											placeholder="Full Name"
 											formControlName="fullName">
 										<mat-error>
-											<span *ngIf="!registerForm.get('fullName').valid && registerForm.get('fullName').touched">
+											<span *ngIf="!registerForm.get('fullName')?.valid && registerForm.get('fullName')?.touched">
 												Please enter your Full Name.
 											</span>
 										</mat-error>
@@ -32,7 +32,7 @@
 											placeholder="Email"
 											formControlName="username">
 										<mat-error>
-											<span *ngIf="!registerForm.get('username').valid && registerForm.get('username').touched">
+											<span *ngIf="!registerForm.get('username')?.valid && registerForm.get('username')?.touched">
 												Please enter your username
 											</span>
 										</mat-error>
@@ -46,7 +46,7 @@
 											placeholder="Password"
 											formControlName="password">
 										<mat-error>
-											<span *ngIf="!registerForm.get('password').valid && registerForm.get('password').touched">
+											<span *ngIf="!registerForm.get('password')?.valid && registerForm.get('password')?.touched">
 												Please enter your password
 											</span>
 										</mat-error>

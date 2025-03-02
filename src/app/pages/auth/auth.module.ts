@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { AuthManagementRoutingModule } from './auth-management-routing.module';
+import { AuthRoutingModule } from './auth-routing.module';
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
 import { RegisterComponent } from './register/register.component';
@@ -20,8 +20,8 @@ import { ChangePasswordComponent } from './change-password/change-password.compo
   ],
   imports: [
     CommonModule,
-    AuthManagementRoutingModule,
+    AuthRoutingModule,
     SharedModule
   ]
 })
-export class AuthManagementModule { }
+export class AuthModule { }

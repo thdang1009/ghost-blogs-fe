@@ -18,7 +18,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class RegisterComponent implements OnInit {
 
-  registerForm: UntypedFormGroup | undefined;
+  registerForm!: UntypedFormGroup;
   fullName = '';
   username = '';
   password = '';

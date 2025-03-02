@@ -1,14 +1,16 @@
-import { Routes } from '@angular/router';
-import { AdminLayoutComponent } from '@layouts/admin-layout/admin-layout.component';
-import { GuestLayoutComponent } from '@layouts/guest-layout/guest-layout.component';
-import { LoginGuard } from './guards/login.guard';
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
+import { GuestLayoutComponent } from './layouts/guest-layout/guest-layout.component';
+import { LoginGuard } from '@guards/login.guard';
 
 export const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
-  }, {
+  },
+  {
     path: 'admin',
     component: AdminLayoutComponent,
     children: [{
@@ -16,7 +18,8 @@ export const routes: Routes = [
       loadChildren: () => import('./layouts/admin-layout/admin-layout.module').then(m => m.AdminLayoutModule),
       canActivate: [LoginGuard]
     }]
-  }, {
+  },
+  {
     path: '',
     component: GuestLayoutComponent,
     children: [{
@@ -26,7 +29,12 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  },
+    redirectTo: 'home'
+  }
 ];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }

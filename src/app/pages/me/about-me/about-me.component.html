@@ -60,8 +60,10 @@
 				<h2 class="section-header">About Me</h2>
 			</div>
 			<div class="who-am-i-container">
-
-				<ngx-typed-js [strings]="arrString"
+				<span class="static-text">
+					I'm Ghost - a developer
+				</span>
+				<!-- <ngx-typed-js [strings]="arrString"
 					[shuffle]="true"
 					[typeSpeed]="40"
 					[loop]="true">
@@ -69,7 +71,7 @@
 						<span class="static-text">I'm Ghost -&nbsp;</span>
 						<span class="typing"></span>
 					</h3>
-				</ngx-typed-js>
+				</ngx-typed-js> -->
 
 				<app-list-badge [myStyles]="{'display': 'flex', 'margin': 'inherit', 'padding': '0 0 12px 0'}"></app-list-badge>
 				<p>
@@ -139,7 +141,7 @@
 						<p>
 							<strong>Email:</strong>
 							<a href="mailto:thdang1009@gmail.com">
-								thdang1009@gmail.com
+								thdang1009&#64;gmail&#46;com
 							</a>
 						</p>
 					</li>
@@ -241,7 +243,7 @@
 									2018 - present
 								</div>
 								<div class="content base dark400">
-									Fullstack Software Engineer @
+									Fullstack Software Engineer &#64;
 									<a href="https://frontendmasters.com/"
 										target="_blank"
 										rel="noopener noreferrer">
@@ -380,7 +382,7 @@
 									placeholder="Name"
 									formControlName="name">
 								<mat-error>
-									<span *ngIf="!contactForm.get('name').valid && contactForm.get('name').touched">
+									<span *ngIf="!contactForm.get('name')?.valid && contactForm.get('name')?.touched">
 										Please enter your name
 									</span>
 								</mat-error>
@@ -393,7 +395,7 @@
 									placeholder="Email"
 									formControlName="email">
 								<mat-error>
-									<span *ngIf="!contactForm.get('email').valid && contactForm.get('email').touched">
+									<span *ngIf="!contactForm.get('email')?.valid && contactForm.get('email')?.touched">
 										Please enter your email
 									</span>
 								</mat-error>
@@ -406,7 +408,7 @@
 									placeholder="Subject"
 									formControlName="subject">
 								<mat-error>
-									<span *ngIf="!contactForm.get('subject').valid && contactForm.get('subject').touched">
+									<span *ngIf="!contactForm.get('subject')?.valid && contactForm.get('subject')?.touched">
 										Please enter subject
 									</span>
 								</mat-error>
@@ -423,7 +425,7 @@
 									autosize>
 								</textarea>
 								<mat-error>
-									<span *ngIf="!contactForm.get('message').valid && contactForm.get('message').touched">
+									<span *ngIf="!contactForm.get('message')?.valid && contactForm.get('message')?.touched">
 										Please enter message
 									</span>
 								</mat-error>

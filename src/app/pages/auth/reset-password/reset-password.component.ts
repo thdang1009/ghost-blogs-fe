@@ -12,8 +12,8 @@ import { MyErrorStateMatcher } from '../login/login.component';
 })
 export class ResetPasswordComponent implements OnInit {
 
-  resetPasswordForm: UntypedFormGroup | undefined;
-  sentOTPForm: UntypedFormGroup | undefined;
+  resetPasswordForm!: UntypedFormGroup;
+  sentOTPForm!: UntypedFormGroup;
   email = '';
   matcher = new MyErrorStateMatcher();
   isLoadingResults = false;

@@ -11,7 +11,7 @@ import { MyErrorStateMatcher } from '../login/login.component';
 })
 export class ChangePasswordComponent implements OnInit {
 
-  changePasswordForm: UntypedFormGroup | undefined;
+  changePasswordForm!: UntypedFormGroup;
   username = '';
   password = '';
   matcher = new MyErrorStateMatcher();

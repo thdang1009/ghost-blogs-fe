@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { AdminLayoutRoutes } from './admin-layout.routing';
 import { DashboardComponent } from '@pages/dashboard/dashboard.component';
 import { ReuseComponentModule } from '@reuse/reuse.module';
-import { ComponentsModule } from '@components/components.module';
+import { ComponentsModule } from '../../components/components.module';
+import { AuthModule } from '@pages/auth/auth.module';
 
 @NgModule({
   imports: [
@@ -12,6 +13,7 @@ import { ComponentsModule } from '@components/components.module';
     RouterModule.forChild(AdminLayoutRoutes),
     ReuseComponentModule,
     ComponentsModule,
+    AuthModule,
   ],
   declarations: [
     DashboardComponent,

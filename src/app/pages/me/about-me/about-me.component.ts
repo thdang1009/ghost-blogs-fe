@@ -21,7 +21,7 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
 
 
   isRunning = false;
-  contactForm: UntypedFormGroup | undefined;
+  contactForm!: UntypedFormGroup;
   heights: number[] = [];
   yearOlds: number | undefined;
   currentActive = 0;
