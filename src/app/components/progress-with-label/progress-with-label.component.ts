@@ -7,8 +7,8 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class ProgressWithLabelComponent implements OnInit {
 
-  @Input() percent: number;
-  @Input() label: string;
+  @Input() percent: number = 0;
+  @Input() label: string = '';
   constructor() { }
 
   ngOnInit(): void {

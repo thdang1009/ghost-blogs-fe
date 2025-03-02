@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '@services/_index';
 
-declare const $: any;
-
 declare interface Child {
   path: string;
   title: string;
@@ -150,7 +148,7 @@ export class SidebarComponent implements OnInit {
       });
   }
   isMobileMenu() {
-    if ($(window).width() > 991) {
+    if (window.innerWidth > 991) {
       return false;
     }
     return true;

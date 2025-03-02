@@ -3,7 +3,7 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { GuestLayoutRoutes } from './guest-layout.routing';
 import { HomeComponent } from '@pages/home/home.component';
-import { ComponentsModule } from '@components';
+import { ComponentsModule } from '@components/components.module';
 import { ReuseComponentModule } from '@reuse/reuse.module';
 import { SharedModule } from '@shared/shared-module.module';
 @NgModule({

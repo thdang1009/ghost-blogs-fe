@@ -7,7 +7,7 @@ import { Component, Input, OnInit } from '@angular/core';
 })
 export class ListBadgeComponent implements OnInit {
 
-  @Input() myStyles;
+  @Input() myStyles: any;
   constructor() {
 
   }

@@ -21,6 +21,7 @@ export class HomeComponent implements OnInit {
   isFilteredByTag = false;
   pageIndex = 1;
   numberOfAllPost = 0;
+  isRunning = false;
 
   @HostListener('window:scroll', ['$event'])
   onScroll(event: Event) {

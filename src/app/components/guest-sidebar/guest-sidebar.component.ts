@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '@services/_index';
-import { checkIsInPDFView } from '@shares/common';
+import { checkIsInPDFView } from '@shared/common';
 
 declare const $: any;
 declare interface RouteInfo {
@@ -44,8 +44,8 @@ export const ROUTES: RouteInfo[] = [
 })
 export class GuestSidebarComponent implements OnInit {
 
-  _isInPDFView;
-  menuItems: any[];
+  _isInPDFView = false;
+  menuItems: any[] = [];
   isLogined = false;
   stringToSearch = '';
   isMember = false;
@@ -63,7 +63,7 @@ export class GuestSidebarComponent implements OnInit {
       tempMenu = ROUTES.filter(el => el && el.path !== 'admin/dashboard');
     }
     this.menuItems = tempMenu;
-    this.router.events.subscribe((event: NavigationEnd) => {
+    this.router.events.subscribe((event: any) => {
       if (event instanceof NavigationEnd) {
         this._isInPDFView = checkIsInPDFView(event.url);
       }

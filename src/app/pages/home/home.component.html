@@ -60,16 +60,16 @@
 						{{post.author}}
             wrote
 						<!-- write a component here later -->
-						{{post.createdAt | timeAgo }}
-            ({{post.createdAt | date }})
+						{{post.createdAt! | timeAgo }}
+            ({{post.createdAt! | date }})
             with
-            {{post.viewCount | number:'1.0-0' }}
+						{{+(post.viewCount ?? 0) | number:'1.0-0' }}
 						<i class="fa fa-eye"
 							aria-hidden="true"></i>
 						|
 							{{post.readTime || 5}} mins read
 					</span>
-					<ng-container *ngIf="post && post.tags.length">
+					<ng-container *ngIf="post && post.tags && post.tags.length">
 						<div *ngFor="let tag of post.tags"
 							class="tagging">
 							<a [routerLink]="'/home'"

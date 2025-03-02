@@ -22,4 +22,5 @@ export class Post {
   type?: String;
   contentGhostEditor?: Object;
   readTime?: Number;
+  viewCount?: Number;
 }
