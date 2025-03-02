@@ -5,7 +5,6 @@ import { HomeComponent } from '@pages/home/home.component';
 import { NotLoginGuard } from '@guards/not-login.guard';
 import { LogoutComponent } from '@pages/auth/logout/logout.component';
 import { DonationComponent } from '@pages/donation/donation.component';
-// import { PostDetailComponent } from '@pages/blog-management/post/post-detail/post-detail.component';
 import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-password.component';
 import { PostDetailComponent } from '@pages/blogs/post/post-detail/post-detail.component';
 
@@ -15,44 +14,44 @@ export const GuestLayoutRoutes: Routes = [
     title: 'Ghost\'s Posts',
     component: PostDetailComponent,
   },
-  {
-    path: 'home',
-    title: 'Ghost\'s Blogs',
-    component: HomeComponent
-  },
-  {
-    path: 'reset-password',
-    title: 'Reset password',
-    component: ResetPasswordComponent, canActivate: [NotLoginGuard]
-  },
-  {
-    path: 'login',
-    title: 'Login',
-    component: LoginComponent, canActivate: [NotLoginGuard]
-  },
-  {
-    path: 'logout',
-    title: 'Logout',
-    component: LogoutComponent
-  },
-  {
-    path: 'register',
-    title: 'Register',
-    component: RegisterComponent, canActivate: [NotLoginGuard]
-  },
-  {
-    path: 'donation',
-    title: 'Donate',
-    component: DonationComponent
-  },
-  {
-    path: 'me',
-    children: [{
-      path: '',
-      loadChildren: () => import('../../pages/me/me.module').then(m => m.MeModule),
-      canActivate: []
-    }]
-  },
+  // {
+  //   path: 'home',
+  //   title: 'Ghost\'s Blogs',
+  //   component: HomeComponent
+  // },
+  // {
+  //   path: 'reset-password',
+  //   title: 'Reset password',
+  //   component: ResetPasswordComponent, canActivate: [NotLoginGuard]
+  // },
+  // {
+  //   path: 'login',
+  //   title: 'Login',
+  //   component: LoginComponent, canActivate: [NotLoginGuard]
+  // },
+  // {
+  //   path: 'logout',
+  //   title: 'Logout',
+  //   component: LogoutComponent
+  // },
+  // {
+  //   path: 'register',
+  //   title: 'Register',
+  //   component: RegisterComponent, canActivate: [NotLoginGuard]
+  // },
+  // {
+  //   path: 'donation',
+  //   title: 'Donate',
+  //   component: DonationComponent
+  // },
+  // {
+  //   path: 'me',
+  //   children: [{
+  //     path: '',
+  //     loadChildren: () => import('../../pages/me/me.module').then(m => m.MeModule),
+  //     canActivate: []
+  //   }]
+  // },
   // {
   //   path: 'confirm-email/:confirmationCode',
   //   component: ConfirmEmailComponent

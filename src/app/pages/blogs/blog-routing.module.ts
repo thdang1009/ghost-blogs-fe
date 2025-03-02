@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { PostDetailComponent } from './post/post-detail/post-detail.component';
 
 const routes: Routes = [
-  { path: 'blogs/:ref', title: 'Ghost\'s Post', component: PostDetailComponent, canActivate: [] },
+  // { path: 'blogs/:ref', title: 'Ghost\'s Post', component: PostDetailComponent, canActivate: [] },
 ];
 
 @NgModule({

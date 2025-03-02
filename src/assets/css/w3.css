@@ -1,0 +1,10 @@
+.w3-blue, .w3-hover-blue:hover {
+    color: rgb(255, 255, 255) !important;
+    background-color: rgb(0, 104, 255) !important;
+}
+.w3-container, .w3-panel {
+    padding: 0.01em 16px;
+}
+.w3-round-xlarge {
+    border-radius: 16px;
+}
