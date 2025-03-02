@@ -88,7 +88,7 @@ export class GuestSidebarComponent implements OnInit {
   }
 
   isMobileMenu() {
-    if ($(window).width() > 991) {
+    if (window.innerWidth > 991) {
       return false;
     }
     return true;

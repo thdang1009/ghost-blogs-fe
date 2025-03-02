@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from '@layouts/admin-layout/admin-layout.component';
 import { GuestLayoutComponent } from '@layouts/guest-layout/guest-layout.component';
+import { LoginGuard } from './guards/login.guard';
 
 export const routes: Routes = [
   {

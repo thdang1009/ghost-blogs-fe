@@ -9,7 +9,7 @@ export class Post {
   user?: Number;
   permission?: String;
   description?: String;
-  content?: String; // content
+  content?: string; // content
   postReference?: String;
   postImgUrls?: String[];
   postBackgroundImg?: String;

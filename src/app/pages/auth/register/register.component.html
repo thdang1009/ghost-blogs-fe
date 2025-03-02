@@ -1,0 +1,69 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-header card-header-info">
+						<h4 class="card-title">Register</h4>
+					</div>
+					<div class="card-body">
+						<form [formGroup]="registerForm"
+							(ngSubmit)="onFormSubmit(registerForm.value)">
+							<div class="row">
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="fullName"
+											placeholder="Full Name"
+											formControlName="fullName">
+										<mat-error>
+											<span *ngIf="!registerForm.get('fullName').valid && registerForm.get('fullName').touched">
+												Please enter your Full Name.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="email"
+											placeholder="Email"
+											formControlName="username">
+										<mat-error>
+											<span *ngIf="!registerForm.get('username').valid && registerForm.get('username').touched">
+												Please enter your username
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="password"
+											placeholder="Password"
+											formControlName="password">
+										<mat-error>
+											<span *ngIf="!registerForm.get('password').valid && registerForm.get('password').touched">
+												Please enter your password
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+							</div>
+							<div class="button-row">
+								<button [disabled]="!registerForm.valid"
+									type="submit"
+									class="btn btn-info pull-right btn-w100">
+									Register
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

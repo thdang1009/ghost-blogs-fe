@@ -1,0 +1,446 @@
+<div class="about-me-components">
+	<!-- **** **** **** **** LEFT NAVIGATE  **** **** **** **** -->
+	<div class="left-navigation">
+		<div class="aside">
+			<div class="my-logo">
+				<img loading="lazy"
+					src="https://dangtrinh.site/api/v1/file/static/toi.jpeg"
+					alt="Ghost">
+			</div>
+			<div class="nav-container">
+				<ul class="nav list list-with-divider">
+					<li>
+						<a [ngClass]="{
+                            'ghost-nav-hight-light': currentActive === 0
+                        }"
+							(click)="scrollTo('about-me')"
+							class="abc">
+							<i class="fa fa-user"></i>
+							About Me
+						</a>
+					</li>
+					<li>
+						<a [ngClass]="{
+                            'ghost-nav-hight-light': currentActive === 1
+                        }"
+							(click)="scrollTo('portfolio')"
+							class="abc">
+							<i class="fa fa-briefcase"></i>
+							Portfolio
+						</a>
+					</li>
+					<li>
+						<a [ngClass]="{
+                            'ghost-nav-hight-light': currentActive === 2
+                        }"
+							(click)="scrollTo('contact')"
+							class="abc">
+							<i class="fa fa-comments"></i>
+							Contact
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+
+	</div>
+	<!-- **** **** **** **** LEFT NAVIGATE END  **** **** **** **** -->
+
+	<!-- **** **** **** **** MAIN CONTENT  **** **** **** **** -->
+	<div #aboutMeContent
+		(scroll)="checkOffsetTop($event)"
+		class="about-me-content">
+
+		<!-- **** **** **** **** ABOUT ME  **** **** **** **** -->
+		<section #aboutMe
+			class="about-me"
+			id="about-me">
+			<div (click)="scrollTo('about-me')"
+				class="section-header-container box-border-tl-br">
+				<h2 class="section-header">About Me</h2>
+			</div>
+			<div class="who-am-i-container">
+
+				<ngx-typed-js [strings]="arrString"
+					[shuffle]="true"
+					[typeSpeed]="40"
+					[loop]="true">
+					<h3 class="xs-mh-70">
+						<span class="static-text">I'm Ghost -&nbsp;</span>
+						<span class="typing"></span>
+					</h3>
+				</ngx-typed-js>
+
+				<app-list-badge [myStyles]="{'display': 'flex', 'margin': 'inherit', 'padding': '0 0 12px 0'}"></app-list-badge>
+				<p>
+					I am
+					<strong>Đăng Trịnh</strong>
+					, a Senior Full Stack Engineer with
+					<strong>7+</strong>
+					years of experience building backend and frontend and maintaining responsive websites.
+					I am a super fan of
+					<strong>JavaScript</strong>
+					language and its ecosystem.
+					I am committed to producing
+					<strong>
+						clean, reliable, and scalable
+					</strong>
+					code that prioritizes
+					<strong>performance</strong>
+					optimization.
+					Outside of work, I love to
+					<strong>read</strong>
+					, I’m also a
+					<strong>minimalist</strong>
+					.
+				</p>
+				<strong>
+					Techstack: Angular, NodeJS, NestJS, TypeScript, JavaScript, HTML, CSS, PostgreSQL, MongoDB, ...
+				</strong>
+			</div>
+			<div class="detail-info">
+				<ul class="list list-with-divider">
+					<li>
+						<p>
+							<strong>Birthday:</strong>
+							10/09/1996
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Website:</strong>
+							<a href="https://dangtrinh.site">
+								&nbsp;dangtrinh.site
+							</a>
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Degree:</strong>
+							Bachelor
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Location:</strong>
+							HO CHI MINH City
+						</p>
+					</li>
+				</ul>
+
+				<ul class="list list-with-divider">
+					<li>
+						<p>
+							<strong>Age:</strong>
+							{{ yearOlds }}
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Email:</strong>
+							<a href="mailto:thdang1009@gmail.com">
+								thdang1009@gmail.com
+							</a>
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Phone:</strong>
+							<a href="phoneto:+84327123239">
+								&nbsp;+84 327 123 239
+							</a>
+						</p>
+					</li>
+					<li>
+						<p>
+							<strong>Freelance:</strong>
+							<a class="hover-pointer"
+								href="https://www.upwork.com/freelancers/~01cb8f92b533a4d365"
+								target="_blank"
+								rel="noopener noreferrer">
+								Available
+							</a>
+						</p>
+					</li>
+				</ul>
+				<ul class="list pdx-2">
+					<li>
+						<app-progress-with-label [percent]="95"
+							[label]="'Javascript'"></app-progress-with-label>
+					</li>
+					<li>
+						<app-progress-with-label [percent]="85"
+							[label]="'HTML5, CSS3, SCSS'"></app-progress-with-label>
+					</li>
+					<li>
+						<app-progress-with-label [percent]="95"
+							[label]="'Angular, React'"></app-progress-with-label>
+					</li>
+					<li>
+						<app-progress-with-label [percent]="90"
+							[label]="'NodeJS, NestJS'"></app-progress-with-label>
+					</li>
+					<li>
+						<app-progress-with-label [percent]="85"
+							[label]="'MongoDB, PostgreSQL'"></app-progress-with-label>
+					</li>
+				</ul>
+			</div>
+			<div class="two-col row">
+				<div class="time-line-container col-sm-12 col-lg-6">
+					<h3>Education</h3>
+					<div class="card">
+						<!-- Stepper HTML -->
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2011 - 2014
+								</div>
+								<div class="content base dark400">
+									High School
+									<br>
+									<a href="https://ndc.edu.vn/"
+										target="_blank"
+										rel="noopener noreferrer">
+										Collège de Mytho (Trường Trung học Phổ thông Nguyễn Đình Chiểu)
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2014 - 2018
+								</div>
+								<div class="content base dark400">
+									Software Engineer
+									<br>
+									<a href="https://www.hcmus.edu.vn/"
+										target="_blank"
+										rel="noopener noreferrer">
+										HCMUS (Khoa học tự nhiên)
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2018 - present
+								</div>
+								<div class="content base dark400">
+									Fullstack Software Engineer @
+									<a href="https://frontendmasters.com/"
+										target="_blank"
+										rel="noopener noreferrer">
+										Frontend Master
+									</a>
+								</div>
+							</div>
+						</div>
+						<!-- END Step -->
+					</div>
+				</div>
+				<div class="time-line-container col-sm-12 col-lg-6">
+					<h3>Experience</h3>
+					<div class="card">
+						<!-- Stepper HTML -->
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2017 - 2018
+								</div>
+								<div class="content base dark400">
+									VNG Corp
+									<br>
+									Javascript Fresher
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2018 - 2021
+								</div>
+								<div class="content base dark400">
+									ZION
+									<br>
+									Frontend Engineer
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									2022 - 09/2023
+								</div>
+								<div class="content base dark400">
+									ZION, Freelancer
+									<br>
+									Senior Fullstack Engineer
+								</div>
+							</div>
+						</div>
+						<div class="step">
+							<div>
+								<div class="circle"></div>
+							</div>
+							<div>
+								<div class="title">
+									<i class="fa fa-calendar"></i>
+									10/2023 - present
+								</div>
+								<div class="content base dark400">
+									BlueSG, Freelancer
+									<br>
+									Senior Fullstack Engineer
+								</div>
+							</div>
+						</div>
+						<!-- END Step -->
+					</div>
+				</div>
+			</div>
+
+		</section>
+		<!-- **** **** **** **** ABOUT ME END **** **** **** **** -->
+
+		<!-- **** **** **** **** SERVICES  **** **** **** **** -->
+		<!-- **** **** **** **** SERVICES END **** **** **** **** -->
+
+		<!-- **** **** **** **** PORTFOLIO **** **** **** **** -->
+		<section #portfolio
+			class="portfolio"
+			id="portfolio">
+			<div (click)="scrollTo('portfolio')"
+				class="section-header-container  box-border-tl-br">
+				<h2 class="section-header">Portfolio</h2>
+			</div>
+			<div class="portfolio-container row">
+				<ng-container *ngFor="let item of listPortfolio; let i = index">
+					<div class="product-preview-iframe">
+						<label>
+							<a [href]="item.src"
+								target="_blank">
+								{{item.title}}
+							</a>
+						</label>
+						<iframe [title]="item.title"
+							[src]="item.src | safe"
+							width="100%"
+							height="100%">
+						</iframe>
+					</div>
+				</ng-container>
+			</div>
+		</section>
+		<!-- **** **** **** **** PORTFOLIO END **** **** **** **** -->
+
+		<!-- **** **** **** **** CONTACT **** **** **** **** -->
+		<section #contact
+			class="contact"
+			id="contact">
+			<div (click)="scrollTo('contact')"
+				class="section-header-container  box-border-tl-br">
+				<h2 class="section-header">Contact</h2>
+			</div>
+			<div class="contact-us-container row">
+				<h3>Send me a message</h3>
+				<form [formGroup]="contactForm"
+					(ngSubmit)="sendMessageToMe(contactForm.value)">
+					<div class="row">
+						<div class="col-lg-6 col-md-12">
+							<mat-form-field class="example-full-width">
+								<input matInput
+									type="text"
+									placeholder="Name"
+									formControlName="name">
+								<mat-error>
+									<span *ngIf="!contactForm.get('name').valid && contactForm.get('name').touched">
+										Please enter your name
+									</span>
+								</mat-error>
+							</mat-form-field>
+						</div>
+						<div class="col-lg-6 col-md-12">
+							<mat-form-field class="example-full-width">
+								<input matInput
+									type="email"
+									placeholder="Email"
+									formControlName="email">
+								<mat-error>
+									<span *ngIf="!contactForm.get('email').valid && contactForm.get('email').touched">
+										Please enter your email
+									</span>
+								</mat-error>
+							</mat-form-field>
+						</div>
+						<div class="col-md-12">
+							<mat-form-field class="example-full-width">
+								<input matInput
+									type="text"
+									placeholder="Subject"
+									formControlName="subject">
+								<mat-error>
+									<span *ngIf="!contactForm.get('subject').valid && contactForm.get('subject').touched">
+										Please enter subject
+									</span>
+								</mat-error>
+							</mat-form-field>
+						</div>
+						<div class="col-md-12">
+							<mat-form-field class="example-full-width">
+								<textarea [minRows]="1"
+									[maxRows]="10"
+									(change)="onMessageChange()"
+									matInput
+									placeholder="Comment"
+									formControlName="message"
+									autosize>
+								</textarea>
+								<mat-error>
+									<span *ngIf="!contactForm.get('message').valid && contactForm.get('message').touched">
+										Please enter message
+									</span>
+								</mat-error>
+							</mat-form-field>
+						</div>
+					</div>
+					<button [disabled]="!contactForm.valid || isRunning"
+						type="submit"
+						class="btn btn-info pull-right btn-w100">
+						Submit
+					</button>
+					<div class="clearfix"></div>
+				</form>
+			</div>
+		</section>
+		<!-- **** **** **** **** CONTACT END **** **** **** **** -->
+
+	</div>
+	<!-- **** **** **** **** MAIN CONTENT END **** **** **** **** -->
+</div>

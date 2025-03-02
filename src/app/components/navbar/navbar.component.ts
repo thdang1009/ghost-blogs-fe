@@ -12,8 +12,8 @@ import { checkIsInPDFView } from '@shared/common';
 export class NavbarComponent implements OnInit {
   private listTitles: any[] = [];
   title = '';
-  mobile_menu_visible: any = 0;
-  private toggleButton: any;
+  mobile_menu_visible: number = 0;
+  private toggleButton: HTMLElement | null = null;
   private sidebarVisible: boolean = true;
   stringToSearch = '';
   _isInPDFView = false;
@@ -32,13 +32,12 @@ export class NavbarComponent implements OnInit {
       return [...pre, ...arr];
     }, []);
     const navbar: HTMLElement = this.element.nativeElement;
-    this.toggleButton = navbar.getElementsByClassName('navbar-toggler')[0];
+    this.toggleButton = navbar.getElementsByClassName('navbar-toggler')[0] as HTMLElement;
     this.router.events.subscribe((event) => {
       this.sidebarClose();
-      /* tslint:disable-next-line */
-      var $layer: any = document.getElementsByClassName('close-layer')[0];
-      if ($layer) {
-        $layer.remove();
+      const closeLayer = document.getElementsByClassName('close-layer')[0] as HTMLElement;
+      if (closeLayer) {
+        closeLayer.remove();
         this.mobile_menu_visible = 0;
       }
     });
@@ -50,24 +49,75 @@ export class NavbarComponent implements OnInit {
   }
 
   sidebarOpen() {
-    const toggleButton = this.toggleButton;
     const body = document.getElementsByTagName('body')[0];
-    setTimeout(function () {
-      toggleButton.classList.add('toggled');
+    setTimeout(() => {
+      this.toggleButton?.classList.add('toggled');
     }, 500);
 
     body.classList.add('nav-open');
-
     this.sidebarVisible = true;
   };
   sidebarClose() {
     const body = document.getElementsByTagName('body')[0];
-    this.toggleButton.classList.remove('toggled');
+    this.toggleButton?.classList.remove('toggled');
     this.sidebarVisible = false;
     body.classList.remove('nav-open');
   };
   sidebarToggle() {
-    // TODO: Implement sidebar toggle
+    const toggle = document.getElementsByClassName('navbar-toggler')[0] as HTMLElement;
+    const body = document.getElementsByTagName('body')[0];
+
+    if (!this.sidebarVisible) {
+      this.sidebarOpen();
+    } else {
+      this.sidebarClose();
+    }
+
+    if (this.mobile_menu_visible === 1) {
+      body.classList.remove('nav-open');
+      const closeLayer = document.getElementsByClassName('close-layer')[0] as HTMLElement;
+      if (closeLayer) {
+        closeLayer.remove();
+      }
+      setTimeout(() => {
+        toggle.classList.remove('toggled');
+      }, 400);
+
+      this.mobile_menu_visible = 0;
+    } else {
+      setTimeout(() => {
+        toggle.classList.add('toggled');
+      }, 430);
+
+      const closeLayer = document.createElement('div');
+      closeLayer.setAttribute('class', 'close-layer');
+
+      const mainPanel = document.getElementsByClassName('main-panel')[0];
+      const wrapperFullPage = document.getElementsByClassName('wrapper-full-page')[0];
+
+      if (mainPanel) {
+        mainPanel.appendChild(closeLayer);
+      } else if (body.classList.contains('off-canvas-sidebar')) {
+        wrapperFullPage.appendChild(closeLayer);
+      }
+
+      setTimeout(() => {
+        closeLayer.classList.add('visible');
+      }, 100);
+
+      closeLayer.onclick = () => {
+        body.classList.remove('nav-open');
+        this.mobile_menu_visible = 0;
+        closeLayer.classList.remove('visible');
+        setTimeout(() => {
+          closeLayer.remove();
+          toggle.classList.remove('toggled');
+        }, 400);
+      };
+
+      body.classList.add('nav-open');
+      this.mobile_menu_visible = 1;
+    }
   };
 
   getTitle() {

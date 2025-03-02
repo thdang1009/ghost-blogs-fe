@@ -1,0 +1,56 @@
+<div class="clap-container"></div>
+<div class="container post-container">
+
+	<article class="container article-page">
+		<div class="div__back-to-home">
+			<a (click)="backToHome()">
+				← Back to the Blog Home
+			</a>
+		</div>
+		<figure *ngIf="ready"
+			class="d-flex-col-mid-center">
+			<img loading="lazy"
+				class="page-image"
+				src="{{item.postBackgroundImg}}"
+				alt="post's image">
+		</figure>
+
+		<div *ngIf="ready"
+			class="wrap-content">
+			<header class="header-page d-flex-col-mid-center">
+				<h1 class="page-title">{{item.title}}</h1>
+				<div class="page-date">
+					{{item.author}}
+                    wrote
+                    {{item.createdAt | timeAgo }}
+                    ({{item.createdAt | date }})
+                    with {{+(item.viewCount  ?? 0)| number:'1.0-0' }}
+					<i class="fa fa-eye"
+						aria-hidden="true"></i>
+					|
+							{{item.readTime || 5}} mins read
+				</div>
+				<div style="margin-top: 1rem;">
+					<div *ngFor="let tag of item.tags"
+						class="tagging">
+						<a [routerLink]="'/home'"
+							[queryParams]="{ tag: tag.name }"
+							class="tagging__item">
+							#{{tag.name}}
+						</a>
+					</div>
+				</div>
+			</header>
+		</div>
+		<div class="post-description">
+			<p>
+				{{item.description}}
+			</p>
+		</div>
+		<div class="post-body">
+			<ng-container *ngIf="ready">
+				<markdown [data]="item.content"></markdown>
+			</ng-container>
+		</div>
+	</article>
+</div>

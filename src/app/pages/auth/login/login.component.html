@@ -1,0 +1,92 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row"
+			style="justify-content: center;">
+			<div class="col-lg-4 col-md-4 col-sm-12">
+				<div class="card">
+					<div class="card-header card-header-info">
+						<h4 class="card-title">Login</h4>
+					</div>
+					<div class="card-body">
+						<form [formGroup]="loginForm"
+							(ngSubmit)="onFormSubmit(loginForm.value)">
+							<div class="row">
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="email"
+											placeholder="Email"
+											formControlName="username">
+										<mat-error>
+											<span *ngIf="!loginForm.get('username')?.valid && loginForm.get('username')?.touched">
+												Please enter your username
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="{{isShowPassword ? 'text' : 'password'}}"
+											placeholder="Password"
+											formControlName="password">
+										<ng-container *ngIf="countClick < 10; else eyeIsHurtPart">
+											<i *ngIf="!isShowPassword"
+												(click)="showPassword()"
+												class="fa fa-eye reveal-password"
+												aria-hidden="true"></i>
+											<i *ngIf="isShowPassword"
+												(click)="hidePassword()"
+												class="fa fa-eye-slash reveal-password"
+												aria-hidden="true"></i>
+										</ng-container>
+										<ng-template #eyeIsHurtPart>
+											<img (click)="toggleShowPassword()"
+												loading="lazy"
+												class="reveal-password red"
+												src="/assets/custom-icon/hurt-eye.jpg"
+												alt="It's hurt">
+										</ng-template>
+										<mat-error>
+											<span *ngIf="!loginForm.get('password')?.valid && loginForm.get('password')?.touched">
+												Please enter your password
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<p>
+										Don't have account?
+										<a (click)="register()"
+											href="javascript:void(0)">
+											Register
+										</a>
+									</p>
+								</div>
+								<div class="col-md-12">
+									<p>
+										Forgot your password?
+										<a (click)="resetPassword()"
+											href="javascript:void(0)">
+											Reset password
+										</a>
+									</p>
+								</div>
+							</div>
+							<button [disabled]="!loginForm.valid || isRunning"
+								type="submit"
+								class="btn btn-info pull-right btn-w100">
+								Login
+							</button>
+							<div class="clearfix"></div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

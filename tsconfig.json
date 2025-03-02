@@ -55,6 +55,9 @@
       "@reuse/*": [
         "src/app/reuse/*"
       ],
+      "@guards/*": [
+        "src/app/guards/*"
+      ],
       "@environments/*": [
         "src/environments/*"
       ]
