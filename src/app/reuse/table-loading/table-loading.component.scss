@@ -1,0 +1,9 @@
+.overlay__content.xl {
+    transform: translate(-50%, -50%) scale(1.5) !important;
+}
+.overlay__content.md {
+    transform: translate(-50%, -50%) scale(1) !important;
+}
+.overlay__content.sm {
+    transform: translate(-50%, -50%) scale(0.5) !important;
+}

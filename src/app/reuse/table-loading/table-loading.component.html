@@ -1,0 +1,7 @@
+<div *ngIf="loadingOpacity" class="overlay" [style.opacity]="loadingOpacity">
+    <div class="overlay__inner">
+        <div *ngIf="size === 'xl'" class="overlay__content xl"><span class="spinner"></span></div>
+        <div *ngIf="size === 'md'" class="overlay__conten md"><span class="spinner"></span></div>
+        <div *ngIf="size === 'sm'" class="overlay__content sm"><span class="spinner"></span></div>
+    </div>
+</div>

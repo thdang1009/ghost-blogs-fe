@@ -1,22 +1,22 @@
-import { TestBed } from '@angular/core/testing';
+import { TestBed, waitForAsync } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { PostService } from './post.service';
 import { Post } from '@models/_index';
 import { environment } from '@environments/environment';
+import { PostService } from '@services/_index';
 
 describe('PostService', () => {
   let service: PostService;
   let httpMock: HttpTestingController;
   const apiUrl = environment.apiUrl + '/v1/post';
 
-  beforeEach(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [PostService]
     });
     service = TestBed.inject(PostService);
     httpMock = TestBed.inject(HttpTestingController);
-  });
+  }));
 
   afterEach(() => {
     httpMock.verify();
