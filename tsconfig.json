@@ -23,7 +23,7 @@
       "ES2022",
       "dom"
     ],
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@pages/*": [
         "src/app/pages/*"

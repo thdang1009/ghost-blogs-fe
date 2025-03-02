@@ -4,14 +4,14 @@ import { AboutMeComponent } from './about-me/about-me.component';
 import { DownloadMyCvComponent } from './download-my-cv/download-my-cv.component';
 import { HireMeComponent } from './hire-me/hire-me.component';
 
-const routes: Routes = [
+const routes3: Routes = [
   { path: 'about-me', title: 'About Ghost', component: AboutMeComponent, canActivate: [] },
   { path: 'hire-me', title: 'Hire Ghost', component: HireMeComponent, canActivate: [] },
   { path: 'download-my-cv', title: 'Download my CV', component: DownloadMyCvComponent, canActivate: [] },
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
+  imports: [RouterModule.forChild(routes3)],
   exports: [RouterModule]
 })
 export class MeRoutingModule { }

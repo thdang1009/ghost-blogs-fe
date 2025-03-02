@@ -5,7 +5,7 @@ import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.compon
 import { GuestLayoutComponent } from './layouts/guest-layout/guest-layout.component';
 import { LoginGuard } from '@guards/login.guard';
 
-const routes: Routes = [
+const routes1: Routes = [
   {
     path: '',
     redirectTo: 'home',
@@ -35,7 +35,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { enableTracing: true, initialNavigation: 'enabledBlocking' })
+    RouterModule.forRoot(routes1, { enableTracing: true, initialNavigation: 'enabledBlocking' })
   ],
   exports: [
   ],

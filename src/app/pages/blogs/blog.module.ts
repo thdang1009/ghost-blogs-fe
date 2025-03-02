@@ -38,7 +38,7 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
       markedOptions: {
         provide: MARKED_OPTIONS,
         useFactory: markedOptionsFactory,
-        deps: [AnchorService],
+        deps: [],
       },
       clipboardOptions: {
         provide: CLIPBOARD_OPTIONS,
