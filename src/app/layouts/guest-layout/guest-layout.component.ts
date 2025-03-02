@@ -3,6 +3,9 @@ import { Location, PopStateEvent } from '@angular/common';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import PerfectScrollbar from 'perfect-scrollbar';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
   selector: 'app-guest-layout',
@@ -14,18 +17,29 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
   private lastPoppedUrl: string | undefined;
   private yScrollStack: number[] = [];
 
-  constructor(public location: Location, private router: Router) { }
+  constructor(
+    public location: Location,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(DOCUMENT) private document: Document
+  ) { }
 
   ngOnInit() {
-    const isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
-
-    if (isWindows && !document.getElementsByTagName('body')[0].classList.contains('sidebar-mini')) {
-      document.getElementsByTagName('body')[0].classList.add('perfect-scrollbar-on');
-    } else {
-      document.getElementsByTagName('body')[0].classList.remove('perfect-scrollbar-off');
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
     }
-    const elemMainPanel = document.querySelector('.main-panel');
-    const elemSidebar = document.querySelector('.sidebar .sidebar-wrapper');
+
+    const isWindows = navigator.platform.indexOf('Win') > -1;
+    const body = this.document.getElementsByTagName('body')[0];
+
+    if (isWindows && !body.classList.contains('sidebar-mini')) {
+      body.classList.add('perfect-scrollbar-on');
+    } else {
+      body.classList.remove('perfect-scrollbar-off');
+    }
+
+    const elemMainPanel = this.document.querySelector('.main-panel');
+    const elemSidebar = this.document.querySelector('.sidebar .sidebar-wrapper');
 
     this.location.subscribe((ev: PopStateEvent) => {
       this.lastPoppedUrl = ev.url;
@@ -56,25 +70,25 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
     }
 
     const windowWidth = window.innerWidth;
-    const sidebar = document.querySelector('.sidebar');
-    const sidebarResponsive = document.querySelector('body > .navbar-collapse');
+    const sidebar = this.document.querySelector('.sidebar');
+    const sidebarResponsive = this.document.querySelector('body > .navbar-collapse');
     const sidebarImgContainer = sidebar?.querySelector('.sidebar-background');
 
     if (windowWidth > 767) {
-      const fixedPluginDropdown = document.querySelector('.fixed-plugin .dropdown');
+      const fixedPluginDropdown = this.document.querySelector('.fixed-plugin .dropdown');
       if (fixedPluginDropdown?.classList.contains('show-dropdown')) {
         fixedPluginDropdown.classList.add('open');
       }
     }
 
-    const switchTriggers = document.querySelectorAll('.fixed-plugin a.switch-trigger');
+    const switchTriggers = this.document.querySelectorAll('.fixed-plugin a.switch-trigger');
     switchTriggers.forEach(trigger => {
       trigger.addEventListener('click', function (this: HTMLElement, event: Event) {
         event.stopPropagation();
       });
     });
 
-    const badges = document.querySelectorAll('.fixed-plugin .badge');
+    const badges = this.document.querySelectorAll('.fixed-plugin .badge');
     badges.forEach(badge => {
       badge.addEventListener('click', function (this: HTMLElement) {
         const siblings = Array.from(this.parentElement?.children || []);
@@ -93,10 +107,11 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
       });
     });
 
-    const imgHolders = document.querySelectorAll('.fixed-plugin .img-holder');
+    const imgHolders = this.document.querySelectorAll('.fixed-plugin .img-holder');
+    const that = this;
     imgHolders.forEach(holder => {
       holder.addEventListener('click', function (this: HTMLElement) {
-        const fullPageBackground = document.querySelector('.full-page-background');
+        const fullPageBackground = that.document.querySelector('.full-page-background');
 
         const parentLi = this.parentElement;
         if (parentLi?.parentElement) {
@@ -138,8 +153,8 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
   }
 
   runOnRouteChange(): void {
-    if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
-      const elemMainPanel = document.querySelector('.main-panel');
+    if (isPlatformBrowser(this.platformId) && window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
+      const elemMainPanel = this.document.querySelector('.main-panel');
       if (elemMainPanel) {
         const ps = new PerfectScrollbar(elemMainPanel as HTMLElement);
         ps.update();
@@ -153,6 +168,9 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
   }
 
   isMobileMenu(): boolean {
-    return window.innerWidth <= 991;
+    if (isPlatformBrowser(this.platformId)) {
+      return window.innerWidth <= 991;
+    }
+    return false; // Default for server-side rendering
   }
 }

@@ -6,6 +6,8 @@ import { environment } from '@environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CONSTANT } from '@shared/constant';
 import { LoginResponse, ghostLog, handleError } from '@shared/common';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, Inject } from '@angular/core';
 
 const apiUrl = environment.apiUrl + '/v1/auth';
 
@@ -20,15 +22,20 @@ export class AuthService {
   loggedInStatus = false;
   redirectUrl: string | null = null;
 
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router) {
+  constructor(
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {
     this.loggedInStatus = this.isLogin();
-    if (this.loggedInStatus) {
+    if (this.loggedInStatus && isPlatformBrowser(this.platformId)) {
       this.userInfo = JSON.parse(localStorage.getItem(CONSTANT.USER_INFO) || '{}');
     }
   }
 
   isLogin() {
-    return !!localStorage.getItem(CONSTANT.USER_INFO);
+    return isPlatformBrowser(this.platformId) ? !!localStorage.getItem(CONSTANT.USER_INFO) : false;
   }
 
   login(data: any): Observable<any> {
@@ -131,10 +138,14 @@ export class AuthService {
   }
 
   private saveUserLoginInfo(userInfo: any) {
-    localStorage.setItem(CONSTANT.USER_INFO, JSON.stringify(userInfo));
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(CONSTANT.USER_INFO, JSON.stringify(userInfo));
+    }
   }
   private clearUserInfo() {
-    localStorage.removeItem(CONSTANT.USER_INFO);
-    localStorage.removeItem(CONSTANT.TOKEN);
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(CONSTANT.USER_INFO);
+      localStorage.removeItem(CONSTANT.TOKEN);
+    }
   }
 }

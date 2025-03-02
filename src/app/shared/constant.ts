@@ -1,3 +1,6 @@
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, inject, InjectionToken } from '@angular/core';
+
 export const CONSTANT = {
   USER_INFO: 'USER_INFO',
   TOKEN: 'token',
@@ -12,7 +15,15 @@ export const CONSTANT = {
 
 export const DEBOUCE_TIME = 200;
 
-export const PDF_ASSETS_PATH = window.location.origin + '/assets/pdf';
+export const PDF_ASSETS_PATH = new InjectionToken<string>('PDF_ASSETS_PATH', {
+  factory: () => {
+    const platformId = inject(PLATFORM_ID);
+    if (isPlatformBrowser(platformId)) {
+      return window.location.origin + '/assets/pdf';
+    }
+    return '/assets/pdf'; // fallback for server-side rendering
+  }
+});
 
 export const SAVED_CODE = 'SAVED_CODE';
 
