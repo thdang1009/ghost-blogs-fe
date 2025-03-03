@@ -61,17 +61,14 @@
 			</div>
 			<div class="who-am-i-container">
 				<span class="static-text">
-					I'm Ghost - a developer
+					<ngx-typed-writer [strings]="arrString"
+						[shuffle]="true"
+						[isHTML]="true"
+						[smartBackspace]="true"
+						[backSpeed]="20"
+						[typeSpeed]="40">
+					</ngx-typed-writer>
 				</span>
-				<!-- <ngx-typed-js [strings]="arrString"
-					[shuffle]="true"
-					[typeSpeed]="40"
-					[loop]="true">
-					<h3 class="xs-mh-70">
-						<span class="static-text">I'm Ghost -&nbsp;</span>
-						<span class="typing"></span>
-					</h3>
-				</ngx-typed-js> -->
 
 				<app-list-badge [myStyles]="{'display': 'flex', 'margin': 'inherit', 'padding': '0 0 12px 0'}"></app-list-badge>
 				<p>

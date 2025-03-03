@@ -307,6 +307,14 @@ app-am-chart {
   cursor: pointer;
 }
 
+ngx-typed-writer {
+  font-weight: bold;
+  font-size: 1.5625rem;
+  line-height: 1.4em;
+  margin: 10px 0 15px;
+  display: flex;
+}
+
 app-donation {
   height: 84vh;
   display: flex;

@@ -35,7 +35,7 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
     title: 'Merchant tool',
     allowFullscreen: true
   }];
-  arrString = ['A Fullstack Web Engineer', 'A Javascript Lover', 'A Minimalist', 'A Book Reviewer', 'A Blogger'];
+  arrString = ['I\'m Ghost - A Fullstack Web Engineer', 'I\'m Ghost - A Javascript Lover', 'I\'m Ghost - A Minimalist', 'I\'m Ghost - A Book Reviewer', 'I\'m Ghost - A Blogger'];
 
   indexInterval = 0;
   constructor(

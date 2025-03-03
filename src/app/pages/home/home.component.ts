@@ -52,7 +52,6 @@ export class HomeComponent implements OnInit {
         if (currentPath && currentPath.includes('tag')) {
           this.isFilteredByTag = true;
         }
-        console.log('dangth init path', currentPath);
         this.postService.getPublicPosts(params)
           .subscribe(posts => {
             this.allPosts = (posts || []).reverse();

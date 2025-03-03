@@ -17,7 +17,6 @@ export class PostService {
 
   // lấy hết list post cho khách, nếu là admin thì thấy bài viết ẩn của bản thân
   getPublicPosts(req?: any): Observable<Post[]> {
-    console.log('getPublicPosts', req);
     const hasKeys = !!Object.keys(req).length;
     const queryString = hasKeys && ('?' + buildQueryString(req)) || '';
     const url = `${apiUrl}/public${req && queryString || ''}`;
