@@ -1,0 +1,25 @@
+<input #fileUpload
+	[accept]="requiredFileType"
+	(change)="onFileSelected($event)"
+	type="file"
+	class="file-input"
+	multiple>
+
+<div class="file-upload">
+	<ng-container *ngIf="listFileName && listFileName.length; else pleaseUploadPart">
+		{{(listFileName.length === 1 ? listFileName[0] : ('Uploaded ' + listFileName.length + ' files'))}}
+	</ng-container>
+	<ng-template #pleaseUploadPart>
+		Please choose file
+		<br>
+	</ng-template>
+	<button (click)="fileUpload.click()"
+		mat-mini-fab
+		color="primary"
+		class="upload-btn">
+		<em class="material-icons">attach_file</em>
+	</button>
+	<app-progress-with-label *ngIf="isUploading"
+		[percent]="randomNumber"
+		[label]="'Uploading'"></app-progress-with-label>
+</div>

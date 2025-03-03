@@ -1,0 +1,137 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<form (ngSubmit)="searchPost()"
+						class="form-under-table-header row">
+						<!-- date -->
+
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="col-md-4">
+							<mat-form-field class="example-full-width"
+								appearance="fill">
+								<mat-label>From</mat-label>
+								<input [matDatepicker]="pickerFrom"
+									[formControl]="searchDateFrom"
+									matInput
+									name="dateFrom">
+								<mat-datepicker-toggle [for]="pickerFrom"
+									matSuffix></mat-datepicker-toggle>
+								<mat-datepicker #pickerFrom></mat-datepicker>
+							</mat-form-field>
+						</div>
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="col-md-4">
+							<mat-form-field class="example-full-width"
+								appearance="fill">
+								<mat-label>To</mat-label>
+								<input [matDatepicker]="pickerTo"
+									[formControl]="searchDateTo"
+									matInput
+									name="dateTo">
+								<mat-datepicker-toggle [for]="pickerTo"
+									matSuffix></mat-datepicker-toggle>
+								<mat-datepicker #pickerTo></mat-datepicker>
+							</mat-form-field>
+						</div>
+						<!-- type -->
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="col-md-4">
+							<mat-form-field class="example-full-width"
+								appearance="fill">
+								<mat-label>Trạng thái</mat-label>
+								<mat-select [(ngModel)]="searchStatus"
+									[ngModelOptions]="{standalone: true}">
+									<mat-option *ngFor="let item of statusList; let i = index"
+										[value]="item">
+										{{item}}
+									</mat-option>
+								</mat-select>
+							</mat-form-field>
+						</div>
+						<!-- button add -->
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="col-md-4">
+							<button (click)="addPost()"
+								type="button"
+								matTooltip="Add Empty Row"
+								class="btn btn-success pull-right btn-w100">
+								<i class="material-icons">add</i>
+								Add Empty Post
+							</button>
+						</div>
+						<!-- button search, save -->
+						<div class="col-md-4">
+							<button *ngIf="!itemSelected || !itemSelected.id"
+								[disabled]="isLoadingResults"
+								type="submit"
+								class="btn btn-info pull-right btn-w100">
+								<i class="material-icons">search</i>
+								Search
+							</button>
+						</div>
+
+					</form>
+					<div class="card-body">
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th style="max-width: 120px; min-width: 120px; width: 120px;">Update At</th>
+									<th>Title</th>
+								</thead>
+								<tbody (cdkDropListDropped)="drop($event)"
+									cdkDropList>
+									<ng-container *ngIf="data && data.length; else noDataBlock">
+										<ng-container *ngFor="let post of data; let index = index">
+											<tr [ngClass]="{
+                                                'ghost-public-item': post.permission == 'PUBLIC',
+                                                'ghost-private-item': post.permission == 'PRIVATE',
+                                                'ghost-protected-item': post.permission == 'PROTECTED'
+                                            }"
+												class="hover-pointer-td"
+												cdkDrag>
+												<td (click)="chooseThisItem(post.id!); false"
+													class="text-center">
+													<span class="hover-pointer"
+														matTooltip="Create At: {{ post.createdAt | date: 'dd-MM HH:mm' }}">
+														{{ post.updatedAt | date: 'dd-MM HH:mm' }}
+													</span>
+												</td>
+												<td (click)="chooseThisItem(post.id!); false">
+													<span class="hover-pointer">{{ post.title }}</span>
+												</td>
+												<button [disabled]="isLoadingResults"
+													(click)="deletePost(post)"
+													type="button"
+													matTooltip="Delete Post"
+													class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+													<div class="mdc-icon-button__ripple"></div>
+													delete
+												</button>
+											</tr>
+										</ng-container>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+								</tbody>
+							</table>
+						</div>
+						<post-edit *ngIf="itemSelected && itemSelected.id"
+							[itemSelected]="itemSelected"
+							(save)="saveItem($event)">
+						</post-edit>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -52,6 +52,7 @@
               "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css"
             ],
             "scripts": [
+              "node_modules/jquery/dist/jquery.js",
               "node_modules/popper.js/dist/umd/popper.js",
               "node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js",
               "node_modules/arrive/src/arrive.js",
@@ -83,6 +84,11 @@
               "node_modules/katex/dist/contrib/auto-render.min.js",
               "node_modules/mermaid/dist/mermaid.min.js",
               "node_modules/clipboard/dist/clipboard.min.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "rxjs/add/operator/filter",
+              "jquery",
+              "chartist"
             ],
             "server": "src/main.server.ts",
             "prerender": true,

@@ -1,0 +1,235 @@
+<div class="main-content"
+	tabindex="-1">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card"
+					tabindex="-1">
+					<form (ngSubmit)="searchBook()"
+						class="form-under-table-header row">
+						<div class="col-md-4">
+							<button *ngIf="!itemSelected || !itemSelected.id"
+								[disabled]="isLoadingResults"
+								type="submit"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">search</em>
+								Search
+							</button>
+							<button *ngIf="itemSelected && itemSelected.id"
+								[disabled]="isLoadingResults"
+								(click)="back()"
+								type="button"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">arrow_back</em>
+								Back without save
+							</button>
+						</div>
+						<div *ngIf="itemSelected && itemSelected.id"
+							class="col-md-4">
+							<button [disabled]="isLoadingResults"
+								(click)="readThisBook()"
+								type="button"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">launch</em>
+								Read
+							</button>
+						</div>
+						<div *ngIf="!itemSelected || !itemSelected.id"
+							class="col-md-4">
+							<button (click)="addBook()"
+								type="button"
+								matTooltip="Add"
+								class="btn btn-success pull-right btn-w100">
+								<em class="material-icons">add</em>
+								Add Book
+							</button>
+						</div>
+					</form>
+					<div class="card-body">
+						<div *ngIf="!itemSelected || !itemSelected.id; else bookView"
+							class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th style="max-width: 120px; min-width: 120px; width: 120px;">Update At</th>
+									<th>Name</th>
+									<th>Owner</th>
+									<th>Permission</th>
+								</thead>
+								<tbody>
+									<ng-container *ngIf="data && data.length; else noDataBlock">
+										<tr *ngFor="let book of data; let index = index"
+											[ngClass]="{
+                                            'ghost-public-item': book.permission == 'PUBLIC',
+                                            'ghost-private-item': book.permission == 'PRIVATE',
+                                            'ghost-protected-item': book.permission == 'PROTECTED'
+                                        }"
+											class="hover-pointer-td">
+											<td (click)="chooseThisItem(book)"
+												class="text-center">
+												<span class="hover-pointer"
+													matTooltip="Create At: {{ book.createdAt | date: 'dd-MM HH:mm' }}">
+													{{ book.updatedAt | date: 'dd-MM HH:mm' }}
+												</span>
+											</td>
+											<td (click)="chooseThisItem(book)"
+												class="hover-pointer">
+												<span>{{ book.title }}</span>
+											</td>
+											<td (click)="chooseThisItem(book)"
+												class="hover-pointer">
+												<span>
+													{{ book?.user?.fullName }}
+												</span>
+											</td>
+											<td (click)="chooseThisItem(book)"
+												class="hover-pointer">
+												<span>
+													{{ book.permission }}
+												</span>
+											</td>
+											<button [disabled]="isLoadingResults"
+												(click)="deleteBook(book)"
+												type="button"
+												matTooltip="Delete Book"
+												class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+										</tr>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+								</tbody>
+							</table>
+						</div>
+						<ng-template #bookView>
+							<div class="card-body">
+								<form [formGroup]="detailForm"
+									(ngSubmit)="onFormSubmit(detailForm.value)">
+									<div class="row">
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="Title"
+													formControlName="title">
+												<mat-error>
+													<span *ngIf="!detailForm.get('title')?.valid && detailForm.get('title')?.touched">Please enter name.</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="score"
+													formControlName="score">
+
+												<mat-label>
+													Score: {{slider.value}}
+												</mat-label>
+												<mat-slider [max]="100"
+													[min]="1"
+													[step]="1">
+													<input #slider
+														[(ngModel)]="itemSelected!.score"
+														matSliderThumb>
+												</mat-slider>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<mat-select [compareWith]="compareWithFunc"
+													formControlName="isDone">
+													<mat-option *ngFor="let item of listTrueFalse; let i = index"
+														[value]="item">
+														{{item}}
+													</mat-option>
+												</mat-select>
+												<mat-error>
+													<span *ngIf="!detailForm.get('isDone')?.valid && detailForm.get('isDone')?.touched">
+														Please enter isDone.
+													</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="slot"
+													formControlName="slot">
+												<mat-error>
+													<span *ngIf="!detailForm.get('slot')?.valid && detailForm.get('slot')?.touched">Please enter slot.</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="description"
+													formControlName="description">
+												<mat-error>
+													<span *ngIf="!detailForm.get('description')?.valid && detailForm.get('description')?.touched">
+														Please enter description.
+													</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<mat-select [compareWith]="compareWithFunc"
+													formControlName="url">
+													<mat-option *ngFor="let item of listFileOnServer; let i = index"
+														[value]="item.id">
+														{{item.originName}}
+													</mat-option>
+												</mat-select>
+												<mat-error>
+													<span *ngIf="!detailForm.get('url')?.valid && detailForm.get('url')?.touched">Please enter url.</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<mat-label>Permission</mat-label>
+												<mat-select [compareWith]="compareWithFunc"
+													formControlName="permission">
+													<mat-option *ngFor="let item of permissions; let i = index"
+														[value]="item">
+														{{item}}
+													</mat-option>
+												</mat-select>
+												<mat-error>
+													<span *ngIf="!detailForm.get('permission')?.valid && detailForm.get('permission')?.touched">
+														Please enter permission.
+													</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+									</div>
+									<div class="button-row">
+										<button [disabled]="!detailForm.valid"
+											type="submit"
+											class="btn btn-info pull-right btn-w100">
+											{{isUpdate ? 'Update' : 'Create'
+                                            }}
+										</button>
+									</div>
+								</form>
+							</div>
+						</ng-template>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

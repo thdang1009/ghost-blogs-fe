@@ -98,3 +98,6 @@ export function debounce<T extends (...args: any[]) => void>(func: T, timeout = 
     timer = setTimeout(() => { func.apply(this, args); }, timeout);
   };
 }
+export function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

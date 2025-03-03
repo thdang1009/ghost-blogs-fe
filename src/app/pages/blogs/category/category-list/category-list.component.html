@@ -1,0 +1,55 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th>Name</th>
+									<th>Description</th>
+									<th>Content</th>
+									<th>imgUrl</th>
+								</thead>
+								<tbody>
+									<ng-container *ngIf="categories && categories.length; else noDataBlock">
+										<tr *ngFor="let category of categories; let index = index"
+											class="hover-pointer-td">
+											<td (click)="edit(category)">{{ category.name }}</td>
+											<td (click)="edit(category)">
+												{{ category.description }}
+											</td>
+											<td (click)="edit(category)">
+												{{ category.content }}
+											</td>
+											<td (click)="edit(category)">
+												{{ category.imgUrl}}
+											</td>
+											<button (click)="delete(category)"
+												type="button"
+												matTooltip="Delete"
+												class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+										</tr>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

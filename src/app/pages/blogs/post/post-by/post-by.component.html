@@ -1,0 +1,24 @@
+<div class="content-box">
+  <div class="list-post" *ngFor="let post of posts">
+    <article class="post">
+      <a class="post-thumbnail" (click)="openPost(post)" [href]="'blogs/' + post.postReference" [ngStyle]="{
+            'background-image': 'url(' + post.postBackgroundImg + ')'
+          }"></a>
+      <div class="post-content">
+        <h2 class="post-title">
+          <a [href]="'blogs/' + post.postReference">{{post.title}}</a>
+        </h2>
+        <p>{{post.description}}</p><span class="post-date">
+          {{post.author}}
+          write at
+          {{post.createdAt | date }}
+        </span>
+        <ng-container *ngIf="post && post.tags.length">
+          <div class="tagging" *ngFor="let tag of post.tags">
+            <a class="tagging__item" href="{{'/home?tag=' + tag.name}}">#{{tag.name}}</a>
+          </div>
+        </ng-container>
+      </div>
+    </article>
+  </div>
+</div>

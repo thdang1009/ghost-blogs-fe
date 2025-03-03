@@ -1,0 +1,68 @@
+<div class="main-content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead class=" text-primary">
+                                    <th>
+                                        #
+                                    </th>
+                                    <th>
+                                        Full Name
+                                    </th>
+                                    <th>
+                                        User Name
+                                    </th>
+                                    <th>
+                                        Status
+                                    </th>
+                                    <th>
+                                        Permission
+                                    </th>
+                                    <th>
+                                        Update By
+                                    </th>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngIf="users && users.length; else noDataBlock">
+                                        <tr *ngFor="let user of users; let index = index" class="hover-pointer-td">
+                                            <td>
+                                                {{ index + 1 }}
+                                            </td>
+                                            <td>
+                                                {{ user.fullName }}
+                                            </td>
+                                            <td>
+                                                {{ user.username }}
+                                            </td>
+                                            <td>
+                                                {{ user.status }}
+                                            </td>
+                                            <td>
+                                                {{ user.permission}}
+                                            </td>
+                                            <td>
+                                                {{ user.updateBy }}
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                    <ng-template #noDataBlock>
+                                        <tr class="text-center">
+                                            <td colspan="100%" class="text-center">
+                                                <app-table-loading (size)="'sm'"></app-table-loading>
+                                                No data
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

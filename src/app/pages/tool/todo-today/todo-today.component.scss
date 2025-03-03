@@ -1,0 +1,78 @@
+.form-under-table-header {
+    padding: 10px 0;
+}
+
+.warning * {
+    color: #ff9e0f;
+}
+
+.success * {
+    color: #55b559;
+}
+
+.primary * {
+    color: #00cae3;
+}
+
+.future * {
+    color: #a72abd;
+}
+.past * {
+    color: #a2678a;
+}
+.editable {
+    border: none;
+    outline: none;
+    background: transparent;
+}
+.wd100 {
+    width: 100%;
+}
+.hover-pointer {
+    cursor: pointer;
+}
+textarea {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: auto !important;
+}
+.show-on-hover {
+    display: block;
+}
+.hide-on-leave {
+    display: none;
+}
+.btn-show-on-hover {
+    display: block;
+}
+.btn-float-in-row {
+    position: absolute !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    top: 50%;
+    right: 0;
+    transform: translate(-50%, -50%);
+}
+.btn-move {
+    height: 52.75px;
+    padding: 0 10px;
+    margin: 0;
+}
+.control-and-btn-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.is-important * {
+    font-weight: bold;
+}
+.form-check {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+.status-width {
+    max-width: 68px;
+    min-width: 68px;
+    width: 68px;
+}

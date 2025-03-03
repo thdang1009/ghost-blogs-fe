@@ -3,10 +3,10 @@ import { Tag } from "./_index";
 
 export class Post {
   category?: String[];
-  id?: Number;
+  id?: number;
   title?: String;
   author?: String;
-  user?: Number;
+  user?: number;
   permission?: String;
   description?: String;
   content?: string; // content

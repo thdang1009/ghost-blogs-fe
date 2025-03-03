@@ -1,0 +1,42 @@
+<!-- <app-ghost-pdf-viewer *ngIf="isReady; else enterLinkPart"
+	[src]="pdfSrc"
+	[pdfFileName]="pdfFileName"
+	[isAdminView]="true">
+
+</app-ghost-pdf-viewer> -->
+
+<ng-template #enterLinkPart>
+	<div class="main-content">
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header card-header-info">
+							<h4 class="card-title">View book</h4>
+						</div>
+						<div class="card-body">
+							<form (ngSubmit)="tryToGetBook()">
+								<mat-form-field class="example-full-width"
+									appearance="fill">
+									<mat-label>Link</mat-label>
+									<input [ngModelOptions]="{standalone: true}"
+										[(ngModel)]="newLink"
+										matInput
+										type="text"
+										placeholder="Past link to open">
+								</mat-form-field>
+
+								<button [disabled]="!newLink || isLoadingResults"
+									type="submit"
+									class="btn btn-info pull-right btn-w100">
+									<em class="material-icons">cloud_download</em>
+									Open from Link
+								</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</ng-template>

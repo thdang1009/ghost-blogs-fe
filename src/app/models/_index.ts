@@ -4,3 +4,8 @@ export * from './category';
 export * from './guest-message';
 export * from './alert';
 export * from './todo-label';
+export * from './my-file';
+export * from './note';
+export * from './todo-today';
+export * from './book';
+export * from './user';

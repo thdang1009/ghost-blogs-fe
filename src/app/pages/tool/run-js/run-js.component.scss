@@ -1,0 +1,56 @@
+ngs-code-editor {
+    /* width: 90vw; */
+    height: 60vh;
+}
+
+.output-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 5px 10px;
+}
+
+.buttons-container {
+    gap: 0.5rem;
+    justify-content: space-between;
+    align-self: flex-start;
+    padding-bottom: 0.5rem;
+    display: inherit;
+    width: auto;
+    vertical-align: top;
+}
+
+.buttons-container {
+}
+
+.button {
+    display: block;
+    background-color: var(--button-secondary-default);
+    color: var(--text-primary);
+    padding: 0.5em;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--elem-radius);
+    width: 100px;
+    font: var(--type-emphasis-m);
+    cursor: pointer;
+}
+
+.output {
+    flex: 10 150px;
+    align-items: center;
+    position: relative;
+    display: inline-block;
+    background-color: var(--background-secondary);
+    margin: 0;
+    padding: 0.8em;
+    border-radius: var(--elem-radius);
+    width: 100%;
+    height: 120px;
+    font: var(--type-code-regular);
+    border: 1px solid var(--border-primary);
+}
+
+.scrollable {
+    overflow-x: scroll;
+    margin-bottom: 15px;
+}

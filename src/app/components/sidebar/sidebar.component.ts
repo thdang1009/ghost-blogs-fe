@@ -21,10 +21,10 @@ declare interface RouteInfo {
 export const ROUTES: RouteInfo[] = [
   { path: 'dashboard', title: 'Dashboard', icon: 'dashboard', class: '', permission: 'isMember', hasChild: false },
   {
-    path: 'user-management', title: 'User', icon: 'people', class: '', permission: 'isGrandAdmin', hasChild: true,
+    path: 'user', title: 'User', icon: 'people', class: '', permission: 'isGrandAdmin', hasChild: true,
     children: [
-      { path: 'user-management/add-user', title: 'Add User', icon: 'person_add', class: '', permission: 'isGrandAdmin' },
-      { path: 'user-management/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' }
+      { path: 'user/add-user', title: 'Add User', icon: 'person_add', class: '', permission: 'isGrandAdmin' },
+      { path: 'user/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' }
     ]
   },
   {
@@ -33,7 +33,6 @@ export const ROUTES: RouteInfo[] = [
       { path: 'tool/todo-today', title: 'Todo Today', icon: 'checklist_rtl', class: '', permission: 'isMember' },
       { path: 'tool/note', title: 'Note', icon: 'notes', class: '', permission: 'isMember' },
       { path: 'tool/guest-message', title: 'List Guest Message', icon: 'list', class: '', permission: 'isGrandAdmin' },
-      { path: 'tool/system', title: 'System', icon: 'dns', class: '', permission: 'isAdmin' },
       // { path: 'tool/run-js', title: 'Run JS', icon: 'code', class: '', permission: 'isGrandAdmin' }
     ]
   },

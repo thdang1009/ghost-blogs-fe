@@ -1,0 +1,157 @@
+<div class="main-content"
+	tabindex="-1">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card"
+					tabindex="-1">
+					<form (ngSubmit)="searchGuestMessage()"
+						class="form-under-table-header row">
+						<!-- button search -->
+						<div class="col-md-4">
+							<button *ngIf="!itemSelected || !itemSelected.id"
+								[disabled]="isLoadingResults"
+								type="submit"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">search</em>
+								Search
+							</button>
+							<button *ngIf="itemSelected && itemSelected.id"
+								[disabled]="isLoadingResults"
+								(click)="back()"
+								type="button"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">arrow_back</em>
+								Back
+							</button>
+						</div>
+					</form>
+					<div class="card-body">
+						<div *ngIf="!itemSelected || !itemSelected.id; else guestmessageView"
+							class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th class="text-center"
+										style="max-width: 120px; min-width: 120px; width: 120px;">
+										Subject
+									</th>
+									<th class="text-center">Name</th>
+									<th class="text-center">Email</th>
+								</thead>
+								<tbody>
+									<ng-container *ngIf="data && data.length; else noDataBlock">
+										<tr *ngFor="let guestMessage of data; let index = index"
+											class="hover-pointer-td">
+											<td class="text-center">
+												<span (click)="chooseThisItem(guestMessage)"
+													class="hover-pointer">
+													{{ guestMessage.subject }}
+												</span>
+											</td>
+											<td class="text-center">
+												<span (click)="chooseThisItem(guestMessage)"
+													class="hover-pointer">
+													{{ guestMessage.name }}
+												</span>
+											</td>
+											<td class="text-center">
+												<span (click)="chooseThisItem(guestMessage)"
+													class="hover-pointer">
+													{{ guestMessage.email }}
+												</span>
+												<button [disabled]="isLoadingResults"
+													(click)="deleteGuestMessage(guestMessage)"
+													type="button"
+													matTooltip="Delete GuestMessage"
+													class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+													<div class="mdc-icon-button__ripple"></div>
+													delete
+												</button>
+											</td>
+										</tr>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+								</tbody>
+							</table>
+						</div>
+						<ng-template #guestmessageView>
+							<div class="card-body">
+								<form [formGroup]="detailForm">
+									<div class="row">
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="Subject"
+													formControlName="subject">
+												<mat-error>
+													<span *ngIf="!detailForm.get('subject')?.valid && detailForm.get('subject')?.touched">
+														Please enter subject.
+													</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<textarea [minRows]="1"
+													[maxRows]="10"
+													matInput
+													placeholder="Comment"
+													formControlName="message"
+													autosize>
+												</textarea>
+												<mat-error>
+													<span *ngIf="!detailForm.get('message')?.valid && detailForm.get('message')?.touched">
+														Please enter message
+													</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="Name"
+													formControlName="name">
+												<mat-error>
+													<span *ngIf="!detailForm.get('name')?.valid && detailForm.get('name')?.touched">Please enter name.</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+										<div class="col-md-12">
+											<mat-form-field class="example-full-width">
+												<input matInput
+													type="text"
+													placeholder="Email"
+													formControlName="email">
+												<mat-error>
+													<span *ngIf="!detailForm.get('email')?.valid && detailForm.get('email')?.touched">Please enter email.</span>
+												</mat-error>
+											</mat-form-field>
+										</div>
+									</div>
+								</form>
+							</div>
+						</ng-template>
+						<button *ngIf="itemSelected && itemSelected.id"
+							[disabled]="isLoadingResults"
+							(click)="back()"
+							type="button"
+							class="btn btn-info pull-right btn-w100">
+							<em class="material-icons">arrow_back</em>
+							Back
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,93 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<div class="col-md-6 col-sm-12">
+							<button (click)="uploadNewFile()"
+								type="button"
+								class="btn btn-info pull-right btn-w100">
+								<em class="material-icons">upload_file</em>
+								Upload New File
+							</button>
+						</div>
+						<div class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th>#</th>
+									<th>Origin Name</th>
+									<th>-</th>
+									<th class="hidden-xs">Owner</th>
+									<th class="hidden-xs">Ext - Type</th>
+									<th class="hidden-xs">Url</th>
+								</thead>
+								<tbody>
+									<ng-container *ngIf="files && files.length; else noDataBlock">
+										<tr *ngFor="let file of files; let index = index"
+											[ngClass]="{
+                                            'ghost-public-item': file.permission == 'PUBLIC',
+                                            'ghost-private-item': file.permission == 'PRIVATE',
+                                            'ghost-protected-item': file.permission == 'PROTECTED'
+                                        }"
+											class="hover-pointer-td">
+											<td (click)="edit(file)">{{ index + 1 }}</td>
+											<td (click)="edit(file)">
+												{{ file.originName }}
+											</td>
+											<td (click)="edit(file)">
+												<img *ngIf="file.type && file.type === 'Image' && file.permission != 'PRIVATE' && file.permission !== 'PROTECTED'"
+													[src]="file.urlGet + '?v={{new Date().getTime()}}'"
+													loading="lazy"
+													class="file-list__img-preview">
+											</td>
+											<td (click)="edit(file)"
+												class="hidden-xs">
+												{{ file.user?.fullName }}
+											</td>
+											<td (click)="edit(file)"
+												class="hidden-xs">
+												{{ file.ext }} -
+                                                {{ file.type }}
+											</td>
+											<td (click)="edit(file)"
+												class="hidden-xs">
+												{{ file.urlGet}}
+											</td>
+											<button (click)="deleteItem(file)"
+												type="button"
+												matTooltip="Delete"
+												class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+										</tr>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+
+								</tbody>
+							</table>
+						</div>
+						<div *ngIf="files && files.length"
+							class="col-sm-12 show-more-post-container">
+							<button [disabled]="isRunning"
+								(click)="showMore()"
+								type="button"
+								class="btn btn-info pull-right btn-w100">
+								<a class="show-more-post">Show more</a>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

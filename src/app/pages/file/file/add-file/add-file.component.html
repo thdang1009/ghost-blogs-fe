@@ -1,0 +1,157 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+
+					<div class="col-sm-12 col-md-6 col-xl-3">
+						<button *ngIf="isUpdate"
+							[disabled]="isLoadingResults"
+							(click)="back()"
+							type="button"
+							class="btn btn-info pull-right btn-w100"
+							style="margin-bottom: 25px;">
+							<em class="material-icons">arrow_back</em>
+							Back without save
+						</button>
+					</div>
+					<div class="card-header card-header-info">
+						<h4 class="card-title">
+							{{isUpdate ? 'Update' : 'New'}} File
+						</h4>
+					</div>
+					<div class="card-body">
+						<choose-file *ngIf="!isUpdate"
+							(uploadDone)="handleAfterUpload($event)"></choose-file>
+
+						<form *ngIf="isUpdate"
+							[formGroup]="registerForm"
+							(ngSubmit)="onFormSubmit(registerForm.value)">
+							<div class="row">
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="Origin Name"
+											formControlName="originName">
+										<mat-error>
+											<span *ngIf="!registerForm.get('originName')?.valid && registerForm.get('originName')?.touched">
+												Please enter originName.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="nameOnDisk"
+											formControlName="nameOnDisk">
+										<mat-error>
+											<span *ngIf="!registerForm.get('nameOnDisk')?.valid && registerForm.get('nameOnDisk')?.touched">
+												Please enter your name on disk.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="urlGet"
+											formControlName="urlGet">
+										<i *ngIf="registerForm.get('urlGet')?.value && registerForm.get('permission')?.value === 'PUBLIC'"
+											(click)="openExternalLink(registerForm.get('urlGet')?.value)"
+											class="fa fa-external-link-alt cursor-pointer icon-inline-text"></i>
+										<mat-error>
+											<span *ngIf="!registerForm.get('urlGet')?.valid && registerForm.get('urlGet')?.touched">
+												Please enter your urlGet.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<mat-label>Permission</mat-label>
+										<mat-select [compareWith]="compareWithFunc"
+											formControlName="permission">
+											<mat-option *ngFor="let item of filePermissionList; let i = index"
+												[value]="item">
+												{{item}}
+											</mat-option>
+										</mat-select>
+										<mat-error>
+											<span *ngIf="!registerForm.get('permission')?.valid && registerForm.get('permission')?.touched">
+												Please enter permission.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="pathOnDisk"
+											formControlName="pathOnDisk">
+										<mat-error>
+											<span *ngIf="!registerForm.get('pathOnDisk')?.valid && registerForm.get('pathOnDisk')?.touched">
+												Please enter your pathOnDisk.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="ext"
+											formControlName="ext">
+										<mat-error>
+											<span *ngIf="!registerForm.get('ext')?.valid && registerForm.get('ext')?.touched">
+												Please enter your ext.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width">
+										<input matInput
+											type="text"
+											placeholder="type"
+											formControlName="type">
+										<mat-error>
+											<span *ngIf="!registerForm.get('type')?.valid && registerForm.get('type')?.touched">
+												Please enter your type.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+
+							</div>
+							<div class="button-row">
+								<button [disabled]="!registerForm.valid"
+									type="submit"
+									class="btn btn-info pull-right btn-w100">
+									{{ isUpdate ? 'Update' : 'Create'}}
+								</button>
+								<button *ngIf="isUpdate"
+									(click)="onDownloadFile()"
+									type="button"
+									class="btn btn-info pull-right btn-w100">
+									Download
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

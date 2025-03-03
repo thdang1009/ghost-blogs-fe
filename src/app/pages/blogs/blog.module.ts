@@ -9,6 +9,12 @@ import { HttpClient } from '@angular/common/http';
 import { ReuseComponentModule } from '@reuse/reuse.module';;
 import { ComponentsModule } from '@components/components.module';
 import { AnchorService } from '@shared/anchor/anchor.service';
+import { AddCategoryComponent } from './category/add-category/add-category.component';
+import { CategoryListComponent } from './category/category-list/category-list.component';
+import { TagListComponent } from './tag/tag-list/tag-list.component';
+import { AddTagComponent } from './tag/add-tag/add-tag.component';
+import { PostEditComponent } from './post/post-edit/post-edit.component';
+import { PostListComponent } from './post/post-list/post-list.component';
 
 
 export function markedOptionsFactory(anchorService: AnchorService): MarkedOptions {
@@ -24,7 +30,13 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
 
 @NgModule({
   declarations: [
+    PostListComponent,
     PostDetailComponent,
+    AddTagComponent,
+    TagListComponent,
+    AddCategoryComponent,
+    CategoryListComponent,
+    PostEditComponent,
   ],
   imports: [
     CommonModule,

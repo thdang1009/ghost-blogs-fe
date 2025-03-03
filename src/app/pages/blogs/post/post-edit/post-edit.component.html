@@ -1,0 +1,181 @@
+<form class="form-under-table-header row">
+	<!-- Title -->
+	<textarea [(ngModel)]="itemSelected.title"
+		[minRows]="1"
+		[maxRows]="3"
+		[useImportant]="true"
+		name="title"
+		type="text"
+		class="editable wd100 editable-header"
+		autosize>
+	</textarea>
+
+	<textarea [(ngModel)]="itemSelected.description"
+		[minRows]="1"
+		[maxRows]="3"
+		[useImportant]="true"
+		name="description"
+		type="text"
+		class="editable wd100"
+		autosize>
+	</textarea>
+	<!-- permission -->
+	<div class="col-md-4">
+		<mat-form-field class="example-full-width"
+			appearance="fill">
+			<mat-label>Permission</mat-label>
+			<mat-select [(ngModel)]="itemSelected.permission"
+				[ngModelOptions]="{standalone: true}"
+				name="permission">
+				<mat-option *ngFor="let item of listPermisson; let i = index"
+					[value]="item">
+					{{item}}
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+	<!-- background cover -->
+	<div class="col-md-4">
+		<mat-form-field class="example-full-width"
+			appearance="fill">
+			<mat-label>Background cover</mat-label>
+			<mat-select [(ngModel)]="itemSelected.postBackgroundImg"
+				name="postBackgroundImg">
+				<mat-option *ngFor="let item of listFileOnServer; let i = index"
+					[value]="item.urlGet">
+					{{item.originName}}
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+	<!-- type -->
+	<div class="col-md-4">
+		<mat-form-field class="example-full-width"
+			appearance="fill"
+			name="type">
+			<mat-label>Type</mat-label>
+			<mat-select [(ngModel)]="itemSelected.type">
+				<mat-option *ngFor="let item of listPostType; let i = index"
+					[value]="item">
+					{{item}}
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+
+	<!-- tag -->
+	<div class="col-md-4">
+		<mat-form-field class="example-chip-list">
+			<mat-label>Tags:</mat-label>
+			<mat-chip-grid #chipGrid
+				aria-label="Enter Tag">
+				<mat-chip-row *ngFor="let tag of tags"
+					[aria-description]="'press enter to edit ' + tag.name"
+					(removed)="removeTag(tag)">
+					{{tag.name}}
+					<button [attr.aria-label]="'remove ' + tag.name"
+						class=" mdc-icon-button material-icons"
+						matChipRemove>
+						<div class="mdc-icon-button__ripple"></div>
+						cancel
+					</button>
+				</mat-chip-row>
+				<input #tagInput
+					[formControl]="tagCtrl"
+					[matChipInputFor]="chipGrid"
+					[matAutocomplete]="autoTag"
+					(matChipInputTokenEnd)="addTag($event)"
+					placeholder="New tag...">
+				<mat-autocomplete #autoTag="matAutocomplete"
+					(optionSelected)="selectedTag($event)">
+					<mat-option *ngFor="let tag of filteredTags | async"
+						[value]="tag">
+						{{tag.name}}
+					</mat-option>
+				</mat-autocomplete>
+			</mat-chip-grid>
+		</mat-form-field>
+	</div>
+	<!-- category -->
+	<div class="col-md-4">
+		<mat-form-field class="example-chip-list">
+			<mat-label>Categories:</mat-label>
+			<mat-chip-grid #chipGrid2
+				aria-label="Enter Categories">
+				<mat-chip-row *ngFor="let category of categories"
+					[aria-description]="'press enter to edit ' + category?.name"
+					(removed)="removeCategory(category)">
+					{{category?.name}}
+					<button [attr.aria-label]="'remove ' + category?.name"
+						class=" mdc-icon-button material-icons"
+						matChipRemove>
+						<div class="mdc-icon-button__ripple"></div>
+						cancel
+					</button>
+				</mat-chip-row>
+				<input #categoryInput
+					[formControl]="categoryCtrl"
+					[matChipInputFor]="chipGrid2"
+					[matAutocomplete]="autoCategory"
+					[matChipInputFor]="chipGrid2"
+					(matChipInputTokenEnd)="addCategory($event)"
+					placeholder="New category...">
+				<mat-autocomplete #autoCategory="matAutocomplete"
+					(optionSelected)="selectedCategory($event)">
+					<mat-option *ngFor="let category of filteredCategories | async"
+						[value]="category">
+						{{category.name}}
+					</mat-option>
+				</mat-autocomplete>
+			</mat-chip-grid>
+		</mat-form-field>
+	</div>
+	<div class="col-md-4">
+		<button (click)="saveAndBack()"
+			type="button"
+			class="btn btn-info pull-right btn-w100">
+			<i class="material-icons">save</i>
+			Save & Back
+		</button>
+	</div>
+	<!-- tools -->
+	<div class="col-md-8 tool-container">
+		<span (click)="openFullscreen()"
+			class="material-icons md-36"
+			matTooltip="Goto Full Screen">
+			fullscreen
+		</span>
+	</div>
+</form>
+
+<div [ngStyle]="{'flex-direction': isSplitHorizontal ? 'column' : 'row'}"
+	id="edit-post-container"
+	class="edit-post-container">
+	<mat-tab-group>
+		<mat-tab label="Markdown">
+			<textarea [(ngModel)]="itemSelected.content"
+				[ngClass]="{ 'split-horizontal': this.isSplitHorizontal }"
+				[minRows]="1"
+				[useImportant]="true"
+				(blur)="saveOnly()"
+				type="text"
+				class="editable wd100"
+				autosize>
+			</textarea>
+		</mat-tab>
+		<mat-tab label="Preview">
+			<!-- text to markdown -->
+			<markdown [ngClass]="{'split-horizontal': this.isSplitHorizontal}"
+				[data]="itemSelected.content"
+				class>
+			</markdown>
+		</mat-tab>
+	</mat-tab-group>
+</div>
+
+<button (click)="saveAndBack()"
+	type="button"
+	class="btn btn-info pull-right btn-w100">
+	<i class="material-icons">save</i>
+	Save & Back
+</button>

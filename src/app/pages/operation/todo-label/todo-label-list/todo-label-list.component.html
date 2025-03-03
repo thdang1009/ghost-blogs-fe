@@ -1,0 +1,58 @@
+<div class="main-content">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<div class="table-responsive">
+							<table class="table">
+								<thead class=" text-primary">
+									<th>Icon</th>
+									<th>Name</th>
+									<th>Description</th>
+									<th>AutoDetectKeywords</th>
+								</thead>
+								<tbody>
+									<ng-container *ngIf="todoLabels && todoLabels.length; else noDataBlock">
+										<tr *ngFor="let todoLabel of todoLabels; let index = index"
+											class="hover-pointer-td">
+											<td (click)="edit(todoLabel)">
+												{{ todoLabel.imgAlternative}}
+											</td>
+											<td (click)="edit(todoLabel)">
+												{{ todoLabel.name }}
+											</td>
+											<td (click)="edit(todoLabel)">
+												{{ todoLabel.description }}
+											</td>
+											<td (click)="edit(todoLabel)">
+												{{ todoLabel.autoDetectKeywords }}
+											</td>
+
+											<button (click)="delete(todoLabel)"
+												type="button"
+												matTooltip="Delete"
+												class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+										</tr>
+									</ng-container>
+									<ng-template #noDataBlock>
+										<tr class="text-center">
+											<td colspan="100%"
+												class="text-center">
+												<app-table-loading (size)="'sm'"></app-table-loading>
+												No data
+											</td>
+										</tr>
+									</ng-template>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
