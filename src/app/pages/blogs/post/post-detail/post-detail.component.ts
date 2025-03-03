@@ -1,10 +1,12 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { PostService } from '@services/_index';
 import { Router } from '@angular/router';
 import { Title, Meta } from "@angular/platform-browser";
 import { POST_TYPE } from '@shared/enum';
 import { Post } from '@models/post';
+import { addStructuredData } from '@shared/common';
+import { DOCUMENT } from '@angular/common';
 @Component({
   selector: 'app-post-detail',
   templateUrl: './post-detail.component.html',
@@ -23,7 +25,11 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private titleService: Title,
-    private meta: Meta) { }
+    private meta: Meta,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+    addStructuredData(this.document);
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('ref');

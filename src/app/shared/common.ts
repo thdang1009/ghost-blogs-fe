@@ -101,3 +101,15 @@ export function debounce<T extends (...args: any[]) => void>(func: T, timeout = 
 export function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+export function addStructuredData(_document: Document) {
+  const script = _document.createElement('script');
+  script.type = 'application/ld+json';
+  script.text = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Website",
+    "name": "Ghost's blogs",
+    "description": "Ghost's blogs",
+    "url": "https://dangtrinh.site"
+  });
+  _document.head.appendChild(script);
+}

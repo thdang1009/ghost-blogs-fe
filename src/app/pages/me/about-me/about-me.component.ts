@@ -1,7 +1,9 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, NgForm, Validators } from '@angular/forms';
+import { Meta } from '@angular/platform-browser';
 import { GuestMessageService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { addStructuredData, showNoti } from '@shared/common';
 
 export interface PortfolioData {
   src: string,
@@ -18,7 +20,6 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   @ViewChild('portfolio') portfolioElement: ElementRef | undefined;
   @ViewChild('contact') contactElement: ElementRef | undefined;
   @ViewChild('aboutMeContent') aboutMeContent: ElementRef | undefined;
-
 
   isRunning = false;
   contactForm!: UntypedFormGroup;
@@ -40,7 +41,24 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   indexInterval = 0;
   constructor(
     private formBuilder: UntypedFormBuilder,
-    private guestMessage: GuestMessageService) { }
+    private guestMessage: GuestMessageService,
+    private meta: Meta,
+    @Inject(DOCUMENT) private document: Document
+  ) {
+    addStructuredData(this.document);
+
+    this.meta.updateTag({ itemprop: 'name', content: 'About Dang Trinh' });
+    this.meta.updateTag({ itemprop: 'description', content: 'Detail about Dang Trinh' });
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
+    this.meta.updateTag({ name: 'twitter:title', content: 'About Dang Trinh' });
+    this.meta.updateTag({ name: 'twitter:description', content: 'Detail about Dang Trinh' });
+    this.meta.updateTag({ name: 'twitter:creator', content: 'Dang Trinh' });
+    this.meta.updateTag({ name: 'twitter:image', content: 'https://dangtrinh.site/assets/img/ghost.png' });
+    this.meta.updateTag({ property: 'og:title', content: 'About Dang Trinh' });
+    this.meta.updateTag({ property: 'og:description', content: 'Detail about Dang Trinh' });
+    this.meta.updateTag({ property: 'og:creator', content: 'Dang Trinh' });
+    this.meta.updateTag({ property: 'og:image', content: 'https://dangtrinh.site/assets/img/ghost.png' });
+  }
 
   ngOnInit(): void {
     this.yearOlds = new Date().getFullYear() - 1996;
