@@ -11,7 +11,7 @@ export class TableLoadingComponent implements OnInit {
 
   ngOnInit(): void {
     let count = 0;
-    const intervalId = setInterval(_ => {
+    const intervalId = setInterval((_: any) => {
       this.loadingOpacity = 1 - count * 0.025;
       ++count;
       if (count > 40) {

@@ -61,7 +61,11 @@
       "@environments/*": [
         "src/environments/*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "jasmine"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
