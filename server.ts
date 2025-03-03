@@ -5,10 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 import AppServerModule from './src/main.server';
 
-interface CustomRequest extends express.Request {
-  isBot?: boolean;
-}
-
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
   const server = express();
@@ -21,49 +17,28 @@ export function app(): express.Express {
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
-  // Serve static files
-  server.get('*.*', express.static(browserDistFolder, {
+  // Example Express Rest API endpoints
+  // server.get('/api/**', (req, res) => { });
+  // Serve static files from /browser
+  server.get('**', express.static(browserDistFolder, {
     maxAge: '1y',
-    index: false
+    index: 'index.html',
   }));
 
-  // Add bot detection middleware
-  server.use((req: CustomRequest, res, next) => {
-    const userAgent = req.get('user-agent') || '';
-    req.isBot = /bot|crawler|spider|facebook|twitter|linkedin|slack|discord/i.test(userAgent);
-    next();
-  });
-
   // All regular routes use the Angular engine
-  server.get('*', async (req: CustomRequest, res, next) => {
-    try {
-      const { protocol, originalUrl, baseUrl, headers } = req;
-      const url = `${protocol}://${headers.host}${originalUrl}`;
+  server.get('**', (req, res, next) => {
+    const { protocol, originalUrl, baseUrl, headers } = req;
 
-      // Increase timeout for bots
-      const renderTimeout = req.isBot ? 10000 : 5000;
-      res.setTimeout(renderTimeout);
-
-      const html = await commonEngine.render({
+    commonEngine
+      .render({
         bootstrap: AppServerModule,
         documentFilePath: indexHtml,
-        url,
+        url: `${protocol}://${headers.host}${originalUrl}`,
         publicPath: browserDistFolder,
-        providers: [
-          { provide: APP_BASE_HREF, useValue: baseUrl },
-        ],
-      });
-
-      // Add cache control for bots
-      if (req.isBot) {
-        res.setHeader('Cache-Control', 'public, max-age=300');
-      }
-
-      res.send(html);
-    } catch (error) {
-      console.error('Error rendering page:', error);
-      next(error);
-    }
+        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+      })
+      .then((html) => res.send(html))
+      .catch((err) => next(err));
   });
 
   return server;
