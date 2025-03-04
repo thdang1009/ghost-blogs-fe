@@ -315,6 +315,11 @@ ngx-typed-writer {
   display: flex;
 }
 
+ngx-typed-writer>span {
+  display: flex;
+  height: 2.8em;
+}
+
 app-donation {
   height: 84vh;
   display: flex;
