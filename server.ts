@@ -17,29 +17,49 @@ export function app(): express.Express {
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
-  // Example Express Rest API endpoints
-  // server.get('/api/**', (req, res) => { });
-  // Serve static files from /browser
-  server.get('**', express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: 'index.html',
-  }));
+  // Bot detection middleware
+  server.use((req: any, res, next) => {
+    const userAgent = req.get('user-agent') || '';
+    req.isBot = /bot|crawler|spider|facebook|twitter|linkedin|slack|discord/i.test(userAgent);
+    next();
+  });
 
-  // All regular routes use the Angular engine
-  server.get('**', (req, res, next) => {
-    const { protocol, originalUrl, baseUrl, headers } = req;
+  // Dynamic routes first
+  server.get('*', async (req: any, res, next) => {
+    // Skip static files
+    if (req.path.match(/\.(jpg|jpeg|png|gif|ico|css|js|svg)$/i)) {
+      return next();
+    }
 
-    commonEngine
-      .render({
+    try {
+      const { protocol, originalUrl, baseUrl, headers } = req;
+      const url = `${protocol}://${headers.host}${originalUrl}`;
+
+      if (req.isBot) {
+        res.setTimeout(30000);
+      }
+
+      const html = await commonEngine.render({
         bootstrap: AppServerModule,
         documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
+        url,
         publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
-      })
-      .then((html) => res.send(html))
-      .catch((err) => next(err));
+        providers: [
+          { provide: APP_BASE_HREF, useValue: baseUrl },
+        ],
+        inlineCriticalCss: false
+      });
+
+      res.send(html);
+    } catch (error) {
+      next(error);
+    }
   });
+
+  // Static files after
+  server.get('*.*', express.static(browserDistFolder, {
+    maxAge: '1y'
+  }));
 
   return server;
 }
