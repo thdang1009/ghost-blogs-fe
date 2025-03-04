@@ -64,8 +64,10 @@
             ({{post.createdAt! | date }})
             with
 						{{+(post.viewCount ?? 0) | number:'1.0-0' }}
-						<i class="fa fa-eye"
-							aria-hidden="true"></i>
+						<i class="material-icons"
+							aria-hidden="true">
+							visibility
+						</i>
 						|
 							{{post.readTime || 5}} mins read
 					</span>

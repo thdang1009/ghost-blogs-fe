@@ -63,9 +63,9 @@
 											type="text"
 											placeholder="urlGet"
 											formControlName="urlGet">
-										<i *ngIf="registerForm.get('urlGet')?.value && registerForm.get('permission')?.value === 'PUBLIC'"
+										<!-- <i *ngIf="registerForm.get('urlGet')?.value && registerForm.get('permission')?.value === 'PUBLIC'"
 											(click)="openExternalLink(registerForm.get('urlGet')?.value)"
-											class="fa fa-external-link-alt cursor-pointer icon-inline-text"></i>
+											class="fa fa-external-link-alt cursor-pointer icon-inline-text"></i> -->
 										<mat-error>
 											<span *ngIf="!registerForm.get('urlGet')?.valid && registerForm.get('urlGet')?.touched">
 												Please enter your urlGet.

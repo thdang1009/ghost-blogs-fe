@@ -25,8 +25,10 @@
                     {{item.createdAt | timeAgo }}
                     ({{item.createdAt | date }})
                     with {{+(item.viewCount  ?? 0)| number:'1.0-0' }}
-					<i class="fa fa-eye"
-						aria-hidden="true"></i>
+					<i class="material-icons"
+						aria-hidden="true">
+						visibility
+					</i>
 					|
 							{{item.readTime || 5}} mins read
 				</div>

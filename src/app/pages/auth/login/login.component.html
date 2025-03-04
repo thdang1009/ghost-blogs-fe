@@ -35,12 +35,17 @@
 										<ng-container *ngIf="countClick < 10; else eyeIsHurtPart">
 											<i *ngIf="!isShowPassword"
 												(click)="showPassword()"
-												class="fa fa-eye reveal-password"
-												aria-hidden="true"></i>
+												class="material-icons reveal-password"
+												aria-hidden="true">
+												visibility
+											</i>
+
 											<i *ngIf="isShowPassword"
-												(click)="hidePassword()"
-												class="fa fa-eye-slash reveal-password"
-												aria-hidden="true"></i>
+												(click)="showPassword()"
+												class="material-icons reveal-password"
+												aria-hidden="true">
+												visibility_off
+											</i>
 										</ng-container>
 										<ng-template #eyeIsHurtPart>
 											<img (click)="toggleShowPassword()"
