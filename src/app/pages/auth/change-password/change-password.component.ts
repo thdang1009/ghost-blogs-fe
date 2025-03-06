@@ -44,12 +44,11 @@ export class ChangePasswordComponent implements OnInit {
     this.authService.changePassword(form)
       .subscribe(res => {
         this.isRunning = false;
-        setTimeout(() => {
-          this.router.navigate(['/admin/dashboard']);
-        }, 1000);
+        this.router.navigate(['/admin/dashboard']);
         showNoti('Update Password success!', 'success');
       }, (err) => {
         this.isRunning = false;
+        showNoti('Update Password failed!', 'error');
       });
   }
 

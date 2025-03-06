@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Category } from '@models/_index';
 import { CategoryService } from '@services/_index';
-import { showNoti } from '@shares/common';
+import { showNoti } from '@shared/common';
 
 @Component({
   selector: 'app-category-list',
@@ -10,7 +11,7 @@ import { showNoti } from '@shares/common';
 export class CategoryListComponent implements OnInit {
 
 
-  categorys = [];
+  categorys: Category[] = [];
   constructor(
     private categoryService: CategoryService,
     private router: Router) { }
@@ -26,7 +27,7 @@ export class CategoryListComponent implements OnInit {
       showNoti(`Create category fail!`, 'danger');
     });
   }
-  postReference(category) {
+  postReference(category: Category) {
     if (!category) {
       return;
     }
@@ -40,7 +41,7 @@ export class CategoryListComponent implements OnInit {
         });
     }
   }
-  edit(category) {
+  edit(category: Category) {
     if (!category) {
       return;
     }

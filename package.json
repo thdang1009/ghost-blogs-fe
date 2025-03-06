@@ -6,7 +6,7 @@
     "start": "ng serve --port 4500",
     "build": "rm -rf dist && ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "test": "ng test ghost-blogs-fe",
     "ssr": "rm -rf dist && ng build && node dist/ghost-blogs-fe/server/server.mjs",
     "serve:ssr:ghost-blogs-fe": "node dist/ghost-blogs-fe/server/server.mjs --port 4500"
   },
