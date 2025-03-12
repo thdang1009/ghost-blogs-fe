@@ -13,6 +13,12 @@ export class LoginGuard {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): boolean {
     const logined = this.authService.isLogin();
-    return logined;
+
+    if (!logined) {
+      this.router.navigate(['/home']);
+      return false;
+    }
+
+    return true;
   }
 }

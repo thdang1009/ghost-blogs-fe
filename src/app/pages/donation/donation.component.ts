@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Renderer2 } from '@angular/core';
+import { openNewTab } from '@shared/common';
 
 @Component({
   selector: 'app-donation',
@@ -7,10 +8,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DonationComponent implements OnInit {
 
-  constructor() { }
+  constructor(private renderer: Renderer2) { }
 
   ngOnInit(): void {
-    window.open('https://www.buymeacoffee.com/thdang1009', '_blank');
+    const url = 'https://www.buymeacoffee.com/thdang1009';
+    openNewTab(this.renderer, url);
   }
 
 }

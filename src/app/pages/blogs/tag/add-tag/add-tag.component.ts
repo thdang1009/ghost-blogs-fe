@@ -20,7 +20,7 @@ export class AddTagComponent implements OnInit {
   content = '';
   isLoadingResults = false;
   isUpdate = false;
-  id = undefined;
+  id: string | undefined;
 
   constructor(
     private formBuilder: UntypedFormBuilder,

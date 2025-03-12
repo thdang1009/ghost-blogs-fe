@@ -18,7 +18,7 @@ export class AddCategoryComponent implements OnInit {
   content = '';
   isLoadingResults = false;
   isUpdate = false;
-  id = undefined;
+  id: string | undefined;
 
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -43,6 +43,8 @@ export class AddCategoryComponent implements OnInit {
             this.initFormWithData(res);
             this.isUpdate = true;
             this.id = id;
+          }, err => {
+            console.log(err);
           });
       }
     });

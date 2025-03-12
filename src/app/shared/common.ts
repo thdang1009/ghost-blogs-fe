@@ -1,5 +1,6 @@
 import { Observable, of } from "rxjs";
 import { TDTD_STATUS } from "./enum";
+import { Renderer2 } from '@angular/core';
 
 declare var $: any;
 export interface GhostSiteResponse {
@@ -112,4 +113,19 @@ export function addStructuredData(_document: Document) {
     "url": "https://dangtrinh.site"
   });
   _document.head.appendChild(script);
+}
+
+/**
+ * Opens a URL in a new tab using the provided Renderer2 instance.
+ * @param renderer - The Renderer2 instance to use for DOM manipulation.
+ * @param url - The URL to open in a new tab.
+ */
+export function openNewTab(renderer: Renderer2, url: string): void {
+  const a = renderer.createElement('a');
+  renderer.setAttribute(a, 'href', url);
+  renderer.setAttribute(a, 'target', '_blank');
+  renderer.setAttribute(a, 'rel', 'noopener noreferrer');
+  renderer.appendChild(document.body, a);
+  a.click();
+  renderer.removeChild(document.body, a); // Clean up
 }
