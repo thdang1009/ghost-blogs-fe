@@ -20,14 +20,14 @@ import { markedOptionsFactory } from './pages/blogs/blog.module';
 
 // third party
 import { MarkdownModule, ClipboardButtonComponent, MARKED_OPTIONS, CLIPBOARD_OPTIONS } from 'ngx-markdown';
-// import { AnchorModule } from '@shared/anchor/anchor.module';
-// import { AnchorService } from '@shared/anchor/anchor.service';
+import { AnchorModule } from '@shared/anchor/anchor.module';
 import { DonationComponent } from '@pages/donation/donation.component';
 import { AuthModule } from '@pages/auth/auth.module';
+import { AnchorService } from '@shared/anchor/anchor.service';
 // NgModule
 @NgModule({
   imports: [
-    // AnchorModule,
+    AnchorModule,
     AuthModule,
     BrowserAnimationsModule,
     FormsModule,
@@ -44,7 +44,7 @@ import { AuthModule } from '@pages/auth/auth.module';
       markedOptions: {
         provide: MARKED_OPTIONS,
         useFactory: markedOptionsFactory,
-        deps: [],
+        deps: [AnchorService],
       },
       clipboardOptions: {
         provide: CLIPBOARD_OPTIONS,
@@ -69,7 +69,7 @@ import { AuthModule } from '@pages/auth/auth.module';
   ],
   bootstrap: [AppComponent],
   exports: [
-    // AnchorModule,
+    AnchorModule,
     BrowserAnimationsModule,
     BrowserModule,
     FormsModule,

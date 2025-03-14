@@ -39,6 +39,7 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
     PostEditComponent,
   ],
   imports: [
+
     CommonModule,
     SharedModule,
     ReuseComponentModule,
@@ -50,7 +51,7 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
       markedOptions: {
         provide: MARKED_OPTIONS,
         useFactory: markedOptionsFactory,
-        deps: [],
+        deps: [AnchorService],
       },
       clipboardOptions: {
         provide: CLIPBOARD_OPTIONS,
