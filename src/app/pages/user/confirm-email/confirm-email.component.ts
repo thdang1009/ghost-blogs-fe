@@ -21,7 +21,7 @@ export class ConfirmEmailComponent implements OnInit {
     this.authenService.confirmEmail(code)
       .subscribe(_ => {
         showNoti(`Successfully confirm email!`, 'success');
-        this.navigationService.gotoHome();
+        this.navigationService.gotoLogin();
       }, err => {
 
         console.log(err);

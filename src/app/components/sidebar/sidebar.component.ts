@@ -61,7 +61,14 @@ export const ROUTES: RouteInfo[] = [
       { path: 'operation/todo-label-list', title: 'List TodoLabel', icon: 'list', class: '', permission: 'isAdmin' },
       { path: 'operation/todo-label', title: 'Add A TodoLabel', icon: 'local_offer', class: '', permission: 'isAdmin' },
     ]
-  }
+  },
+  // {
+  //   path: 'apps', title: 'Apps', icon: 'apps', class: '', permission: 'isMember', hasChild: true,
+  //   children: [
+  //     { path: 'apps/json-beautifier', title: 'JSON Beautifier', icon: 'code', class: '', permission: 'isMember' },
+  //     { path: 'apps/json-excel', title: 'JSON Excel', icon: 'code', class: '', permission: 'isMember' },
+  //   ]
+  // }
 ];
 
 @Component({

@@ -1,0 +1,39 @@
+.json-editor-left {
+    width: 100vw;
+}
+
+.json-editor-right {
+    width: 100vw;
+}
+
+.json-controler {
+    width: 100vw;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+.btn-responsive {
+    width: 100vw;
+}
+
+@media (min-width: 992px) {
+    .json-editor-left {
+        width: 45vw;
+    }
+
+    .json-editor-right {
+        width: 45vw;
+    }
+
+    .json-controler {
+        width: 8vw;
+        flex-direction: column;
+    }
+    .btn-responsive {
+        width: auto;
+    }
+    
+}

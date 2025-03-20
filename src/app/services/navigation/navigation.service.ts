@@ -5,11 +5,15 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class NavigationService {
-    constructor(
-        private router: Router
-    ) { }
+  constructor(
+    private router: Router
+  ) { }
 
-    gotoHome() {
-        this.router.navigate(['home']);
-    }
+  gotoHome() {
+    this.router.navigate(['home']);
+  }
+
+  gotoLogin() {
+    this.router.navigate(['login'], { queryParams: { fromRegister: true } });
+  }
 }

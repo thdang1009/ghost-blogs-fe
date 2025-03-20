@@ -46,4 +46,12 @@ export const AdminLayoutRoutes: Routes = [
       canActivate: [LoginGuard]
     }]
   },
+  // {
+  //   path: 'apps',
+  //   children: [{
+  //     path: '',
+  //     loadChildren: () => import('../../pages/apps/apps.module').then(m => { return m.AppsModule }),
+  //     canActivate: [LoginGuard]
+  //   }]
+  // },
 ];

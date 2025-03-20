@@ -1,0 +1,82 @@
+<!-- <div *ngIf="mod === 'excelToJSON'"
+	class="center drop-zone-container">
+	<ngx-file-drop [multiple]="false"
+		(onFileDrop)="dropped($event)"
+		(onFileOver)="fileOver($event)"
+		(onFileLeave)="fileLeave($event)"
+		dropZoneLabel="Drop files here"
+		accept=".xlsx,.xls,.csv"
+		contentClassName="ghost-ngx-file-drop-content-style">
+		<ng-template ngx-file-drop-content-tmp
+			let-openFileSelector="openFileSelector">
+			<span class="span__drag-description">
+				Press the button or drag file here
+			</span>
+			<button (click)="openFileSelector()"
+				class="btn btn-info"
+				type="button">
+				Browse Files
+			</button>
+		</ng-template>
+	</ngx-file-drop>
+	<div class="upload-table">
+		<table class="table">
+			<thead></thead>
+			<tbody class="upload-name-style">
+				<tr *ngFor="let item of files; let i=index">
+					<td>
+						<strong>
+							{{ item.relativePath }}
+						</strong>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+<json-editor *ngIf="mod === 'jsonToExcel'"
+	[options]="editorOptions"
+	[data]="initialData"
+	(change)="showJson($event);"
+	id="json-editor-left"
+	name="json-editor-left"
+	class="json-editor-left">
+</json-editor>
+<div class="json-controler">
+	<div class="div__radio-label">
+		<input [value]="'jsonToExcel'"
+			[(ngModel)]="mod"
+			id="json-to-excel"
+			type="radio"
+			class="radio"
+			name="radio-name">
+		<label for="json-to-excel">
+			&nbsp;JSON Array to Excel
+		</label>
+	</div>
+	<div class="div__radio-label">
+		<input [value]="'excelToJSON'"
+			[(ngModel)]="mod"
+			id="excel-to-json"
+			type="radio"
+			class="radio"
+			name="radio-name">
+		<label for="excel-to-json">&nbsp;Excel to JSON</label>
+	</div>
+
+	<button [disabled]="isLoadingResults"
+		(click)="execute(mod)"
+		id="execute"
+		type="button"
+		class="btn btn-info pull-right btn-responsive">
+		Execute
+	</button>
+</div>
+<json-editor *ngIf="mod === 'excelToJSON'"
+	[options]="editorOptions2"
+	[data]="initialData2"
+	(change)="showJson2($event);"
+	id="json-editor-right"
+	name="json-editor-right"
+	class="json-editor-right">
+</json-editor> -->

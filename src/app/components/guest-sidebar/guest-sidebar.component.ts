@@ -13,19 +13,19 @@ declare interface RouteInfo {
 }
 export const ROUTES: RouteInfo[] = [
   // {
-  //   path: 'useful-app/json-beautifier',
+  //   path: 'apps/json-beautifier',
   //   title: 'JSON Beautifier',
   //   icon: 'code',
   //   class: ''
   // },
   // {
-  //   path: 'useful-app/json-excel',
+  //   path: 'apps/json-excel',
   //   title: 'JSON Excel',
   //   icon: 'code',
   //   class: ''
   // },
   // {
-  //   path: 'useful-app/text-diff',
+  //   path: 'apps/text-diff',
   //   title: 'Text Diff',
   //   icon: 'description',
   //   class: ''
