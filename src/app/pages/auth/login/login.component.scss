@@ -1,7 +1,27 @@
 .reveal-password {
+    cursor: pointer;
     position: absolute;
     right: 10px;
     font-size: large;
     width: 22.5px;
     height: 18.5px;
+}
+
+.btn-w100 {
+    width: 100%;
+}
+
+#googleSignInButton {
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.mt-4 {
+    margin-top: 24px;
+}
+
+.mt-2 {
+    margin-top: 12px;
 }

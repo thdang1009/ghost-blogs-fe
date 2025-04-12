@@ -44,16 +44,19 @@ export class AuthService {
     return this.http.post<any>(apiUrl + '/login', data)
       .pipe(
         tap((resp: LoginResponse) => {
-          this.loggedInStatus = true;
-          this.userInfo = resp.data;
-          this.isLoggedIn.emit(true);
-          this.saveUserLoginInfo(resp.data); // <- before check isAdminE
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
-          this.isAdminE.emit(this.isAdmin());
-          this.router.navigateByUrl(returnUrl);
         }),
         catchError(handleError('login', []))
       );
+  }
+
+  handleLoginResponse(resp: LoginResponse) {
+    this.loggedInStatus = true;
+    this.userInfo = resp.data;
+    this.isLoggedIn.emit(true);
+    this.saveUserLoginInfo(resp.data); // <- before check isAdminE
+    this.isAdminE.emit(this.isAdmin());
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    this.router.navigateByUrl(returnUrl);
   }
 
   logout(): Observable<any> {

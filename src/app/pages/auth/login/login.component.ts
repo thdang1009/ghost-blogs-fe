@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { CONSTANT } from '@shared/constant';
 import { showNoti } from '@shared/common';
+import { GoogleAuthService } from '@services/auth/google-auth.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -34,6 +35,7 @@ export class LoginComponent implements OnInit {
     private formBuilder: UntypedFormBuilder,
     private router: Router,
     private authService: AuthService,
+    private googleAuthService: GoogleAuthService
   ) { }
 
   ngOnInit() {
@@ -41,6 +43,18 @@ export class LoginComponent implements OnInit {
       username: [null, Validators.required],
       password: [null, Validators.required]
     });
+
+    // Initialize Google Sign-In button after view is initialized
+    setTimeout(() => {
+      this.initGoogleSignIn();
+    }, 1000);
+  }
+
+  /**
+   * Initialize Google Sign-In button
+   */
+  initGoogleSignIn() {
+    this.googleAuthService.initGoogleSignIn('googleSignInButton');
   }
 
   onFormSubmit(form: NgForm) {
