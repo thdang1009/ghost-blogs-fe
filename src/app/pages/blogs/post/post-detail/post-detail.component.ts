@@ -216,11 +216,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.renderer.appendChild(this.document.body, heart);
     // Animate the heart
     setTimeout(() => {
-      // this.renderer.setStyle(heart, 'transform', 'translateY(-50px) scale(1.5)');
-      // this.renderer.setStyle(heart, 'opacity', '0');
+      this.renderer.setStyle(heart, 'transform', 'translateY(-50px) scale(1.5)');
+      this.renderer.setStyle(heart, 'opacity', '0');
       // Remove the element after animation completes
       setTimeout(() => {
-        // this.renderer.removeChild(this.document.body, heart);
+        this.renderer.removeChild(this.document.body, heart);
       }, 700);
     }, 10);
   }
