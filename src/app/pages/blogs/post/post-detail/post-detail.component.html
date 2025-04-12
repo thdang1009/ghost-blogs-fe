@@ -35,7 +35,7 @@
         </div>
       </header>
     </div>
-    <div class="post-description">
+    <div *ngIf="ready" class="post-description">
       <p>
         {{item.description}}
       </p>
@@ -46,43 +46,27 @@
       </ng-container>
 
       <!-- Facebook Social Plugins -->
-      <div *ngIf="ready" class="facebook-social-plugins">
-        <h3>Share your thoughts</h3>
+      <ng-container *ngIf="ready">
+        <div class="facebook-social-plugins">
+          <div id="fb-root"></div>
+          <script async defer crossorigin="anonymous"
+            src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0&appId=598355823212592"></script>
 
-        <div class="fb-like-share-container">
-          <!-- Like Button -->
-          <div class="fb-like"
-               [attr.data-href]="currentPageUrl"
-               data-width=""
-               data-layout="button_count"
-               data-action="like"
-               data-size="large"
-               data-share="false">
+          <h3>Share your thoughts</h3>
+
+          <div class="fb-like-share-container">
+            <!-- Like, Share Button -->
+            <div #fbLike class="fb-like" data-width="" data-layout="" data-action="" data-size="" data-share="true">
+            </div>
           </div>
 
-          <!-- Share Button -->
-          <div class="fb-share-button"
-               [attr.data-href]="currentPageUrl"
-               data-layout="button_count"
-               data-size="large">
-            <a target="_blank"
-               [href]="'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(currentPageUrl)"
-               class="fb-xfbml-parse-ignore">
-              Share
-            </a>
+          <!-- Comments Plugin -->
+          <div class="fb-comments-container">
+            <div #fbComments class="fb-comments" data-width="" data-numposts="5">
+            </div>
           </div>
         </div>
-
-        <!-- Comments Plugin -->
-        <div class="fb-comments-container">
-          <div class="fb-comments"
-               [attr.data-href]="currentPageUrl"
-               data-width="100%"
-               data-numposts="5"
-               data-order-by="reverse_time">
-          </div>
-        </div>
-      </div>
+      </ng-container>
     </div>
   </article>
 </div>

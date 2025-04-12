@@ -1,13 +1,14 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
+import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PostService } from '@services/_index';
 import { Router } from '@angular/router';
 import { Title, Meta } from "@angular/platform-browser";
 import { POST_TYPE } from '@shared/enum';
 import { Post } from '@models/post';
 import { addStructuredData } from '@shared/common';
-import { DOCUMENT } from '@angular/common';
-
+import { DOCUMENT, isPlatformServer, PlatformLocation } from '@angular/common';
+import { filter } from 'rxjs/operators';
+import { environment } from '@environments/environment';
 // Declare FB globally to access the Facebook SDK
 declare const FB: any;
 
@@ -16,7 +17,7 @@ declare const FB: any;
   templateUrl: './post-detail.component.html',
   styleUrls: ['./post-detail.component.scss']
 })
-export class PostDetailComponent implements OnInit, OnDestroy {
+export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ready = false;
   item!: Post;
@@ -26,17 +27,44 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   count: Number = 0;
   currentPageUrl: string = '';
 
+  @ViewChild('fbLike') fbLike!: ElementRef;
+  @ViewChild('fbComments') fbComments!: ElementRef;
+
   constructor(
     private postService: PostService,
     private route: ActivatedRoute,
     private router: Router,
     private titleService: Title,
     private meta: Meta,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private platformLocation: PlatformLocation
   ) {
     addStructuredData(this.document);
-    // Set the current page URL for Facebook plugins
-    this.currentPageUrl = this.document.location.href;
+  }
+
+
+  private setCurrentPageUrl() {
+    if (isPlatformServer(this.platformId)) {
+      // This code will only run on the server
+      // You would typically get the URL from the request object here
+      // For example, if you are using a Node.js server with Express:
+      // this.currentPageUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      // However, for the client-side rendering after SSR, we'll use PlatformLocation
+      this.currentPageUrl = environment.production ?
+        this.platformLocation.href : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+    } else {
+      // This code will run on the client
+      this.currentPageUrl = environment.production ?
+        this.platformLocation.href : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+    }
+
+    // Update the URL when the route changes (optional, for single-page applications)
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.currentPageUrl = this.platformLocation.href;
+    });
   }
 
   ngOnInit(): void {
@@ -44,7 +72,10 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.postService.getPost(id as string).subscribe(post => {
       this.item = post;
       this.count = post.clapCount || 0;
-      this.ready = true;
+
+      // Set the current page URL for Facebook plugins
+      this.setCurrentPageUrl();
+
       const subject = post.title as string;
       const desc = post.description as string;
       const creator = post.author as string;
@@ -62,13 +93,32 @@ export class PostDetailComponent implements OnInit, OnDestroy {
       this.meta.updateTag({ property: 'og:creator', content: creator });
       this.meta.updateTag({ property: 'og:image', content: img });
       this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+      this.ready = true;
 
       // Reload Facebook plugins after the post is loaded
       this.reloadFacebookPlugins();
     });
-    window.onbeforeunload = () => this.ngOnDestroy();
   }
 
+  ngAfterViewInit() {
+    const intervalId = setInterval(() => {
+      if (this.ready) {
+        this.setCurrentPageUrlToFacebookPlugins();
+        clearInterval(intervalId);
+      }
+    }, 1000);
+  }
+
+  setCurrentPageUrlToFacebookPlugins() {
+    const fbLike = this.fbLike.nativeElement;
+    if (fbLike) {
+      fbLike.setAttribute('data-href', this.currentPageUrl);
+    }
+    const fbComments = this.fbComments.nativeElement;
+    if (fbComments) {
+      fbComments.setAttribute('data-href', this.currentPageUrl);
+    }
+  }
   /**
    * Reload Facebook plugins after dynamic content is loaded
    */
