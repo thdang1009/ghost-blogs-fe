@@ -9,10 +9,84 @@
   display: flex;
   position: fixed;
   bottom: 35%;
-  width: 100%;
-  align-items: flex-end;
+  right: 4%;
+  z-index: 100;
+  align-items: center;
   justify-content: center;
 }
+
+.clap-button-container {
+  padding: 10px;
+  border-radius: 25%;
+}
+
+.clap-button {
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25%;
+  transition: all 0.2s ease;
+  background-color: rgba(0, 0, 0, 0.05);
+
+  &:hover {
+
+    i {
+      color: #e91e63;
+    }
+  }
+
+  &:active {
+    transform: scale(1.1);
+  }
+
+  i {
+    font-size: 24px;
+    color: #3c4858;
+    transition: color 0.2s ease;
+  }
+}
+
+.clap-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3c4858;
+}
+
+/* Animation for clap button */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.clap-button:active i {
+  animation: pulse 0.3s ease-in-out;
+  color: #e91e63;
+}
+
+.clap-animation {
+  animation: float-up 0.7s ease-out forwards;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) scale(1.5);
+    opacity: 0;
+  }
+}
+
 .post-thumbnail {
   height: 512px;
   width: 512px;
@@ -86,5 +160,10 @@
   .fb-like-share-container {
     flex-direction: column;
     gap: 10px;
+  }
+
+  .clap-container {
+    right: 10px;
+    bottom: 20px;
   }
 }

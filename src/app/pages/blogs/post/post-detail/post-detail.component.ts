@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, Renderer2, ViewChild } from '@angular/core';
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PostService } from '@services/_index';
 import { Router } from '@angular/router';
@@ -31,6 +31,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('fbComments') fbComments!: ElementRef;
   @ViewChild('fbShareButton') fbShareButton!: ElementRef;
   @ViewChild('fbShareButtonLink') fbShareButtonLink!: ElementRef;
+
   constructor(
     private postService: PostService,
     private route: ActivatedRoute,
@@ -39,11 +40,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     private meta: Meta,
     @Inject(DOCUMENT) private document: Document,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private platformLocation: PlatformLocation
+    private platformLocation: PlatformLocation,
+    private renderer: Renderer2
   ) {
     addStructuredData(this.document);
   }
-
 
   private setCurrentPageUrl() {
     if (isPlatformServer(this.platformId)) {
@@ -155,8 +156,14 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.titleService.setTitle('Ghost Site');
   }
 
+  /**
+   * Handle clapping for the post with animation effect
+   */
   clapThisPost(e: any) {
-    // make debounce
+    // Create clap animation
+    this.createClapAnimation(e);
+
+    // Make debounce for API call
     this.num++;
     if (this.idDebounce) {
       clearTimeout(this.idDebounce);
@@ -170,6 +177,52 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
           clearTimeout(this.idDebounce);
         });
     }, 500);
+  }
+
+  /**
+   * Create a floating heart animation when clap button is clicked
+   */
+  createClapAnimation(e: MouseEvent) {
+    const target = e.currentTarget as HTMLElement;
+
+    // Create a heart element
+    const heart = this.renderer.createElement('i');
+    this.renderer.addClass(heart, 'material-icons');
+    this.renderer.addClass(heart, 'clap-animation');
+    this.renderer.setStyle(heart, 'position', 'fixed');
+    this.renderer.setStyle(heart, 'color', '#e91e63');
+    this.renderer.setStyle(heart, 'font-size', '16px');
+    this.renderer.setStyle(heart, 'pointer-events', 'none');
+    this.renderer.setStyle(heart, 'opacity', '1');
+    this.renderer.setStyle(heart, 'transform', 'scale(1)');
+    this.renderer.setStyle(heart, 'transition', 'all 0.7s ease-out');
+
+    // Set the text content to heart icon
+    this.renderer.setProperty(heart, 'textContent', 'favorite');
+
+    console.log('target', target);
+    // Position the heart relative to the button
+    const rect = target.getBoundingClientRect();
+    const x = rect.left + rect.width / 2 - 8;
+    const y = rect.top - 10;
+    console.log('x', x);
+    console.log('y', y);
+
+    this.renderer.setStyle(heart, 'left', `${x}px`);
+    this.renderer.setStyle(heart, 'top', `${y}px`);
+    console.log('heart', heart);
+
+    // Add to DOM at the click position
+    this.renderer.appendChild(this.document.body, heart);
+    // Animate the heart
+    setTimeout(() => {
+      // this.renderer.setStyle(heart, 'transform', 'translateY(-50px) scale(1.5)');
+      // this.renderer.setStyle(heart, 'opacity', '0');
+      // Remove the element after animation completes
+      setTimeout(() => {
+        // this.renderer.removeChild(this.document.body, heart);
+      }, 700);
+    }, 10);
   }
 
   updateClap() {

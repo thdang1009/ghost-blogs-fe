@@ -1,4 +1,11 @@
-<div class="clap-container"></div>
+<div class="clap-container">
+  <div *ngIf="ready" class="clap-button-container">
+    <button class="clap-button" (click)="clapThisPost($event)" aria-label="Clap for this post">
+      <i class="material-icons">favorite</i>
+      <span class="clap-count">{{+count | number:'1.0-0'}}</span>
+    </button>
+  </div>
+</div>
 <div class="container post-container">
 
   <article class="container article-page">
