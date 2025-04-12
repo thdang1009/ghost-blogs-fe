@@ -53,11 +53,14 @@
             src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0&appId=598355823212592"></script>
 
           <h3>Share your thoughts</h3>
-
           <div class="fb-like-share-container">
             <!-- Like, Share Button -->
-            <div #fbLike class="fb-like" data-width="450" data-layout="standard" data-action="like" data-size="small"
+            <!-- facebook like is no longer supported -->
+            <!-- <div #fbLike class="fb-like" data-width="450" data-layout="standard" data-action="like" data-size="small"
               data-share="true">
+            </div> -->
+            <div #fbShareButton class="fb-share-button" data-layout="" data-size="">
+              <a #fbShareButtonLink target="_blank" class="fb-xfbml-parse-ignore">Share</a>
             </div>
           </div>
 

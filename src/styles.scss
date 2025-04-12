@@ -590,6 +590,11 @@ mat-tab-group {
   right: 10px;
 }
 
+.post-body {
+  p > img {
+    max-width: 100%;
+  }
+}
 @media (min-width: 992px) {
   app-json-beautifier {
     flex-direction: row;

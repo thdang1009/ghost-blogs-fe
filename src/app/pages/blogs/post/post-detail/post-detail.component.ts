@@ -27,9 +27,10 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   count: Number = 0;
   currentPageUrl: string = '';
 
-  @ViewChild('fbLike') fbLike!: ElementRef;
+  // @ViewChild('fbLike') fbLike!: ElementRef;
   @ViewChild('fbComments') fbComments!: ElementRef;
-
+  @ViewChild('fbShareButton') fbShareButton!: ElementRef;
+  @ViewChild('fbShareButtonLink') fbShareButtonLink!: ElementRef;
   constructor(
     private postService: PostService,
     private route: ActivatedRoute,
@@ -109,13 +110,17 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setCurrentPageUrlToFacebookPlugins() {
-    const fbLike = this.fbLike.nativeElement;
-    if (fbLike) {
-      fbLike.setAttribute('data-href', this.currentPageUrl);
+    const fbShareButton = this.fbShareButton.nativeElement;
+    if (fbShareButton) {
+      fbShareButton.setAttribute('data-href', this.currentPageUrl);
     }
     const fbComments = this.fbComments.nativeElement;
     if (fbComments) {
       fbComments.setAttribute('data-href', this.currentPageUrl);
+    }
+    const fbShareButtonLink = this.fbShareButtonLink.nativeElement;
+    if (fbShareButtonLink) {
+      fbShareButtonLink.setAttribute('href', 'https://www.facebook.com/sharer/sharer.php?u=' + this.currentPageUrl);
     }
   }
   /**
