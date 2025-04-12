@@ -94,9 +94,6 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       this.meta.updateTag({ property: 'og:image', content: img });
       this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
       this.ready = true;
-
-      // Reload Facebook plugins after the post is loaded
-      this.reloadFacebookPlugins();
     });
   }
 
@@ -104,9 +101,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const intervalId = setInterval(() => {
       if (this.ready) {
         this.setCurrentPageUrlToFacebookPlugins();
+        // Reload Facebook plugins after the post is loaded
+        this.reloadFacebookPlugins();
         clearInterval(intervalId);
       }
-    }, 1000);
+    }, 150);
   }
 
   setCurrentPageUrlToFacebookPlugins() {
