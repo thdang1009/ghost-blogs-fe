@@ -14,6 +14,7 @@ export class FileListComponent implements OnInit {
   isRunning = false;
   listAll: MyFile[] = [];
   files: MyFile[] = [];
+  isPreview = false;
   constructor(
     private fileService: FileService,
     private router: Router) { }
@@ -38,7 +39,7 @@ export class FileListComponent implements OnInit {
       showNoti(`Get file fail!`, 'danger');
     });
   }
-  getMoreFiles(pageSize = 5) {
+  getMoreFiles(pageSize = 10) {
     const tempArray = [];
     for (let i = 0; i < pageSize; i++, this.index++) {
       if (this.listAll[this.index])
@@ -84,6 +85,9 @@ export class FileListComponent implements OnInit {
       ['admin/file/file'],
       {
       });
+  }
+  showPreview() {
+    this.isPreview = !this.isPreview;
   }
   showMore() {
     this.files = [...this.files, ...this.getMoreFiles()];

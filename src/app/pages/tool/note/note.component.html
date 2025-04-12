@@ -1,118 +1,93 @@
-<div class="main-content"
-	tabindex="-1">
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-12">
-				<div class="card"
-					tabindex="-1">
-					<form (ngSubmit)="searchNote()"
-						class="form-under-table-header row">
-						<!-- button search -->
-						<div class="col-md-4">
-							<button *ngIf="!itemSelected || !itemSelected.id"
-								[disabled]="isLoadingResults"
-								type="submit"
-								class="btn btn-info pull-right btn-w100">
-								<em class="material-icons">search</em>
-								Search
-							</button>
-							<button *ngIf="itemSelected && itemSelected.id"
-								[disabled]="isLoadingResults"
-								(click)="saveThenBack()"
-								type="button"
-								class="btn btn-info pull-right btn-w100">
-								<em class="material-icons">save</em>
-								Save & Back
-							</button>
-						</div>
-						<!-- button add -->
-						<div class="col-md-4">
-							<button *ngIf="!itemSelected || !itemSelected.id"
-								(click)="addNote()"
-								type="button"
-								matTooltip="Add Empty Row"
-								class="btn btn-success pull-right btn-w100">
-								<em class="material-icons">add</em>
-								Add Empty Note
-							</button>
-						</div>
-					</form>
-					<div class="card-body">
-						<div *ngIf="!itemSelected || !itemSelected.id; else noteView"
-							class="table-responsive">
-							<table class="table">
-								<thead class=" text-primary">
-									<th style="max-width: 120px; min-width: 120px; width: 120px;">Update At</th>
-									<th>Header</th>
-								</thead>
-								<tbody>
-									<ng-container *ngIf="data && data.length; else noDataBlock">
-										<tr *ngFor="let note of data; let index = index"
-											class="hover-pointer-td">
-											<td class="text-center">
-												<span (click)="chooseThisItem(note)"
-													class="hover-pointer"
-													matTooltip="Create At: {{ note.createTime | date: 'dd-MM HH:mm' }}">
-													{{ note.updateTime | date: 'dd-MM HH:mm' }}
-												</span>
-											</td>
-											<td>
-												<span (click)="chooseThisItem(note)"
-													class="hover-pointer">
-													{{
-                                                    note.header }}
-												</span>
-												<button [disabled]="isLoadingResults"
-													(click)="deleteNote(note)"
-													type="button"
-													matTooltip="Delete Note"
-													class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-													<div class="mdc-icon-button__ripple"></div>
-													delete
-												</button>
-											</td>
-										</tr>
-									</ng-container>
-									<ng-template #noDataBlock>
-										<tr class="text-center">
-											<td colspan="100%"
-												class="text-center">
-												<app-table-loading (size)="'sm'"></app-table-loading>
-												No data
-											</td>
-										</tr>
-									</ng-template>
-								</tbody>
-							</table>
-						</div>
-						<ng-template #noteView>
-							<textarea [(ngModel)]="itemSelected!.header"
-								[minRows]="1"
-								[maxRows]="3"
-								[useImportant]="true"
-								[disabled]="isLoadingResults"
-								(blur)="saveItem(itemSelected!.id!, itemSelected!, -1);false"
-								type="text"
-								class="editable wd100"
-								autosize></textarea>
-							<angular-editor [config]="editorConfig"
-								[placeholder]="'Enter text here...'"
-								[(ngModel)]="itemSelected!.content"
-								[disabled]="isLoadingResults"
-								(blur)="saveItem(itemSelected!.id!, itemSelected!, -1);false">
-							</angular-editor>
-						</ng-template>
-						<button *ngIf="itemSelected && itemSelected.id"
-							[disabled]="isLoadingResults"
-							(click)="saveThenBack()"
-							type="button"
-							class="btn btn-info pull-right btn-w100">
-							<em class="material-icons">save</em>
-							Save & Back
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+<div class="main-content" tabindex="-1">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card" tabindex="-1">
+          <form (ngSubmit)="searchNote()" class="form-under-table-header row">
+            <div class="col-md-4">
+              <textarea [(ngModel)]="searchText" placeholder="Search note" class="form-control"
+                (ngModelChange)="searchNote()"></textarea>
+            </div>
+            <!-- button search -->
+            <div class="col-md-4">
+              <button *ngIf="!itemSelected || !itemSelected.id" [disabled]="isLoadingResults" type="submit"
+                class="btn btn-info pull-right btn-w100">
+                <em class="material-icons">search</em>
+                Search
+              </button>
+              <button *ngIf="itemSelected && itemSelected.id" [disabled]="isLoadingResults" (click)="saveThenBack()"
+                type="button" class="btn btn-info pull-right btn-w100">
+                <em class="material-icons">save</em>
+                Save & Back
+              </button>
+            </div>
+            <!-- button add -->
+            <div class="col-md-4">
+              <button *ngIf="!itemSelected || !itemSelected.id" (click)="addNote()" type="button"
+                matTooltip="Add Empty Row" class="btn btn-success pull-right btn-w100">
+                <em class="material-icons">add</em>
+                Add Empty Note
+              </button>
+            </div>
+          </form>
+          <div class="card-body">
+            <div *ngIf="!itemSelected || !itemSelected.id; else noteView" class="table-responsive">
+              <table class="table">
+                <thead class=" text-primary">
+                  <th style="max-width: 120px; min-width: 120px; width: 120px;">Update At</th>
+                  <th>Header</th>
+                </thead>
+                <tbody>
+                  <ng-container *ngIf="data && data.length; else noDataBlock">
+                    <tr *ngFor="let note of data; let index = index" class="hover-pointer-td">
+                      <td class="text-center">
+                        <span (click)="chooseThisItem(note)" class="hover-pointer"
+                          matTooltip="Create At: {{ note.createTime | date: 'dd-MM HH:mm' }}">
+                          {{ note.updateTime | date: 'dd-MM HH:mm' }}
+                        </span>
+                      </td>
+                      <td>
+                        <span (click)="chooseThisItem(note)" class="hover-pointer">
+                          {{
+                          note.header }}
+                        </span>
+                        <button [disabled]="isLoadingResults" (click)="deleteNote(note)" type="button"
+                          matTooltip="Delete Note"
+                          class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+                          <div class="mdc-icon-button__ripple"></div>
+                          delete
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #noDataBlock>
+                    <tr class="text-center">
+                      <td colspan="100%" class="text-center">
+                        <app-table-loading (size)="'sm'"></app-table-loading>
+                        No data
+                      </td>
+                    </tr>
+                  </ng-template>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noteView>
+              <textarea [(ngModel)]="itemSelected!.header" [minRows]="1" [maxRows]="3" [useImportant]="true"
+                [disabled]="isLoadingResults" (blur)="saveItem(itemSelected!.id!, itemSelected!, -1);false" type="text"
+                class="editable wd100" autosize></textarea>
+              <angular-editor [config]="editorConfig" [placeholder]="'Enter text here...'"
+                [(ngModel)]="itemSelected!.content" [disabled]="isLoadingResults"
+                (blur)="saveItem(itemSelected!.id!, itemSelected!, -1);false">
+              </angular-editor>
+            </ng-template>
+            <button *ngIf="itemSelected && itemSelected.id" [disabled]="isLoadingResults" (click)="saveThenBack()"
+              type="button" class="btn btn-info pull-right btn-w100">
+              <em class="material-icons">save</em>
+              Save & Back
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

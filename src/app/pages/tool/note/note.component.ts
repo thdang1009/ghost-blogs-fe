@@ -2,7 +2,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { showNoti } from '@shared/common';
+import { debounce, showNoti } from '@shared/common';
 import { Note } from '@models/note';
 import { NoteService } from '@services/_index';
 import * as dateFns from 'date-fns';
@@ -67,7 +67,7 @@ export class NoteComponent implements OnInit {
   debounceID = undefined;
   today = dateFns.startOfToday();
   searchDate = new UntypedFormControl(this.today);
-  searchStatus = 'NONE';
+  searchText = '';
   itemSelected: Note | undefined;
 
   constructor(
@@ -105,8 +105,9 @@ export class NoteComponent implements OnInit {
       });
   }
 
+  debouceSearch = debounce(this._getMyNote.bind(this), 500);
   searchNote(id: number | undefined = undefined) {
-    this._getMyNote(id);
+    this.debouceSearch({ id, searchText: this.searchText });
   }
 
   isSecretHeader(header = '') {
@@ -142,21 +143,21 @@ export class NoteComponent implements OnInit {
       });
   }
 
-  _getMyNote(id: number | undefined = undefined) {
+  _getMyNote(searchParams: { id: number | undefined, searchText: string | undefined }) {
     const value = this.searchDate && this.searchDate.value || new Date();
-    const fromDate = dateFns.startOfDay(value);
+    const fromDate = dateFns.setYear(new Date(), 1900);
     const toDate = dateFns.endOfDay(value);
     const req = {
       from: fromDate || undefined,
       to: toDate || undefined,
-      status: this.searchStatus === 'NONE' && undefined || this.searchStatus
+      searchText: searchParams.searchText || undefined
     }
     this.isLoadingResults = true;
     this.noteService.getMyNote(req)
       .subscribe((res: any) => {
         this.data = res;
-        if (id) {
-          const foundNote = res.filter((el: Note) => el.id === id)[0];
+        if (searchParams.id) {
+          const foundNote = res.filter((el: Note) => el.id === searchParams.id)[0];
           if (this.isSecretHeader(foundNote?.header)) {
             const pwValid = this.guardSecretHeader();
             if (!pwValid) {
