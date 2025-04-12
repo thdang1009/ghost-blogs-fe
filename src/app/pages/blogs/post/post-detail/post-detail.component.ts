@@ -7,6 +7,10 @@ import { POST_TYPE } from '@shared/enum';
 import { Post } from '@models/post';
 import { addStructuredData } from '@shared/common';
 import { DOCUMENT } from '@angular/common';
+
+// Declare FB globally to access the Facebook SDK
+declare const FB: any;
+
 @Component({
   selector: 'app-post-detail',
   templateUrl: './post-detail.component.html',
@@ -20,6 +24,8 @@ export class PostDetailComponent implements OnInit, OnDestroy {
   POST_TYPE = POST_TYPE;
   num = 0;
   count: Number = 0;
+  currentPageUrl: string = '';
+
   constructor(
     private postService: PostService,
     private route: ActivatedRoute,
@@ -29,6 +35,8 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document
   ) {
     addStructuredData(this.document);
+    // Set the current page URL for Facebook plugins
+    this.currentPageUrl = this.document.location.href;
   }
 
   ngOnInit(): void {
@@ -53,8 +61,28 @@ export class PostDetailComponent implements OnInit, OnDestroy {
       this.meta.updateTag({ property: 'og:description', content: desc });
       this.meta.updateTag({ property: 'og:creator', content: creator });
       this.meta.updateTag({ property: 'og:image', content: img });
+      this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+
+      // Reload Facebook plugins after the post is loaded
+      this.reloadFacebookPlugins();
     });
     window.onbeforeunload = () => this.ngOnDestroy();
+  }
+
+  /**
+   * Reload Facebook plugins after dynamic content is loaded
+   */
+  reloadFacebookPlugins(): void {
+    if (typeof FB !== 'undefined') {
+      FB.XFBML.parse();
+    }
+  }
+
+  /**
+   * Helper method to encode URI component for sharing
+   */
+  encodeURIComponent(url: string): string {
+    return encodeURIComponent(url);
   }
 
   ngOnDestroy(): void {
@@ -69,6 +97,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     this.meta.removeTag('property="og:description"');
     this.meta.removeTag('property="og:creator"');
     this.meta.removeTag('property="og:image"');
+    this.meta.removeTag('property="og:url"');
     this.titleService.setTitle('Ghost Site');
   }
 

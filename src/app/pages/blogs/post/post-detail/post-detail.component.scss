@@ -40,6 +40,34 @@
 .post-body {
     max-width: 90vw;
 }
+
+/* Facebook Social Plugins Styles */
+.facebook-social-plugins {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e0e0e0;
+    width: 100%;
+}
+
+.facebook-social-plugins h3 {
+    font-size: 1.5rem;
+    color: #3C4858;
+    margin-bottom: 20px;
+    font-weight: 400;
+}
+
+.fb-like-share-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.fb-comments-container {
+    margin-top: 30px;
+    width: 100%;
+}
+
 @media (max-width: 991px) {
     .post-container {
         padding: 10px 20px;
@@ -47,5 +75,10 @@
     .page-image {
         height: auto;
         width: 311px;
+    }
+
+    .fb-like-share-container {
+        flex-direction: column;
+        gap: 10px;
     }
 }

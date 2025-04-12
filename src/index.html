@@ -17,6 +17,24 @@
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'>
   <meta name="viewport" content="width=device-width">
   <link rel=preconnect rel="stylesheet" href="assets/css/w3.css">
+  <script>
+    window.fbAsyncInit = function () {
+      FB.init({
+        appId: '598355823212592',
+        xfbml: true,
+        version: 'v22.0'
+      });
+      FB.AppEvents.logPageView();
+    };
+
+    (function (d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) { return; }
+      js = d.createElement(s); js.id = id;
+      js.src = "https://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+  </script>
 
   <!-- Fonts and icons -->
   <link rel=preconnect href="assets/css/font-awesome.min.css" rel="stylesheet">
@@ -25,6 +43,9 @@
   <script rel=preconnect src="assets/js/bundle.js?v=1" crossorigin="anonymous" async></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Basic Meta Tags -->
+  <meta property="fb:app_id" content="598355823212592">
+  <meta property="og:type" content="website">
+  <meta property="og:type" content="article">
   <meta property="og:title" content="Ghost's blogs">
   <meta property="og:description" content="Ghost's blogs">
   <meta property="og:image" content="https://dangtrinh.site/assets/img/ghost.png">

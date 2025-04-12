@@ -7,6 +7,8 @@ import { ComponentsModule } from '@components/components.module';
 import { ReuseComponentModule } from '@reuse/reuse.module';
 import { SharedModule } from '@shared/shared-module.module';
 import { AuthModule } from '@pages/auth/auth.module';
+import { DataDeletionModule } from '@pages/data-deletion/data-deletion.module';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -15,6 +17,7 @@ import { AuthModule } from '@pages/auth/auth.module';
     ReuseComponentModule,
     SharedModule,
     AuthModule,
+    DataDeletionModule,
     RouterModule
   ],
   declarations: [

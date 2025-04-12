@@ -8,6 +8,7 @@ import { DonationComponent } from '@pages/donation/donation.component';
 import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-password.component';
 import { PostDetailComponent } from '@pages/blogs/post/post-detail/post-detail.component';
 import { ConfirmEmailComponent } from '@pages/user/confirm-email/confirm-email.component';
+import { DataDeletionComponent } from '@pages/data-deletion/data-deletion.component';
 
 export const GuestLayoutRoutes: Routes = [
   {
@@ -44,6 +45,11 @@ export const GuestLayoutRoutes: Routes = [
     path: 'donation',
     title: 'Donate',
     component: DonationComponent
+  },
+  {
+    path: 'data-deletion',
+    title: 'Data Deletion Instructions',
+    component: DataDeletionComponent
   },
   {
     path: 'me',
