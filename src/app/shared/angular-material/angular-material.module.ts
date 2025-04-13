@@ -11,7 +11,7 @@ import { MatSliderModule } from "@angular/material/slider";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-
+import { MatCheckboxModule } from '@angular/material/checkbox';
 @NgModule({
   declarations: [],
   imports: [
@@ -30,6 +30,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
     MatTabsModule,
     MatChipsModule,
     MatAutocompleteModule,
+    MatCheckboxModule,
   ],
   exports: [
     // angular material
@@ -45,7 +46,9 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
     MatSliderModule,
     MatTabsModule,
     MatChipsModule,
-    MatAutocompleteModule],
+    MatAutocompleteModule,
+    MatCheckboxModule,
+  ],
   providers: [
     {
       provide: MAT_CHIPS_DEFAULT_OPTIONS,

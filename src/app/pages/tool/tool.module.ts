@@ -12,6 +12,7 @@ import { HttpClientModule } from '@angular/common/http';
 // angular rich text editor
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
+import { CouponComponent } from './coupon/coupon.component';
 // import { RunJsComponent } from './run-js/run-js.component';
 
 @NgModule({
@@ -19,6 +20,7 @@ import { GuestMessageComponent } from './guest-message/guest-message.component';
     NoteComponent,
     TodoTodayComponent,
     GuestMessageComponent,
+    CouponComponent,
     // RunJsComponent,
   ],
   imports: [

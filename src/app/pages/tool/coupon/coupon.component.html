@@ -1,0 +1,432 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <!-- Pending Rewards List Section -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header card-header-info">
+            <h4 class="card-title">Pending Reward Requests</h4>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="text-primary">
+                  <tr>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <!-- <th *ngIf="canRedeemCoupons">Select</th> -->
+                    <th *ngIf="canManageCoupons">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let reward of pendingRewards">
+                    <td>{{ reward.description }}</td>
+                    <td>{{ reward.status }}</td>
+                    <td>{{ reward.createdAt | date:'medium' }}</td>
+                    <!-- <td *ngIf="canRedeemCoupons">
+                      <button mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-success': isRewardSelected(reward._id!), 'btn-default': !isRewardSelected(reward._id!)}"
+                        (click)="selectReward(reward._id!)">
+                        {{ isRewardSelected(reward._id!) ? 'Selected' : 'Select' }}
+                      </button>
+                    </td> -->
+                    <td *ngIf="canManageCoupons" class="actions">
+                      <button mat-icon-button class="btn btn-primary btn-link btn-sm"
+                        *ngIf="editingRewardId !== reward._id" (click)="editReward(reward)">
+                        <i class="material-icons">edit</i>
+                      </button>
+                      <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward)">
+                        <i class="material-icons">delete</i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="pendingRewards.length === 0">
+                    <td colspan="7" class="text-center">No pending reward requests</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Reward Edit Form -->
+            <div *ngIf="editingRewardId" class="mt-4">
+              <form [formGroup]="rewardForm" (ngSubmit)="saveReward()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <mat-form-field class="full-width">
+                      <input matInput placeholder="Title" formControlName="title" required>
+                      <mat-error *ngIf="rewardForm.get('title')?.hasError('required')">
+                        Title is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-6">
+                    <mat-form-field class="full-width">
+                      <input matInput placeholder="Description" formControlName="description" required>
+                      <mat-error *ngIf="rewardForm.get('description')?.hasError('required')">
+                        Description is required
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12 text-right">
+                    <button mat-button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                    <button mat-button type="submit" class="btn btn-info" [disabled]="!rewardForm.valid">
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coupons List Section -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header card-header-info">
+            <h4 class="card-title">Coupon Management</h4>
+            <p class="card-category">Manage "Phiếu Pé Ngoan" coupons</p>
+          </div>
+          <div class="card-body">
+            <!-- Create Coupon Button -->
+            <div *ngIf="canManageCoupons && !isEditing" class="mb-4 d-flex">
+              <button mat-button class="btn btn-success" (click)="showCreateCouponForm()">
+                <i class="material-icons">add</i> New Coupon
+              </button>
+              <button mat-button class="btn btn-info ml-2" (click)="showRedemptionInfo()">
+                <i class="material-icons">info</i> Chi tiết thưởng
+              </button>
+              <!-- Redeem Button -->
+              <ng-container *ngIf="canRedeemCoupons && selectedCoupons.size > 0">
+                <button mat-button class="btn btn-success" (click)="showRedemptionInfo(selectedCoupons.size)">
+                  Đã chọn {{ selectedCoupons.size }} phiếu
+                </button>
+              </ng-container>
+            </div>
+
+            <!-- Bulk Add Coupons Form -->
+            <!-- <div *ngIf="canManageCoupons" class="mb-4">
+              <form [formGroup]="bulkForm" (ngSubmit)="bulkAddCoupons()" class="bulk-form">
+                <div class="row">
+                  <div class="col-md-6">
+                    <mat-form-field>
+                      <input matInput type="number" placeholder="Number of coupons to add"
+                        formControlName="count" min="1" max="100">
+                      <mat-error *ngIf="bulkForm.get('count')?.hasError('required')">
+                        Count is required
+                      </mat-error>
+                      <mat-error *ngIf="bulkForm.get('count')?.hasError('min')">
+                        Count must be at least 1
+                      </mat-error>
+                      <mat-error *ngIf="bulkForm.get('count')?.hasError('max')">
+                        Count cannot exceed 100
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-6">
+                    <button mat-button type="submit" class="btn btn-info" [disabled]="!bulkForm.valid">
+                      Add Coupons in Bulk
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div> -->
+
+            <!-- Coupon Edit Form -->
+            <div *ngIf="isEditing && canManageCoupons" class="mb-4">
+              <form [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <mat-form-field class="full-width">
+                      <input matInput placeholder="Description (max 36 characters)" formControlName="description"
+                        required maxlength="36">
+                      <mat-hint align="end">{{couponForm.get('description')?.value?.length || 0}}/36</mat-hint>
+                      <mat-error *ngIf="couponForm.get('description')?.hasError('required')">
+                        Description is required
+                      </mat-error>
+                      <mat-error *ngIf="couponForm.get('description')?.hasError('maxlength')">
+                        Description cannot exceed 36 characters
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="col-md-6">
+                    <mat-form-field class="full-width">
+                      <input matInput placeholder="Usage Purpose" formControlName="usagePurpose">
+                    </mat-form-field>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-12 text-right">
+                    <button mat-button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                    <button mat-button type="submit" class="btn btn-info" [disabled]="!couponForm.valid">
+                      {{ editingCouponId ? 'Update Coupon' : 'Add Coupon' }}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Coupons Table -->
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="text-primary">
+                  <tr>
+                    <th *ngIf="canRedeemCoupons">Select</th>
+                    <!-- <th>ID</th> -->
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Usage Purpose</th>
+                    <th>Created At</th>
+                    <th>Details</th>
+                    <th *ngIf="canManageCoupons">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let coupon of coupons" [ngClass]="{'used-coupon': coupon.status === 'used'}">
+                    <td *ngIf="canRedeemCoupons && coupon.status === 'unused'">
+                      <mat-checkbox [checked]="isCouponSelected(coupon._id!)"
+                        (change)="toggleCouponSelection(coupon._id!)" color="primary">
+                      </mat-checkbox>
+                    </td>
+                    <td *ngIf="canRedeemCoupons && coupon.status === 'used'">
+                      <span class="text-muted">N/A</span>
+                    </td>
+                    <!-- <td>{{ coupon._id }}</td> -->
+                    <td>{{ coupon.description }}</td>
+                    <td>
+                      <span [ngClass]="coupon.status === 'used' ? 'text-danger' : 'text-success'">
+                        {{ coupon.status }}
+                      </span>
+                    </td>
+                    <td>{{ coupon.usagePurpose || '-' }}</td>
+                    <td>{{ coupon.createdAt | date:'medium' }}</td>
+                    <td>
+                      <button mat-icon-button (click)="showCouponDetails(coupon)" class="btn btn-info btn-link btn-sm">
+                        <i class="material-icons">visibility</i>
+                      </button>
+                    </td>
+                    <td *ngIf="canManageCoupons" class="actions">
+                      <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editCoupon(coupon)">
+                        <i class="material-icons">edit</i>
+                      </button>
+                      <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteCoupon(coupon)">
+                        <i class="material-icons">delete</i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="coupons.length === 0">
+                    <td [attr.colspan]="canManageCoupons ? '8' : '7'" class="text-center">No coupons available</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Coupon Detail Modal -->
+<div class="modal fade" id="couponDetailModal" tabindex="-1" role="dialog" *ngIf="selectedCouponForDetail">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Coupon Details</h5>
+        <button type="button" class="close" (click)="closeCouponDetails()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12 coupon-description-overlay">
+            <img src="assets/img/coupon-blank.jpg" alt="Coupon" class="img-fluid coupon-image">
+            <p>{{ selectedCouponForDetail.description }}</p>
+          </div>
+          <div class="col-md-12">
+            <p><strong>Status:</strong>
+              <span [ngClass]="selectedCouponForDetail.status === 'used' ? 'text-danger' : 'text-success'">
+                {{ selectedCouponForDetail.status }}
+              </span>
+            </p>
+            <p><strong>Usage Purpose:</strong> {{ selectedCouponForDetail.usagePurpose || 'Not specified' }}</p>
+            <p><strong>Created:</strong> {{ selectedCouponForDetail.createdAt | date:'medium' }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeCouponDetails()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Redemption Info Modal -->
+<div class="modal fade" id="redemptionInfoModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <span *ngIf="!isRedemptionMode">Coupon Redemption Guide</span>
+          <span *ngIf="isRedemptionMode">Redeem {{ availableCouponCount }} Coupon(s) for a Reward</span>
+        </h5>
+        <button type="button" class="close" (click)="closeRedemptionInfo()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <h6 class="text-primary">Reward Options</h6>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Reward</th>
+                    <th class="text-center">Coupons Required</th>
+                    <th *ngIf="isRedemptionMode" class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 2 > availableCouponCount, 'selectable-reward': isRedemptionMode && 2 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài')}">
+                    <td>Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài</td>
+                    <td class="text-center">2 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="2 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', 2)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="2 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 2 > availableCouponCount, 'selectable-reward': isRedemptionMode && 2 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc')}">
+                    <td>Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc</td>
+                    <td class="text-center">2 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="2 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc', 2)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="2 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 3 > availableCouponCount, 'selectable-reward': isRedemptionMode && 3 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)')}">
+                    <td>Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)</td>
+                    <td class="text-center">3 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="3 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', 3)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="3 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 4 > availableCouponCount, 'selectable-reward': isRedemptionMode && 4 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ')}">
+                    <td>Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ</td>
+                    <td class="text-center">4 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="4 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ', 4)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="4 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 1 > availableCouponCount, 'selectable-reward': isRedemptionMode && 1 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ')}">
+                    <td>Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ</td>
+                    <td class="text-center">1 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="1 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ', 1)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="1 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 1 > availableCouponCount, 'selectable-reward': isRedemptionMode && 1 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt')}">
+                    <td>Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt</td>
+                    <td class="text-center">1 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="1 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt', 1)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="1 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 3 > availableCouponCount, 'selectable-reward': isRedemptionMode && 3 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn')}">
+                    <td>Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn</td>
+                    <td class="text-center">3 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="3 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn', 3)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="3 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 4 > availableCouponCount, 'selectable-reward': isRedemptionMode && 4 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ')}">
+                    <td>Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ</td>
+                    <td class="text-center">4 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="4 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ', 4)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="4 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 5 > availableCouponCount, 'selectable-reward': isRedemptionMode && 5 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch')}">
+                    <td>Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch</td>
+                    <td class="text-center">5 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="5 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch', 5)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="5 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                  <tr [ngClass]="{'disabled-reward': isRedemptionMode && 1 > availableCouponCount, 'selectable-reward': isRedemptionMode && 1 <= availableCouponCount, 'selected-reward': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích')}">
+                    <td>Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích</td>
+                    <td class="text-center">1 phiếu</td>
+                    <td *ngIf="isRedemptionMode" class="text-center">
+                      <button *ngIf="1 <= availableCouponCount" mat-button class="btn btn-sm"
+                        [ngClass]="{'btn-primary': isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích'), 'btn-outline-primary': !isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích')}"
+                        (click)="selectRedemptionOption('Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích', 1)">
+                        {{ isRedemptionOptionSelected('Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích') ? 'Selected' : 'Select' }}
+                      </button>
+                      <span *ngIf="1 > availableCouponCount" class="text-muted">Not enough coupons</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeRedemptionInfo()">Đóng</button>
+        <button *ngIf="isRedemptionMode && selectedRedemptionOption"
+          type="button" class="btn btn-primary"
+          (click)="confirmRedemption()">
+          Đổi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,3 +9,5 @@ export * from './note';
 export * from './todo-today';
 export * from './book';
 export * from './user';
+export * from './coupon';
+export * from './reward';

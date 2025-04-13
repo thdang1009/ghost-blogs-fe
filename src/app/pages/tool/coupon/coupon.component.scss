@@ -1,0 +1,107 @@
+.full-width {
+  width: 100%;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+.actions {
+  white-space: nowrap;
+  width: 1%;
+}
+
+.used-coupon {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.text-danger {
+  color: #f44336;
+}
+
+.text-success {
+  color: #4caf50;
+}
+
+.text-primary {
+  color: #9c27b0;
+}
+
+.text-muted {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.bulk-form {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.table th, .table td {
+  padding: 12px 8px;
+  vertical-align: middle;
+}
+
+/* Redemption Info Modal */
+#redemptionInfoModal .modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+#redemptionInfoModal .table {
+  margin-bottom: 0;
+}
+
+#redemptionInfoModal .table tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Redemption mode styles */
+.disabled-reward {
+  opacity: 0.6;
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.selectable-reward {
+  cursor: pointer;
+}
+
+.selectable-reward:hover {
+  background-color: rgba(156, 39, 176, 0.05);
+}
+
+.selected-reward {
+  background-color: rgba(156, 39, 176, 0.1);
+}
+
+.btn-outline-primary {
+  color: #9c27b0;
+  border: 1px solid #9c27b0;
+}
+
+.btn-outline-primary:hover {
+  background-color: rgba(156, 39, 176, 0.1);
+}
