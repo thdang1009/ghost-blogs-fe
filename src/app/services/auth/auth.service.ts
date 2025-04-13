@@ -44,6 +44,7 @@ export class AuthService {
     return this.http.post<any>(apiUrl + '/login', data)
       .pipe(
         tap((resp: LoginResponse) => {
+          this.handleLoginResponse(resp);
         }),
         catchError(handleError('login', []))
       );

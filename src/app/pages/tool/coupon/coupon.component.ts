@@ -67,10 +67,10 @@ export class CouponComponent implements OnInit {
 
     const userInfo = this.authService.getUserInfo();
     if (userInfo && userInfo.username) {
+      console.log('dangth userInfo', userInfo);
       this.userEmail = userInfo.username;
       this.canManageCoupons = this.userEmail === 'mean.ghost.site@gmail.com';
       this.canRedeemCoupons = ['honghue.hr@gmail.com', 'mean.ghost.site@gmail.com'].includes(this.userEmail);
-      console.log('dangth canRedeemCoupons', this.canRedeemCoupons);
     }
   }
 
