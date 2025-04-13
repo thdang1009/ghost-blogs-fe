@@ -24,6 +24,8 @@ import { AnchorModule } from '@shared/anchor/anchor.module';
 import { DonationComponent } from '@pages/donation/donation.component';
 import { AuthModule } from '@pages/auth/auth.module';
 import { AnchorService } from '@shared/anchor/anchor.service';
+import { NgxGoogleAnalyticsModule } from 'ngx-google-analytics';
+import { environment } from '@environments/environment';
 // NgModule
 @NgModule({
   imports: [
@@ -39,6 +41,7 @@ import { AnchorService } from '@shared/anchor/anchor.service';
     CommonModule,
     // third party
     // CodeEditorModule.forRoot(),
+    NgxGoogleAnalyticsModule.forRoot(environment.gaCode),
     MarkdownModule.forRoot({
       loader: HttpClient,
       markedOptions: {
