@@ -1,10 +1,10 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Coupon, Reward } from '@models/_index';
 import { CouponService, RewardService, AuthService } from '@services/_index';
-import { showNoti } from '@shared/common';
-declare var $: any;
+import { showNoti, compareWithFunc } from '@shared/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-coupon',
@@ -19,6 +19,7 @@ export class CouponComponent implements OnInit {
   rewardForm: UntypedFormGroup;
   bulkForm: UntypedFormGroup;
   redeemForm: UntypedFormGroup;
+  compareWithFunc = compareWithFunc;
 
   isEditing = false;
   editingCouponId: string | null = null;
@@ -31,18 +32,12 @@ export class CouponComponent implements OnInit {
   selectedCoupons: Set<string> = new Set();
   selectedReward: string | null = null;
 
-  // New properties for coupon details
-  selectedCouponForDetail: Coupon | null = null;
-
   // New properties for redemption info modal
-  isRedemptionMode = false;
   availableCouponCount = 0;
   selectedRedemptionOption: string | null = null;
   selectedRedemptionCouponCount = 0;
 
-  @ViewChild('redemptionInfoModal') redemptionInfoModal!: ElementRef;
-  @ViewChild('couponDetailModal') couponDetailModal!: ElementRef;
-  @ViewChild('createCouponForm') createCouponForm!: ElementRef;
+  statusOptions = ['unused', 'used'];
 
   constructor(
     private couponService: CouponService,
@@ -53,7 +48,8 @@ export class CouponComponent implements OnInit {
   ) {
     this.couponForm = this.formBuilder.group({
       description: ['', [Validators.required, Validators.maxLength(36)]],
-      usagePurpose: ['']
+      usagePurpose: [''],
+      status: [null]
     });
 
     this.rewardForm = this.formBuilder.group({
@@ -121,7 +117,8 @@ export class CouponComponent implements OnInit {
     this.editingCouponId = coupon._id || null;
     this.couponForm.patchValue({
       description: coupon.description,
-      usagePurpose: coupon.usagePurpose || ''
+      usagePurpose: coupon.usagePurpose || '',
+      status: coupon.status || 'unused'
     });
   }
 
@@ -135,11 +132,11 @@ export class CouponComponent implements OnInit {
 
   saveCoupon(): void {
     if (!this.canManageCoupons || !this.couponForm.valid) return;
-
+    console.log('dangth couponForm', this.couponForm.value);
     const couponData: Coupon = {
       description: this.couponForm.value.description,
-      status: 'unused', // Default for new coupon
-      usagePurpose: this.couponForm.value.usagePurpose
+      usagePurpose: this.couponForm.value.usagePurpose,
+      status: this.couponForm.value.status
     };
 
     if (this.isEditing && this.editingCouponId) {
@@ -182,38 +179,32 @@ export class CouponComponent implements OnInit {
     );
   }
 
-  // Methods for coupon details
+  // Methods for coupon details using MatDialog
   showCouponDetails(coupon: Coupon): void {
-    this.selectedCouponForDetail = coupon;
-    this.couponDetailModal.nativeElement.style.display = 'block';
+    this.dialog.open(CouponDetailDialogComponent, {
+      width: '700px',
+      data: coupon
+    });
   }
 
-  closeCouponDetails(): void {
-    this.couponDetailModal.nativeElement.style.display = 'none';
-    this.selectedCouponForDetail = null;
-  }
-
-  // Methods for redemption info modal
+  // Methods for redemption info modal using MatDialog
   showRedemptionInfo(couponCount?: number): void {
-    this.isRedemptionMode = couponCount !== undefined;
-    this.availableCouponCount = couponCount || 0;
-    $('#redemptionInfoModal').modal('show');
-  }
+    const isRedemptionMode = couponCount !== undefined;
+    const dialogRef = this.dialog.open(RedemptionInfoDialogComponent, {
+      width: '800px',
+      data: {
+        isRedemptionMode,
+        availableCouponCount: couponCount || 0
+      }
+    });
 
-  closeRedemptionInfo(): void {
-    $('#redemptionInfoModal').modal('hide');
-    this.selectedRedemptionOption = null;
-  }
-
-  selectRedemptionOption(option: string, requiredCoupons: number): void {
-    if (this.isRedemptionMode && requiredCoupons <= this.availableCouponCount) {
-      this.selectedRedemptionOption = option;
-      this.selectedRedemptionCouponCount = requiredCoupons;
-    }
-  }
-
-  isRedemptionOptionSelected(option: string): boolean {
-    return this.selectedRedemptionOption === option;
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.selectedRedemptionOption = result.option;
+        this.selectedRedemptionCouponCount = result.requiredCoupons;
+        this.confirmRedemption();
+      }
+    });
   }
 
   confirmRedemption(): void {
@@ -239,7 +230,7 @@ export class CouponComponent implements OnInit {
             this.loadCoupons();
             this.loadPendingRewards();
             this.selectedCoupons.clear();
-            this.closeRedemptionInfo();
+            this.selectedRedemptionOption = null;
           },
           (error: any) => {
             console.error('Error redeeming coupons', error);
@@ -340,5 +331,137 @@ export class CouponComponent implements OnInit {
 
   isRewardSelected(rewardId: string): boolean {
     return this.selectedReward === rewardId;
+  }
+}
+
+// Dialog component for coupon details
+@Component({
+  selector: 'app-coupon-detail-dialog',
+  template: `
+    <h2 mat-dialog-title>Coupon Details</h2>
+    <div mat-dialog-content>
+      <div class="row">
+        <div class="col-md-12 coupon-description-overlay">
+          <img src="assets/img/coupon-blank.jpg" alt="Coupon" class="img-fluid coupon-image">
+          <p>{{ data.description }}</p>
+        </div>
+        <div class="col-md-12">
+          <p><strong>Status:</strong>
+            <span [class]="data.status === 'used' ? 'text-danger' : 'text-success'">
+              {{ data.status }}
+            </span>
+          </p>
+          <p><strong>Usage Purpose:</strong> {{ data.usagePurpose || 'Not specified' }}</p>
+          <p><strong>Created:</strong> {{ data.createdAt | date:'medium' }}</p>
+        </div>
+      </div>
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-dialog-close>Close</button>
+    </div>
+  `,
+})
+export class CouponDetailDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<CouponDetailDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: Coupon
+  ) {
+  }
+}
+
+// Dialog component for redemption info
+@Component({
+  selector: 'app-redemption-info-dialog',
+  template: `
+    <h2 mat-dialog-title>
+      <span *ngIf="!data.isRedemptionMode">Coupon Redemption Guide</span>
+      <span *ngIf="data.isRedemptionMode">Redeem {{ data.availableCouponCount }} Coupon(s) for a Reward</span>
+    </h2>
+    <div mat-dialog-content class="mat-typography">
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="text-primary">Reward Options</h3>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Reward</th>
+                  <th class="text-center">Coupons Required</th>
+                  <th *ngIf="data.isRedemptionMode" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let reward of rewardOptions"
+                  [class]="getRewardClass(reward)">
+                  <td>{{ reward.name }}</td>
+                  <td class="text-center">{{ reward.requiredCoupons }} phiếu</td>
+                  <td *ngIf="data.isRedemptionMode" class="text-center">
+                    <button *ngIf="reward.requiredCoupons <= data.availableCouponCount"
+                            class="btn btn-sm"
+                            [class]="selectedOption === reward.name ? 'btn-primary' : 'btn-outline-primary'"
+                            (click)="selectOption(reward.name, reward.requiredCoupons)">
+                      {{ selectedOption === reward.name ? 'Selected' : 'Select' }}
+                    </button>
+                    <span *ngIf="reward.requiredCoupons > data.availableCouponCount" class="text-muted">
+                      Not enough coupons
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-dialog-close>Đóng</button>
+      <button *ngIf="data.isRedemptionMode && selectedOption"
+              color="primary"
+              (click)="dialogRef.close({option: selectedOption, requiredCoupons: selectedRequiredCoupons})">
+        Đổi
+      </button>
+    </div>
+  `,
+})
+export class RedemptionInfoDialogComponent {
+  selectedOption: string | null = null;
+  selectedRequiredCoupons: number = 0;
+
+  rewardOptions = [
+    { name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', requiredCoupons: 2 },
+    { name: 'Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc', requiredCoupons: 2 },
+    { name: 'Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', requiredCoupons: 3 },
+    { name: 'Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ', requiredCoupons: 4 },
+    { name: 'Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ', requiredCoupons: 1 },
+    { name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt', requiredCoupons: 1 },
+    { name: 'Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn', requiredCoupons: 3 },
+    { name: 'Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ', requiredCoupons: 4 },
+    { name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch', requiredCoupons: 5 },
+    { name: 'Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích', requiredCoupons: 1 }
+  ];
+
+  constructor(
+    public dialogRef: MatDialogRef<RedemptionInfoDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: {isRedemptionMode: boolean, availableCouponCount: number}
+  ) {}
+
+  selectOption(option: string, requiredCoupons: number): void {
+    this.selectedOption = option;
+    this.selectedRequiredCoupons = requiredCoupons;
+  }
+
+  getRewardClass(reward: any): string {
+    let classes = '';
+    if (this.data.isRedemptionMode && reward.requiredCoupons > this.data.availableCouponCount) {
+      classes += 'disabled-reward';
+    } else if (this.data.isRedemptionMode && reward.requiredCoupons <= this.data.availableCouponCount) {
+      classes += 'selectable-reward';
+    }
+
+    if (this.selectedOption === reward.name) {
+      classes += ' selected-reward';
+    }
+
+    return classes;
   }
 }

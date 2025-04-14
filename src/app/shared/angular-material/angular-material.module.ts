@@ -12,10 +12,11 @@ import { MatTabsModule } from "@angular/material/tabs";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatIconModule } from '@angular/material/icon';
+
 @NgModule({
   declarations: [],
   imports: [
-
     // angular material
     MatButtonModule,
     MatRippleModule,
@@ -31,6 +32,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatChipsModule,
     MatAutocompleteModule,
     MatCheckboxModule,
+    MatIconModule,
   ],
   exports: [
     // angular material
@@ -48,6 +50,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatChipsModule,
     MatAutocompleteModule,
     MatCheckboxModule,
+    MatIconModule,
   ],
   providers: [
     {

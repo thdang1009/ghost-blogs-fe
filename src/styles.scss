@@ -631,7 +631,6 @@ mat-tab-group {
   flex-direction: column; /* Stack items vertically by default */
 }
 
-
 .coupon-description-overlay img {
   /* Add any other image-specific styles here */
 }
@@ -660,5 +659,8 @@ mat-tab-group {
 @media (max-width: 480px) {
   .hidden-xs {
     display: none;
+  }
+  .coupon-description-overlay p {
+    font-size: 1.5vw;
   }
 }
