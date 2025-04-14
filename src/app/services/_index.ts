@@ -15,3 +15,4 @@ export * from './file-download/file-download.service';
 export * from './book/book.service';
 export * from './coupon/coupon.service';
 export * from './reward/reward.service';
+export * from './config.service';

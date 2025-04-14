@@ -6,6 +6,7 @@ import { NoteComponent } from './note/note.component';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
 import { CouponComponent } from './coupon/coupon.component';
+import { CouponSettingsComponent } from '../operation/coupon-settings/coupon-settings.component';
 // import { RunJsComponent } from './run-js/run-js.component';
 
 const routes: Routes = [

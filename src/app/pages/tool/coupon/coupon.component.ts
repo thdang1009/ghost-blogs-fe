@@ -2,9 +2,10 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Coupon, Reward } from '@models/_index';
-import { CouponService, RewardService, AuthService } from '@services/_index';
+import { CouponService, RewardService, AuthService, ConfigService, FileService } from '@services/_index';
 import { showNoti, compareWithFunc } from '@shared/common';
 import { CommonModule } from '@angular/common';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-coupon',
@@ -44,7 +45,9 @@ export class CouponComponent implements OnInit {
     private rewardService: RewardService,
     private authService: AuthService,
     private formBuilder: UntypedFormBuilder,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private configService: ConfigService,
+    private fileService: FileService
   ) {
     this.couponForm = this.formBuilder.group({
       description: ['', [Validators.required, Validators.maxLength(36)]],
@@ -342,7 +345,7 @@ export class CouponComponent implements OnInit {
     <div mat-dialog-content>
       <div class="row">
         <div class="col-md-12 coupon-description-overlay">
-          <img src="assets/img/coupon-blank.jpg" alt="Coupon" class="img-fluid coupon-image">
+          <img [src]="couponImageUrl" alt="Coupon" class="img-fluid coupon-image">
           <p>{{ data.description }}</p>
         </div>
         <div class="col-md-12">
@@ -362,10 +365,36 @@ export class CouponComponent implements OnInit {
   `,
 })
 export class CouponDetailDialogComponent {
+  defaultImagePath = 'assets/img/coupon-blank.jpg';
+  couponImageUrl: string = this.defaultImagePath;
+
   constructor(
     public dialogRef: MatDialogRef<CouponDetailDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Coupon
+    @Inject(MAT_DIALOG_DATA) public data: Coupon,
+    private configService: ConfigService,
+    private fileService: FileService
   ) {
+    this.loadDefaultImage();
+  }
+
+  loadDefaultImage(): void {
+    this.configService.getConfig(['defaultCouponImage']).subscribe(
+      configs => {
+        const config = configs[0];
+        if (config && config.defaultCouponImage) {
+          // Use the configured default image
+          this.couponImageUrl = config.defaultCouponImage;
+        } else {
+          // Fall back to the default image
+          this.couponImageUrl = this.defaultImagePath;
+        }
+      },
+      error => {
+        console.error('Error loading default coupon image config:', error);
+        // Fall back to the default image in case of error
+        this.couponImageUrl = this.defaultImagePath;
+      }
+    );
   }
 }
 

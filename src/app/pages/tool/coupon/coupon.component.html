@@ -93,6 +93,10 @@
               <button class="btn btn-info ml-2" (click)="showRedemptionInfo()">
                 <i class="material-icons">info</i> Chi tiết thưởng
               </button>
+              <!-- Settings Button -->
+              <a routerLink="/admin/operation/coupon-settings" class="btn btn-warning ml-2">
+                <i class="material-icons">settings</i>
+              </a>
               <!-- Redeem Button -->
               <ng-container *ngIf="canRedeemCoupons && selectedCoupons.size > 0">
                 <button class="btn btn-success" (click)="showRedemptionInfo(selectedCoupons.size)">

@@ -61,6 +61,7 @@ export const ROUTES: RouteInfo[] = [
     children: [
       { path: 'operation/todo-label-list', title: 'List TodoLabel', icon: 'list', class: '', permission: 'isAdmin' },
       { path: 'operation/todo-label', title: 'Add A TodoLabel', icon: 'local_offer', class: '', permission: 'isAdmin' },
+      { path: 'operation/coupon-settings', title: 'Coupon Settings', icon: 'settings', class: '', permission: 'isGrandAdmin' },
     ]
   },
   // {

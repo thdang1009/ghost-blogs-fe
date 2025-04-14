@@ -13,6 +13,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
 import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogComponent } from './coupon/coupon.component';
+import { CouponSettingsComponent } from '../operation/coupon-settings/coupon-settings.component';
 // import { RunJsComponent } from './run-js/run-js.component';
 
 @NgModule({
@@ -23,6 +24,7 @@ import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogCompo
     CouponComponent,
     CouponDetailDialogComponent,
     RedemptionInfoDialogComponent,
+    CouponSettingsComponent,
     // RunJsComponent,
   ],
   imports: [
