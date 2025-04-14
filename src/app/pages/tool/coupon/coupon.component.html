@@ -14,8 +14,6 @@
                   <tr>
                     <th>Description</th>
                     <th>Status</th>
-                    <th>Created At</th>
-                    <!-- <th *ngIf="canRedeemCoupons">Select</th> -->
                     <th *ngIf="canManageCoupons">Actions</th>
                   </tr>
                 </thead>
@@ -23,14 +21,6 @@
                   <tr *ngFor="let reward of pendingRewards">
                     <td>{{ reward.description }}</td>
                     <td>{{ reward.status }}</td>
-                    <td>{{ reward.createdAt | date:'medium' }}</td>
-                    <!-- <td *ngIf="canRedeemCoupons">
-                      <button mat-button class="btn btn-sm"
-                        [ngClass]="{'btn-success': isRewardSelected(reward._id!), 'btn-default': !isRewardSelected(reward._id!)}"
-                        (click)="selectReward(reward._id!)">
-                        {{ isRewardSelected(reward._id!) ? 'Selected' : 'Select' }}
-                      </button>
-                    </td> -->
                     <td *ngIf="canManageCoupons" class="actions">
                       <button mat-icon-button class="btn btn-primary btn-link btn-sm"
                         *ngIf="editingRewardId !== reward._id" (click)="editReward(reward)">
@@ -42,7 +32,7 @@
                     </td>
                   </tr>
                   <tr *ngIf="pendingRewards.length === 0">
-                    <td colspan="7" class="text-center">No pending reward requests</td>
+                    <td colspan="100%" class="text-center">No pending reward requests</td>
                   </tr>
                 </tbody>
               </table>
@@ -111,34 +101,6 @@
               </ng-container>
             </div>
 
-            <!-- Bulk Add Coupons Form -->
-            <!-- <div *ngIf="canManageCoupons" class="mb-4">
-              <form [formGroup]="bulkForm" (ngSubmit)="bulkAddCoupons()" class="bulk-form">
-                <div class="row">
-                  <div class="col-md-6">
-                    <mat-form-field>
-                      <input matInput type="number" placeholder="Number of coupons to add"
-                        formControlName="count" min="1" max="100">
-                      <mat-error *ngIf="bulkForm.get('count')?.hasError('required')">
-                        Count is required
-                      </mat-error>
-                      <mat-error *ngIf="bulkForm.get('count')?.hasError('min')">
-                        Count must be at least 1
-                      </mat-error>
-                      <mat-error *ngIf="bulkForm.get('count')?.hasError('max')">
-                        Count cannot exceed 100
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-6">
-                    <button mat-button type="submit" class="btn btn-info" [disabled]="!bulkForm.valid">
-                      Add Coupons in Bulk
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div> -->
-
             <!-- Coupon Edit Form -->
             <div *ngIf="isEditing && canManageCoupons" class="mb-4">
               <form [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
@@ -179,11 +141,9 @@
                 <thead class="text-primary">
                   <tr>
                     <th *ngIf="canRedeemCoupons">Select</th>
-                    <!-- <th>ID</th> -->
                     <th>Description</th>
                     <th>Status</th>
                     <th>Usage Purpose</th>
-                    <th>Created At</th>
                     <th>Details</th>
                     <th *ngIf="canManageCoupons">Actions</th>
                   </tr>
@@ -198,7 +158,6 @@
                     <td *ngIf="canRedeemCoupons && coupon.status === 'used'">
                       <span class="text-muted">N/A</span>
                     </td>
-                    <!-- <td>{{ coupon._id }}</td> -->
                     <td>{{ coupon.description }}</td>
                     <td>
                       <span [ngClass]="coupon.status === 'used' ? 'text-danger' : 'text-success'">
@@ -206,7 +165,6 @@
                       </span>
                     </td>
                     <td>{{ coupon.usagePurpose || '-' }}</td>
-                    <td>{{ coupon.createdAt | date:'medium' }}</td>
                     <td>
                       <button mat-icon-button (click)="showCouponDetails(coupon)" class="btn btn-info btn-link btn-sm">
                         <i class="material-icons">visibility</i>
@@ -235,7 +193,7 @@
 </div>
 
 <!-- Coupon Detail Modal -->
-<div class="modal fade" id="couponDetailModal" tabindex="-1" role="dialog" *ngIf="selectedCouponForDetail">
+<div class="modal fade" id="couponDetailModal" #couponDetailModal tabindex="-1" role="dialog" *ngIf="selectedCouponForDetail">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -269,7 +227,7 @@
 </div>
 
 <!-- Redemption Info Modal -->
-<div class="modal fade" id="redemptionInfoModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="redemptionInfoModal" #redemptionInfoModal tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">

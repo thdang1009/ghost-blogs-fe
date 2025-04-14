@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Coupon, Reward } from '@models/_index';
@@ -39,6 +39,10 @@ export class CouponComponent implements OnInit {
   availableCouponCount = 0;
   selectedRedemptionOption: string | null = null;
   selectedRedemptionCouponCount = 0;
+
+  @ViewChild('redemptionInfoModal') redemptionInfoModal!: ElementRef;
+  @ViewChild('couponDetailModal') couponDetailModal!: ElementRef;
+  @ViewChild('createCouponForm') createCouponForm!: ElementRef;
 
   constructor(
     private couponService: CouponService,
@@ -181,11 +185,11 @@ export class CouponComponent implements OnInit {
   // Methods for coupon details
   showCouponDetails(coupon: Coupon): void {
     this.selectedCouponForDetail = coupon;
-    $('#couponDetailModal').modal('show');
+    this.couponDetailModal.nativeElement.style.display = 'block';
   }
 
   closeCouponDetails(): void {
-    $('#couponDetailModal').modal('hide');
+    this.couponDetailModal.nativeElement.style.display = 'none';
     this.selectedCouponForDetail = null;
   }
 
