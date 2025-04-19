@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: deploy-fe to EC2
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main # Or your main development branch
 
 jobs:
-  deploy:
+  deploy-fe:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,16 +26,16 @@ jobs:
 
       - name: Package Application
         run: |
-          mkdir -p deploy
-          cp -r ./dist/ghost-blogs-fe deploy/ghost-blogs-fe
+          mkdir -p ghost-blogs-fe
+          cp -r ./dist/ghost-blogs-fe ghost-blogs-fe
 
-      - name: SSH and Deploy to EC2
+      - name: SSH and deploy to EC2
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: deploy/ghost-blogs-fe
+          source: ghost-blogs-fe
           target: /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}
 
       - name: SSH and Restart Application
@@ -47,4 +47,4 @@ jobs:
           script: |
             cd /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}/ghost-blogs-fe
             pm2 reload ghost-blogs-fe
-            echo "Deployment successful!"
+            echo "deployment successful!"
