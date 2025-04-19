@@ -2,7 +2,6 @@ import { Observable, of } from "rxjs";
 import { TDTD_STATUS } from "./enum";
 import { Renderer2 } from '@angular/core';
 
-declare var $: any;
 export interface GhostSiteResponse {
   status: string,
   data: any,
@@ -10,19 +9,7 @@ export interface GhostSiteResponse {
 export interface LoginResponse extends GhostSiteResponse {
   token: string
 }
-type NotiType = 'danger' | 'success' | 'error' | 'warning' | 'info';
 
-export function showNoti(content: string, type: NotiType, _timer = 1000, title = 'Notifications') {
-  showNotification('top', 'right', title, content, type, _timer);
-}
-
-export function showNotiSocket(content: string, type: NotiType, _timer = 1000, title = 'Notifications') {
-  showNotification('top', 'left', title, content, type, _timer);
-}
-
-export function showNotification(from: string, align: string, title: string, content: string, type: NotiType, _timer = 1000) {
-  console.log('showNotificationNotImplemented');
-}
 export function buildQueryString(object: any) {
   const str = [];
   for (const p in object) {

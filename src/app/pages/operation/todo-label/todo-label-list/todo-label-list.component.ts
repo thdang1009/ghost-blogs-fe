@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TodoLabel } from '@models/_index';
-import { TodoLabelService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { TodoLabelService, AlertService } from '@services/_index';
 
 @Component({
   selector: 'app-todo-label-list',
@@ -13,7 +12,8 @@ export class TodoLabelListComponent implements OnInit {
 
   todoLabels: TodoLabel[] = [];
   constructor(private todoLabelService: TodoLabelService,
-    private router: Router) { }
+    private router: Router,
+    private alertService: AlertService) { }
 
   ngOnInit(): void {
     this.getTodoLabels();
@@ -23,7 +23,7 @@ export class TodoLabelListComponent implements OnInit {
       this.todoLabels = todoLabels;
     }, (err) => {
       console.log(err);
-      showNoti(`Create todoLabel fail!`, 'danger');
+      this.alertService.showNoti(`Create todoLabel fail!`, 'danger');
     });
   }
   delete(todoLabel: TodoLabel) {
@@ -35,7 +35,7 @@ export class TodoLabelListComponent implements OnInit {
     if (todoLabel) {
       this.todoLabelService.deleteTodoLabel(id)
         .subscribe((_: any) => {
-          showNoti('TodoLabel deleted!', 'success');
+          this.alertService.showNoti('TodoLabel deleted!', 'success');
           this.getTodoLabels();
         }, err => {
         });

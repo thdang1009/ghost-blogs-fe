@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MyFile } from '@models/_index';
-import { FileService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { FileService, AlertService } from '@services/_index';
 
 @Component({
   selector: 'app-file-list',
@@ -17,7 +16,8 @@ export class FileListComponent implements OnInit {
   isPreview = false;
   constructor(
     private fileService: FileService,
-    private router: Router) { }
+    private router: Router,
+    private alertService: AlertService) { }
 
   ngOnInit(): void {
     this.getFiles();
@@ -36,7 +36,7 @@ export class FileListComponent implements OnInit {
       this.files = this.getMoreFiles();
     }, (err) => {
       console.log(err);
-      showNoti(`Get file fail!`, 'danger');
+      this.alertService.showNoti(`Get file fail!`, 'danger');
     });
   }
   getMoreFiles(pageSize = 10) {
@@ -55,7 +55,7 @@ export class FileListComponent implements OnInit {
       this.fileService.deleteFile(id)
         .subscribe((res: any) => {
           if (res.success) {
-            showNoti('File deleted!', 'success');
+            this.alertService.showNoti('File deleted!', 'success');
             this.listAll = this.listAll.filter(el => el.id !== id);
             this.files = this.files.filter(el => el.id !== id);
             // this.getFiles();

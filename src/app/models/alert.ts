@@ -5,6 +5,12 @@ export class Alert {
   autoClose?: Boolean;
   keepAfterRouteChange?: Boolean;
   fade?: Boolean;
+  title?: String;
+  timer?: number;
+  position?: {
+    from: string;
+    align: string;
+  };
 
   constructor(init?: Partial<Alert>) {
     Object.assign(this, init);

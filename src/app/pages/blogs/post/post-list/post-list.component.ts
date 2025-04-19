@@ -2,7 +2,6 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { showNoti } from '@shared/common';
 import { Post } from '@models/_index';
 import { PostService } from '@services/_index';
 import * as dateFns from 'date-fns';

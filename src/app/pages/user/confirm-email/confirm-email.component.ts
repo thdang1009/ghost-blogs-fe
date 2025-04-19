@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService, NavigationService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AlertService, AuthService, NavigationService } from '@services/_index';
 
 @Component({
   selector: 'app-confirm-email',
@@ -13,19 +12,20 @@ export class ConfirmEmailComponent implements OnInit {
   constructor(
     private authenService: AuthService,
     private route: ActivatedRoute,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
     const code = this.route.snapshot.params['confirmationCode'];
     this.authenService.confirmEmail(code)
       .subscribe(_ => {
-        showNoti(`Successfully confirm email!`, 'success');
+        this.alertService.showNoti(`Successfully confirm email!`, 'success');
         this.navigationService.gotoLogin();
       }, err => {
 
         console.log(err);
-        showNoti(`Confirm fail ${err}`, 'danger');
+        this.alertService.showNoti(`Confirm fail ${err}`, 'danger');
       });
   }
 

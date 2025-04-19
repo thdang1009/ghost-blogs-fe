@@ -1,6 +1,5 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { AuthService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AuthService, AlertService } from '@services/_index';
 import { Router } from '@angular/router';
 @Component({
   selector: 'app-logout',
@@ -11,7 +10,11 @@ export class LogoutComponent implements OnInit {
   @Output() isAdminE: EventEmitter<any> = new EventEmitter();
 
   isRunning = false;
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private alertService: AlertService
+  ) { }
 
   async ngOnInit() {
     this.isRunning = true;
@@ -23,9 +26,9 @@ export class LogoutComponent implements OnInit {
       this.isLoggedIn.emit(false);
       this.isAdminE.emit(false);
       this.router.navigate(['/login']);
-      showNoti('Logout success!', 'success');
+      this.alertService.showNoti('Logout success!', 'success');
     }, (err) => {
-      showNoti('Logout failed!', 'error');
+      this.alertService.showNoti('Logout failed!', 'error');
     });
   }
 }

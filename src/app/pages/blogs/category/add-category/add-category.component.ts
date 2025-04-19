@@ -3,7 +3,6 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from '@models/_index';
 import { CategoryService, AlertService } from '@services/_index';
-import { showNoti } from '@shared/common';
 
 
 @Component({
@@ -67,7 +66,7 @@ export class AddCategoryComponent implements OnInit {
     this.categoryService.updateCategory(id, newCategory)
       .subscribe(category => {
         if (category) {
-          showNoti(`Update success`, 'success');
+          this.alertService.showNoti(`Update success`, 'success');
           this.router.navigate(['/admin/blog/category-list']);
         }
       }, (err) => {
@@ -80,7 +79,7 @@ export class AddCategoryComponent implements OnInit {
     this.categoryService.addCategory(newCategory)
       .subscribe(category => {
         if (category) {
-          showNoti(`Create success`, 'success');
+          this.alertService.showNoti(`Create success`, 'success');
           this.router.navigate(['/admin/blog/category-list']);
         }
       }, (err) => {

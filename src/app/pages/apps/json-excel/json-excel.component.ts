@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ExampleJSON2 } from '@helpers/fake.data';
-import { showNoti } from '@shared/common';
 import { SAVED_JSON_EXCEL, SAVED_JSON_EXCEL_2 } from '@shared/constant';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 import { NgxFileDropEntry } from 'ngx-file-drop';
@@ -71,7 +70,7 @@ export class JsonExcelComponent implements OnInit, OnDestroy {
       localStorage.setItem(SAVED_JSON_EXCEL, JSON.stringify(this.visibleData));
       localStorage.setItem(SAVED_JSON_EXCEL_2, JSON.stringify(this.visibleData2));
     } catch (e) {
-      showNoti('Lỗi lưu local: ' + e, 'danger');
+      // showNoti('Lỗi lưu local: ' + e, 'danger');
     }
   }
 
@@ -107,7 +106,7 @@ export class JsonExcelComponent implements OnInit, OnDestroy {
       json = this.visibleData;
       formatedJSON = this.formatJSONArray(json);
     } catch (e) {
-      showNoti('Error JSON: ' + e, 'danger');
+      // showNoti('Error JSON: ' + e, 'danger');
     }
     try {
       /* generate workbook and add the worksheet */
@@ -119,8 +118,8 @@ export class JsonExcelComponent implements OnInit, OnDestroy {
       /* save to file */
       XLSX.writeFile(wb, `Excel_${new Date}.xlsx`);
     } catch (e) {
-      showNoti('Error: ' + e, 'danger');
-      showNoti('Only Support Array', 'info');
+      // showNoti('Error: ' + e, 'danger');
+      // showNoti('Only Support Array', 'info');
     }
   }
 

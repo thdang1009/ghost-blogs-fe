@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MyFile } from '@models/_index';
-import { FileService, ConfigService } from '@services/_index';
-import { showNoti } from '@shared/common';
-import { environment } from '@environments/environment';
+import { FileService, ConfigService, AlertService } from '@services/_index';
 
 @Component({
   selector: 'app-coupon-settings',
@@ -63,7 +61,8 @@ export class CouponSettingsComponent implements OnInit {
   constructor(
     private formBuilder: UntypedFormBuilder,
     private fileService: FileService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private alertService: AlertService
   ) {
     this.configForm = this.formBuilder.group({
       defaultCouponImage: ['']
@@ -93,7 +92,7 @@ export class CouponSettingsComponent implements OnInit {
         this.loadCurrentConfig();
       },
       error => {
-        showNoti('Failed to load images: ' + error, 'danger');
+        this.alertService.showNoti('Failed to load images: ' + error, 'danger');
       }
     );
   }
@@ -110,7 +109,7 @@ export class CouponSettingsComponent implements OnInit {
         }
       },
       error => {
-        showNoti('Failed to load current configuration: ' + error, 'danger');
+        this.alertService.showNoti('Failed to load current configuration: ' + error, 'danger');
       }
     );
   }
@@ -122,10 +121,10 @@ export class CouponSettingsComponent implements OnInit {
 
     this.configService.saveConfig(config).subscribe(
       () => {
-        showNoti('Default coupon image configuration saved successfully', 'success');
+        this.alertService.showNoti('Default coupon image configuration saved successfully', 'success');
       },
       error => {
-        showNoti('Failed to save configuration: ' + error, 'danger');
+        this.alertService.showNoti('Failed to save configuration: ' + error, 'danger');
       }
     );
   }

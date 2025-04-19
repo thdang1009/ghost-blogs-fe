@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormBuilder, Validators, NgForm, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AuthService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AuthService, AlertService } from '@services/_index';
 import { MyErrorStateMatcher } from '../login/login.component';
 
 @Component({
@@ -21,7 +20,8 @@ export class ChangePasswordComponent implements OnInit {
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -45,10 +45,10 @@ export class ChangePasswordComponent implements OnInit {
       .subscribe(res => {
         this.isRunning = false;
         this.router.navigate(['/admin/dashboard']);
-        showNoti('Update Password success!', 'success');
+        this.alertService.showNoti('Update Password success!', 'success');
       }, (err) => {
         this.isRunning = false;
-        showNoti('Update Password failed!', 'error');
+        this.alertService.showNoti('Update Password failed!', 'error');
       });
   }
 

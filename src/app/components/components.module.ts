@@ -11,7 +11,9 @@ import { FormsModule } from '@angular/forms';
 import { ProgressWithLabelComponent } from './progress-with-label/progress-with-label.component';
 import { GhostSiteBtnComponent } from './ghost-site-btn/ghost-site-btn.component';
 import { ListBadgeComponent } from './list-badge/list-badge.component';
+import { AlertComponent } from './alert/alert.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 // third party
 
 @NgModule({
@@ -20,6 +22,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     RouterModule,
     FormsModule,
     DragDropModule,
+    BrowserAnimationsModule,
   ],
   declarations: [
     FooterComponent,
@@ -30,6 +33,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
+    AlertComponent,
   ],
   exports: [
     FooterComponent,
@@ -40,6 +44,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
+    AlertComponent,
   ],
   providers: [
   ]

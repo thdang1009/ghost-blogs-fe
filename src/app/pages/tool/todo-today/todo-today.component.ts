@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { TodoLabel, TodoToday } from '@models/_index';
 import * as dateFns from 'date-fns';
-import { TodoLabelService, TodoTodayService } from '@services/_index';
-import { isImportant, nextStatus, previousStatus, showNoti, toggleStatus } from '@shared/common';
+import { AlertService, TodoLabelService, TodoTodayService } from '@services/_index';
+import { isImportant, nextStatus, previousStatus, toggleStatus } from '@shared/common';
 import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -33,6 +33,7 @@ export class TodoTodayComponent implements OnInit {
   constructor(
     private todoTodayService: TodoTodayService,
     private todoLabelService: TodoLabelService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -152,7 +153,7 @@ export class TodoTodayComponent implements OnInit {
   async drop(event: CdkDragDrop<string[]>) {
     const result = await this.sort(event.previousIndex, event.currentIndex);
     if (result === 'fail') {
-      showNoti('Sort Fail!', 'danger');
+      this.alertService.showNoti('Sort Fail!', 'danger');
       return;
     }
     moveItemInArray(this.data, event.previousIndex, event.currentIndex);

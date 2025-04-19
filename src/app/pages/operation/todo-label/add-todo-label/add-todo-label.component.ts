@@ -3,7 +3,6 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { ActivatedRoute, Router } from '@angular/router';
 import { TodoLabel } from '@models/_index';
 import { TodoLabelService, AlertService } from '@services/_index';
-import { showNoti } from '@shared/common';
 
 
 @Component({
@@ -68,7 +67,7 @@ export class AddTodoLabelComponent implements OnInit {
     this.todoLabelService.updateTodoLabel(id, newValue)
       .subscribe(todoLabel => {
         if (todoLabel) {
-          showNoti(`Update success`, 'success');
+          this.alertService.showNoti(`Update success`, 'success');
           this.router.navigate(['/admin/operation/todo-label-list']);
         }
       }, (err) => {
@@ -81,7 +80,7 @@ export class AddTodoLabelComponent implements OnInit {
     this.todoLabelService.addTodoLabel(newValue)
       .subscribe(todoLabel => {
         if (todoLabel) {
-          showNoti(`Success`, 'success');
+          this.alertService.showNoti(`Success`, 'success');
           this.router.navigate(['/admin/operation/todo-label-list']);
         }
       }, (err) => {

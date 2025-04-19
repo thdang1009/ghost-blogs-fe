@@ -10,16 +10,15 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { showNoti } from '@shared/common';
 import { CONSTANT } from '@shared/constant';
-import { StorageService } from '../services/storage.service';
-
+import { StorageService } from '../services/storage/storage.service';
+import { AlertService } from '@services/_index';
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
 
   constructor(
     private router: Router,
-    private storageService: StorageService
+    private storageService: StorageService,
   ) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
@@ -43,14 +42,13 @@ export class TokenInterceptor implements HttpInterceptor {
         return event;
       }),
       catchError((error: HttpErrorResponse) => {
-        console.log(error);
+        console.log('ghost error--->>>', error);
         if (error.status === 401) {
           this.router.navigate(['login']);
         }
         if (error.status === 400) {
           // TODO document why this block is empty
         }
-        showNoti(`Error: ${error.error.msg || error.message}`, 'danger');
         return throwError(error);
       }));
   }

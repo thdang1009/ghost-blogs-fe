@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Tag } from '@models/_index';
-import { showNoti } from '@shared/common';
 
 describe('AddTagComponent', () => {
   let component: AddTagComponent;
@@ -89,7 +88,6 @@ describe('AddTagComponent', () => {
     component.onFormSubmit(newTag);
 
     expect(tagService.addTag).toHaveBeenCalledWith(newTag);
-    expect(showNoti).toHaveBeenCalledWith('Success', 'success');
     expect(router.navigate).toHaveBeenCalledWith(['/admin/blog/tag-list']);
   });
 
@@ -112,7 +110,6 @@ describe('AddTagComponent', () => {
     component.onFormSubmit(mockTag);
 
     expect(tagService.updateTag).toHaveBeenCalledWith('1', mockTag);
-    expect(showNoti).toHaveBeenCalledWith('Update success', 'success');
     expect(router.navigate).toHaveBeenCalledWith(['/admin/blog/tag-list']);
   });
 

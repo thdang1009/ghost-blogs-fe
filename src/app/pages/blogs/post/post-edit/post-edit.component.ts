@@ -3,8 +3,8 @@ import { MyFile, Post } from '@models/_index';
 import { EventEmitter } from '@angular/core';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
 import { DOCUMENT } from '@angular/common';
-import { TagService, CategoryService, FileService } from '@services/_index';
-import { compareWithFunc, showNoti } from '@shared/common';
+import { TagService, CategoryService, FileService, AlertService } from '@services/_index';
+import { compareWithFunc } from '@shared/common';
 import { Observable } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
@@ -64,7 +64,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     private tagService: TagService,
     private categoryService: CategoryService,
-    private fileService: FileService) {
+    private fileService: FileService,
+    private alertService: AlertService
+  ) {
   }
 
   ngOnInit(): void {
@@ -77,7 +79,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
     }).subscribe((res: any) => {
       this.listFileOnServer = res;
     }, err => {
-      showNoti('Get list file error. ' + err, 'danger');
+      this.alertService.showNoti('Get list file error. ' + err, 'danger');
     });
     this.oldObject = JSON.stringify(this.itemSelected);
     window.onbeforeunload = () => this.ngOnDestroy();
@@ -191,7 +193,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
         this.tags.push(newTagFromServer);
         this.getTags();
       }, error => {
-        showNoti('Create tag fail ' + error, 'danger');
+        this.alertService.showNoti('Create tag fail ' + error, 'danger');
       });
 
     // Clear the input value
@@ -232,7 +234,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
         this.categories.push(newItemFromServer);
         this.getCategories();
       }, error => {
-        showNoti('Create category fail ' + error, 'danger');
+        this.alertService.showNoti('Create category fail ' + error, 'danger');
       });
 
     // Clear the input value

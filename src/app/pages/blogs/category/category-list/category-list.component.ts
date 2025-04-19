@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Category } from '@models/_index';
-import { CategoryService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AlertService, CategoryService } from '@services/_index';
 
 @Component({
   selector: 'app-category-list',
@@ -14,7 +13,9 @@ export class CategoryListComponent implements OnInit {
   categories: Category[] = [];
   constructor(
     private categoryService: CategoryService,
-    private router: Router) { }
+    private router: Router,
+    private alertService: AlertService
+  ) { }
 
   ngOnInit(): void {
     this.getCategorys();
@@ -24,7 +25,7 @@ export class CategoryListComponent implements OnInit {
       this.categories = categories;
     }, (err) => {
       console.log(err);
-      showNoti(`Create category fail!`, 'danger');
+      this.alertService.showNoti(`Create category fail!`, 'danger');
     });
   }
   delete(category: Category) {
@@ -35,7 +36,7 @@ export class CategoryListComponent implements OnInit {
     if (category) {
       this.categoryService.deleteCategory(id)
         .subscribe((_: any) => {
-          showNoti('Category deleted!', 'success');
+          this.alertService.showNoti('Category deleted!', 'success');
           this.getCategorys();
         }, err => {
         });

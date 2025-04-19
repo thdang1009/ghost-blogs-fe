@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl, FormGroupDirective, UntypedFormBuilder, UntypedFormGroup, NgForm, Validators } from '@angular/forms';
-import { AuthService } from '@services/_index';
+import { AuthService, AlertService } from '@services/_index';
 import { Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { CONSTANT } from '@shared/constant';
-import { showNoti } from '@shared/common';
 import { GoogleAuthService } from '@services/auth/google-auth.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
@@ -35,7 +34,8 @@ export class LoginComponent implements OnInit {
     private formBuilder: UntypedFormBuilder,
     private router: Router,
     private authService: AuthService,
-    private googleAuthService: GoogleAuthService
+    private googleAuthService: GoogleAuthService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
         if (res.token) {
           localStorage.setItem(CONSTANT.TOKEN, res.token);
           this.router.navigate(['/admin/dashboard']);
-          showNoti('Login success!', 'success');
+          this.alertService.showNoti('Login success!', 'success');
         }
       }, (err) => {
         this.isRunning = false;

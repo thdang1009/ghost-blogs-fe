@@ -8,7 +8,7 @@ import { CONSTANT } from '@shared/constant';
 import { LoginResponse, ghostLog, handleError } from '@shared/common';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
-import { StorageService } from '@services/storage.service';
+import { StorageService } from '@services/storage/storage.service';
 
 const apiUrl = environment.apiUrl + '/v1/auth';
 

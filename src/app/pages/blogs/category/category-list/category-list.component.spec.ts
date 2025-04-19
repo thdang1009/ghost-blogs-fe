@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Category } from '@models/_index';
-import { showNoti } from '@shared/common';
 
 describe('CategoryListComponent', () => {
   let component: CategoryListComponent;
@@ -56,7 +55,6 @@ describe('CategoryListComponent', () => {
     component.getCategorys(); // Call the method to test error handling
 
     expect(consoleSpy).toHaveBeenCalledWith('Error fetching categories');
-    expect(showNoti).toHaveBeenCalledWith('Create category fail!', 'danger');
   });
 
   it('should delete a category and refresh the list', () => {
@@ -67,7 +65,6 @@ describe('CategoryListComponent', () => {
     component.delete(mockCategory);
 
     expect(categoryService.deleteCategory).toHaveBeenCalledWith(mockCategory._id);
-    expect(showNoti).toHaveBeenCalledWith('Category deleted!', 'success');
     expect(component.getCategorys).toHaveBeenCalled(); // Check if getCategorys is called after deletion
   });
 

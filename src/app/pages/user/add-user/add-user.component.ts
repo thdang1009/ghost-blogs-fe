@@ -4,7 +4,6 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { Router } from '@angular/router';
 import { User } from '@models/_index';
 import { UserService, AlertService } from '@services/_index';
-import { showNoti } from '@shared/common';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -80,7 +79,7 @@ export class AddUserComponent implements OnInit {
     this.userService.addUser(newUser)
       .subscribe(user => {
         if (user && user.id) {
-          showNoti(`Create success`, 'success');
+          this.alertService.showNoti(`Create success`, 'success');
           this.router.navigate(['/admin/user-management/list-user']);
         }
       }, (err) => {

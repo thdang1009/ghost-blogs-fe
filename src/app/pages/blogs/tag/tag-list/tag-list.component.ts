@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Tag } from '@models/_index';
-import { TagService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AlertService, TagService } from '@services/_index';
 
 @Component({
   selector: 'app-tag-list',
@@ -10,8 +9,11 @@ import { showNoti } from '@shared/common';
 })
 export class TagListComponent implements OnInit {
   tags: Tag[] = [];
-  constructor(private tagService: TagService,
-    private router: Router) { }
+  constructor(
+    private tagService: TagService,
+    private router: Router,
+    private alertService: AlertService
+  ) { }
 
   ngOnInit(): void {
     this.getTags();
@@ -21,7 +23,7 @@ export class TagListComponent implements OnInit {
       this.tags = tags;
     }, (err) => {
       console.log(err);
-      showNoti(`Create tag fail!`, 'danger');
+      this.alertService.showNoti(`Create tag fail!`, 'danger');
     });
   }
   delete(tag: Tag) {
@@ -33,7 +35,7 @@ export class TagListComponent implements OnInit {
     if (tag) {
       this.tagService.deleteTag(id)
         .subscribe((_: any) => {
-          showNoti('Tag deleted!', 'success');
+          this.alertService.showNoti('Tag deleted!', 'success');
           this.getTags();
         }, err => {
         });

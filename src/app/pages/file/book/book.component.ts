@@ -1,9 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { BookService } from '@services/_index';
+import { BookService, AlertService } from '@services/_index';
 import { Book, MyFile } from '@models/_index';
 import { ActivatedRoute, Router } from '@angular/router';
-import { compareWithFunc, showNoti } from '@shared/common';
+import { compareWithFunc } from '@shared/common';
 import * as dateFns from 'date-fns';
 import { FileUploader } from 'ng2-file-upload';
 import { environment } from '@environments/environment';
@@ -54,7 +54,8 @@ export class BookComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private ref: ChangeDetectorRef,
-    private formBuilder: UntypedFormBuilder
+    private formBuilder: UntypedFormBuilder,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -93,14 +94,14 @@ export class BookComponent implements OnInit {
       file.withCredentials = false;
     };
     this.uploader.onCompleteItem = (item: any, status: any) => {
-      showNoti('File successfully uploaded!', 'success');
+      this.alertService.showNoti('File successfully uploaded!', 'success');
     };
     this.fileService.getMyFile({
       ext: '.pdf'
     }).subscribe((res: any) => {
       this.listFileOnServer = res;
     }, err => {
-      showNoti('Get list file error. ' + err, 'danger');
+      this.alertService.showNoti('Get list file error. ' + err, 'danger');
     });
 
   }
@@ -120,7 +121,7 @@ export class BookComponent implements OnInit {
       .subscribe((res: any) => {
         this.data.push(res);
         this.isLoadingResults = false;
-        showNoti('Add empty book successfully!', 'success');
+        this.alertService.showNoti('Add empty book successfully!', 'success');
       }, err => {
         this.isLoadingResults = false;
       });

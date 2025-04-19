@@ -2,10 +2,8 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Coupon, Reward } from '@models/_index';
-import { CouponService, RewardService, AuthService, ConfigService, FileService } from '@services/_index';
-import { showNoti, compareWithFunc } from '@shared/common';
-import { CommonModule } from '@angular/common';
-import { environment } from '@environments/environment';
+import { AlertService, CouponService, RewardService, AuthService, ConfigService, FileService } from '@services/_index';
+import { compareWithFunc } from '@shared/common';
 
 @Component({
   selector: 'app-coupon',
@@ -47,7 +45,8 @@ export class CouponComponent implements OnInit {
     private formBuilder: UntypedFormBuilder,
     private dialog: MatDialog,
     private configService: ConfigService,
-    private fileService: FileService
+    private fileService: FileService,
+    private alertService: AlertService
   ) {
     this.couponForm = this.formBuilder.group({
       description: ['', [Validators.required, Validators.maxLength(36)]],
@@ -89,7 +88,7 @@ export class CouponComponent implements OnInit {
       },
       (error) => {
         console.error('Error loading coupons', error);
-        showNoti('Failed to load coupons', 'danger');
+        this.alertService.showNoti('Failed to load coupons', 'danger');
       }
     );
   }
@@ -101,7 +100,7 @@ export class CouponComponent implements OnInit {
       },
       (error) => {
         console.error('Error loading pending rewards', error);
-        showNoti('Failed to load pending rewards', 'danger');
+        this.alertService.showNoti('Failed to load pending rewards', 'danger');
       }
     );
   }
@@ -145,25 +144,25 @@ export class CouponComponent implements OnInit {
     if (this.isEditing && this.editingCouponId) {
       this.couponService.updateCoupon(this.editingCouponId, couponData).subscribe(
         (result) => {
-          showNoti('Coupon updated successfully', 'success');
+          this.alertService.showNoti('Coupon updated successfully', 'success');
           this.loadCoupons();
           this.cancelEdit();
         },
         (error) => {
           console.error('Error updating coupon', error);
-          showNoti('Failed to update coupon', 'danger');
+          this.alertService.showNoti('Failed to update coupon', 'danger');
         }
       );
     } else {
       this.couponService.addCoupon(couponData).subscribe(
         (result) => {
-          showNoti('Coupon added successfully', 'success');
+          this.alertService.showNoti('Coupon added successfully', 'success');
           this.loadCoupons();
           this.cancelEdit();
         },
         (error) => {
           console.error('Error adding coupon', error);
-          showNoti('Failed to add coupon', 'danger');
+          this.alertService.showNoti('Failed to add coupon', 'danger');
         }
       );
     }
@@ -172,12 +171,12 @@ export class CouponComponent implements OnInit {
   deleteCoupon(coupon: Coupon): void {
     this.couponService.deleteCoupon(coupon._id!).subscribe(
       () => {
-        showNoti('Coupon deleted successfully', 'success');
+        this.alertService.showNoti('Coupon deleted successfully', 'success');
         this.loadCoupons();
       },
       (error) => {
         console.error('Error deleting coupon', error);
-        showNoti('Failed to delete coupon', 'danger');
+        this.alertService.showNoti('Failed to delete coupon', 'danger');
       }
     );
   }
@@ -212,7 +211,7 @@ export class CouponComponent implements OnInit {
 
   confirmRedemption(): void {
     if (!this.selectedRedemptionOption || !this.canRedeemCoupons || this.selectedCoupons.size === 0) {
-      showNoti('Please select a reward option', 'warning');
+      this.alertService.showNoti('Please select a reward option', 'warning');
       return;
     }
 
@@ -229,7 +228,7 @@ export class CouponComponent implements OnInit {
       (createdReward: Reward) => {
         this.couponService.redeemCoupons(couponIds, createdReward._id!, createdReward.description).subscribe(
           () => {
-            showNoti('Reward requested successfully', 'success');
+            this.alertService.showNoti('Reward requested successfully', 'success');
             this.loadCoupons();
             this.loadPendingRewards();
             this.selectedCoupons.clear();
@@ -237,13 +236,13 @@ export class CouponComponent implements OnInit {
           },
           (error: any) => {
             console.error('Error redeeming coupons', error);
-            showNoti('Failed to redeem coupons', 'danger');
+            this.alertService.showNoti('Failed to redeem coupons', 'danger');
           }
         );
       },
       (error: any) => {
         console.error('Error creating reward', error);
-        showNoti('Failed to create reward', 'danger');
+        this.alertService.showNoti('Failed to create reward', 'danger');
       }
     );
   }
@@ -268,14 +267,14 @@ export class CouponComponent implements OnInit {
     if (this.editingRewardId) {
       this.rewardService.updateReward(this.editingRewardId, rewardData).subscribe(
         (result) => {
-          showNoti('Reward updated successfully', 'success');
+          this.alertService.showNoti('Reward updated successfully', 'success');
           this.loadPendingRewards();
           this.editingRewardId = null;
           this.rewardForm.reset();
         },
         (error) => {
           console.error('Error updating reward', error);
-          showNoti('Failed to update reward', 'danger');
+          this.alertService.showNoti('Failed to update reward', 'danger');
         }
       );
     }
@@ -286,12 +285,12 @@ export class CouponComponent implements OnInit {
 
     this.rewardService.deleteReward(reward._id!).subscribe(
       () => {
-        showNoti('Reward deleted successfully', 'success');
+        this.alertService.showNoti('Reward deleted successfully', 'success');
         this.loadPendingRewards();
       },
       (error) => {
         console.error('Error deleting reward', error);
-        showNoti('Failed to delete reward', 'danger');
+        this.alertService.showNoti('Failed to delete reward', 'danger');
       }
     );
   }
@@ -303,13 +302,13 @@ export class CouponComponent implements OnInit {
 
     this.couponService.bulkAddCoupons(count).subscribe(
       (result) => {
-        showNoti(`${count} coupons added successfully`, 'success');
+        this.alertService.showNoti(`${count} coupons added successfully`, 'success');
         this.loadCoupons();
         this.bulkForm.patchValue({ count: 1 });
       },
       (error) => {
         console.error('Error adding coupons in bulk', error);
-        showNoti('Failed to add coupons', 'danger');
+        this.alertService.showNoti('Failed to add coupons', 'danger');
       }
     );
   }

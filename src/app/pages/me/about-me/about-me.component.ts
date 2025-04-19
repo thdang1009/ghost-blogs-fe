@@ -2,8 +2,8 @@ import { DOCUMENT } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, NgForm, Validators } from '@angular/forms';
 import { Meta } from '@angular/platform-browser';
-import { GuestMessageService } from '@services/_index';
-import { addStructuredData, showNoti } from '@shared/common';
+import { GuestMessageService, AlertService } from '@services/_index';
+import { addStructuredData } from '@shared/common';
 
 export interface PortfolioData {
   src: string,
@@ -43,6 +43,7 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
     private formBuilder: UntypedFormBuilder,
     private guestMessage: GuestMessageService,
     private meta: Meta,
+    private alertService: AlertService,
     @Inject(DOCUMENT) private document: Document
   ) {
     addStructuredData(this.document);
@@ -84,11 +85,11 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
       .subscribe(res => {
         this.isRunning = false;
         if (res && res.id) {
-          showNoti('Send success!', 'success');
+          this.alertService.showNoti('Send success!', 'success');
         }
       }, (err) => {
         this.isRunning = false;
-        showNoti('Send Fail! ' + err.error, 'danger');
+        this.alertService.showNoti('Send Fail! ' + err.error, 'danger');
       });
     // call api save guest message
   }

@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { UntypedFormGroup, UntypedFormBuilder, Validators, NgForm, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AuthService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { AuthService, AlertService } from '@services/_index';
 import { MyErrorStateMatcher } from '../login/login.component';
 
 @Component({
@@ -23,7 +22,8 @@ export class ResetPasswordComponent implements OnInit {
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit() {
@@ -54,7 +54,7 @@ export class ResetPasswordComponent implements OnInit {
         this.resetPasswordForm?.patchValue({
           email: this.sentOTPForm?.value.email
         });
-        showNoti('Check your email!', 'success');
+        this.alertService.showNoti('Check your email!', 'success');
       }, (err) => {
         this.isRunning = false;
       });
@@ -65,7 +65,7 @@ export class ResetPasswordComponent implements OnInit {
     this.authService.setNewPassword(form)
       .subscribe(res => {
         this.isRunning = false;
-        showNoti('Your password has been updated, please login again!', 'success');
+        this.alertService.showNoti('Your password has been updated, please login again!', 'success');
         this.router.navigate(['/login']);
       }, (err) => {
         this.isRunning = false;

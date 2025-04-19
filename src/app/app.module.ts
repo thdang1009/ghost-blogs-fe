@@ -15,6 +15,7 @@ import { TokenInterceptor } from './helpers/_index';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
   AuthService,
+  AlertService
 } from './services/_index';
 import { markedOptionsFactory } from './pages/blogs/blog.module';
 
@@ -68,6 +69,7 @@ import { environment } from '@environments/environment';
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     DatePipe,
     AuthService,
+    AlertService,
     provideClientHydration(),
   ],
   bootstrap: [AppComponent],

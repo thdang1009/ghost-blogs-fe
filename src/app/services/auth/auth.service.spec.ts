@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AuthService } from './auth.service';
-import { StorageService } from '../storage.service';
+import { StorageService } from '../storage/storage.service';
 import { environment } from '@environments/environment';
 
 describe('AuthService', () => {

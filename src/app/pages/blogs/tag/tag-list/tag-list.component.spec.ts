@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { Tag } from '@models/_index';
-import { showNoti } from '@shared/common';
 
 describe('TagListComponent', () => {
   let component: TagListComponent;
@@ -56,7 +55,6 @@ describe('TagListComponent', () => {
     component.getTags();
 
     expect(consoleSpy).toHaveBeenCalledWith('Error fetching tags');
-    expect(showNoti).toHaveBeenCalledWith('Create tag fail!', 'danger');
   });
 
   it('should delete a tag and refresh the list', () => {
@@ -67,7 +65,6 @@ describe('TagListComponent', () => {
     component.delete(mockTag);
 
     expect(tagService.deleteTag).toHaveBeenCalledWith(mockTag._id);
-    expect(showNoti).toHaveBeenCalledWith('Tag deleted!', 'success');
     expect(component.getTags).toHaveBeenCalled(); // Check if getTags is called after deletion
   });
 

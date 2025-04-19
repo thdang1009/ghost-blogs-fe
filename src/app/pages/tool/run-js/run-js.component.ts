@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ExampleCode } from '@helpers/fake.data';
-import { showNoti } from '@shares/common';
 import { SAVED_CODE } from '@shares/constant';
 import { CodeModel } from '@ngstack/code-editor';
 declare const EVERYTHING = 'everything';
@@ -30,7 +29,7 @@ export class RunJsComponent implements OnInit, OnDestroy {
 
   constructor() {
     // TODO document why this constructor is empty
-  
+
   }
 
   ngOnDestroy(): void {
@@ -107,7 +106,7 @@ export class RunJsComponent implements OnInit, OnDestroy {
     try {
       localStorage.setItem(SAVED_CODE, this.codeModel.value);
     } catch (e) {
-      showNoti('Lỗi lưu local: ' + e, 'danger');
+      // showNoti('Lỗi lưu local: ' + e, 'danger');
     }
   }
 
@@ -126,7 +125,7 @@ export class RunJsComponent implements OnInit, OnDestroy {
       this.saveOnLocal();
 
     } catch (e) {
-      showNoti(e, 'danger');
+      // showNoti(e, 'danger');
     } finally {
       this.isLoadingResults = false;
     }
@@ -137,9 +136,9 @@ export class RunJsComponent implements OnInit, OnDestroy {
     const code = this.codeModel.value;
     try {
       navigator.clipboard.writeText(code);
-      showNoti('Copied!', 'success');
+      // showNoti('Copied!', 'success');
     } catch (e) {
-      showNoti(e, 'danger');
+      // showNoti(e, 'danger');
     } finally {
       this.isLoadingResults = false;
     }

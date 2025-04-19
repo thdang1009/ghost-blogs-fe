@@ -1,6 +1,5 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ExampleJSON } from '@helpers/fake.data';
-import { showNoti } from '@shared/common';
 import { SAVED_JSON, SAVED_JSON_2 } from '@shared/constant';
 import { JsonEditorComponent, JsonEditorOptions } from 'ang-jsoneditor';
 import diff from 'diff-sequences';
@@ -114,7 +113,7 @@ export class JsonBeautifierComponent implements OnInit, OnDestroy {
       localStorage.setItem(SAVED_JSON, JSON.stringify(this.visibleData));
       localStorage.setItem(SAVED_JSON_2, JSON.stringify(this.visibleData2));
     } catch (e) {
-      showNoti('Lỗi lưu local: ' + e, 'danger');
+      // showNoti('Lỗi lưu local: ' + e, 'danger');
     }
   }
 

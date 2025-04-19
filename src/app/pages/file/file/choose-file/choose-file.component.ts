@@ -2,8 +2,8 @@ import { Component, Input, OnInit, Output } from '@angular/core';
 import { MyFile } from '@models/my-file';
 import { Subscription } from 'rxjs';
 import { EventEmitter } from '@angular/core';
-import { FileService } from '@services/_index';
-import { getRandomInt, showNoti } from '@shared/common';
+import { FileService, AlertService } from '@services/_index';
+import { getRandomInt } from '@shared/common';
 
 @Component({
   selector: 'choose-file',
@@ -25,6 +25,7 @@ export class ChooseFileComponent implements OnInit {
 
   constructor(
     private fileService: FileService,
+    private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -56,9 +57,9 @@ export class ChooseFileComponent implements OnInit {
           .subscribe(fileResponse => {
             this.isUploading = false;
             if (fileResponse) {
-              showNoti(`Upload success file ${index + 1} - ${file.name}`, 'success');
+              this.alertService.showNoti(`Upload success file ${index + 1} - ${file.name}`, 'success');
               if (numOfFile > 1 && index + 1 >= numOfFile) {
-                showNoti(`Upload all files`, 'info');
+                this.alertService.showNoti(`Upload all files`, 'info');
                 this.uploadDone.emit(fileResponse);
                 // TODO: redirect to list file instead of file detail
               } else if (numOfFile === 1) {
@@ -66,12 +67,12 @@ export class ChooseFileComponent implements OnInit {
               }
 
             } else {
-              showNoti(`Upload fail file ${index + 1} - ${file.name}`, 'error');
+              this.alertService.showNoti(`Upload fail file ${index + 1} - ${file.name}`, 'error');
             }
           }, (err) => {
             this.isUploading = false;
             console.log(err);
-            showNoti(`Upload fail. Error: ${err}`, 'danger');
+            this.alertService.showNoti(`Upload fail. Error: ${err}`, 'danger');
           });
       });
     }

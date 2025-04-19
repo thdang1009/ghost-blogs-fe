@@ -1,0 +1,20 @@
+<div *ngFor="let alert of alerts" @fadeInOut
+     class="alert-container alert-with-icon {{cssClass(alert)}}"
+     [ngClass]="{ 'top-right': alert.position?.from === 'top' && alert.position?.align === 'right',
+                 'top-left': alert.position?.from === 'top' && alert.position?.align === 'left',
+                 'bottom-right': alert.position?.from === 'bottom' && alert.position?.align === 'right',
+                 'bottom-left': alert.position?.from === 'bottom' && alert.position?.align === 'left' }">
+
+    <button mat-button type="button" aria-hidden="true" class="close mat-button" (click)="removeAlert(alert)">
+        <i class="material-icons">close</i>
+    </button>
+
+    <i class="material-icons" data-notify="icon">{{getIconClass(alert)}}</i>
+
+    <span *ngIf="alert.title" class="alert-title">{{alert.title}}</span>
+    <span class="alert-message">{{alert.message}}</span>
+
+    <div *ngIf="alert.timer" class="progress" data-notify="progressbar">
+        <div class="progress-bar progress-bar-{{alert.type}}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>

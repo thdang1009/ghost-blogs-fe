@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '@models/_index';
-import { UserService } from '@services/_index';
-import { showNoti } from '@shared/common';
+import { UserService, AlertService } from '@services/_index';
 
 @Component({
   selector: 'app-user-list',
@@ -9,9 +8,8 @@ import { showNoti } from '@shared/common';
 })
 export class UserListComponent implements OnInit {
 
-
   users: User[] = [];
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService, private alertService: AlertService) { }
 
   ngOnInit(): void {
     this.userService.getUsers().subscribe(users => {
@@ -19,7 +17,7 @@ export class UserListComponent implements OnInit {
       this.users = users;
     }, (err) => {
       console.log(err);
-      showNoti(`Create user fail!`, 'danger');
+      this.alertService.showNoti(`Create user fail!`, 'danger');
     });
   }
 }

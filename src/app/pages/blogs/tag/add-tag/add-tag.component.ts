@@ -3,7 +3,6 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { ActivatedRoute, Router } from '@angular/router';
 import { Tag } from '@models/_index';
 import { TagService, AlertService } from '@services/_index';
-import { showNoti } from '@shared/common';
 
 
 @Component({
@@ -68,7 +67,7 @@ export class AddTagComponent implements OnInit {
     this.tagService.updateTag(id, newValue)
       .subscribe(tag => {
         if (tag) {
-          showNoti(`Update success`, 'success');
+          this.alertService.showNoti(`Update success`, 'success');
           this.router.navigate(['/admin/blog/tag-list']);
         }
       }, (err) => {
@@ -81,7 +80,7 @@ export class AddTagComponent implements OnInit {
     this.tagService.addTag(newValue)
       .subscribe(tag => {
         if (tag) {
-          showNoti(`Success`, 'success');
+          this.alertService.showNoti(`Success`, 'success');
           this.router.navigate(['/admin/blog/tag-list']);
         }
       }, (err) => {

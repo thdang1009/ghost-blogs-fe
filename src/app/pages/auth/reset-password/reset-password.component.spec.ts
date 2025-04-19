@@ -5,7 +5,6 @@ import { AuthService } from '@services/_index';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { showNoti } from '@shared/common';
 
 describe('ResetPasswordComponent', () => {
   let component: ResetPasswordComponent;

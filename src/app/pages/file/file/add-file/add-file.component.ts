@@ -5,7 +5,7 @@ import { FileDownloadService } from '@services/_index';
 import { FILE_PERMISSION } from '@shared/enum';
 import { MyFile } from '@models/_index';
 import { FileService, AlertService } from '@services/_index';
-import { compareWithFunc, openExternalLink, showNoti } from '@shared/common';
+import { compareWithFunc, openExternalLink } from '@shared/common';
 
 
 @Component({
@@ -51,9 +51,9 @@ export class AddFileComponent implements OnInit {
     }
     try {
       navigator.clipboard.writeText(file.urlGet);
-      showNoti('Link copied to clipboard!', 'success');
+      this.alertService.showNoti('Link copied to clipboard!', 'success');
     } catch (e) {
-      showNoti(e as string, 'danger');
+      this.alertService.error(e as string);
     } finally {
       this.isLoadingResults = false;
     }
@@ -118,7 +118,7 @@ export class AddFileComponent implements OnInit {
     this.fileService.updateFile(id, newFile)
       .subscribe(file => {
         if (file) {
-          showNoti(`Update success`, 'success');
+          this.alertService.showNoti(`Update success`, 'success');
           this.copyLinkToClipboard(file);
           this.router.navigate(['/admin/file/file-list']);
         }
@@ -132,7 +132,7 @@ export class AddFileComponent implements OnInit {
     this.fileService.addFile(newFile)
       .subscribe(file => {
         if (file) {
-          showNoti(`Create success`, 'success');
+          this.alertService.showNoti(`Create success`, 'success');
           this.router.navigate(['/admin/file/file-list']);
         }
       }, (err) => {
