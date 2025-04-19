@@ -1,25 +1,21 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
-import { Observable } from 'rxjs';
-import { AuthService, AlertService } from '@services/_index';
+
+import { AuthService } from '@services/_index';
+import { AlertService } from '@services/_index';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AdminGuard implements CanActivate {
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private alertService: AlertService
-  ) { }
+export class AdminGuard {
 
-  canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | Promise<boolean> | boolean {
+  constructor(private authService: AuthService, private alertService: AlertService) { }
+
+  canActivate(): boolean {
     const isAdmin = this.authService.isAdmin();
-    if (isAdmin) {
-      return true;
+    if (!isAdmin) {
+      this.alertService.error('Admin only features, please contact admin to upgrade your account');
     }
-    this.alertService.showNoti('Admin only features, please contact admin to upgrade your account', 'danger');
-    this.router.navigate(['/home']);
-    return false;
+    return isAdmin;
   }
+
 }

@@ -4,7 +4,7 @@ export * from './post/post.service';
 export * from './tag/tag.service';
 export * from './category/category.service';
 export * from './guest-message/guest-message.service';
-export * from './alert/alert.service';
+export * from '../components/alert/alert.service';
 export * from './navigation/navigation.service';
 export * from './todo-label/todo-label.service';
 export * from './file/file.service';

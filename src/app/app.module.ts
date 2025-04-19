@@ -27,11 +27,13 @@ import { AuthModule } from '@pages/auth/auth.module';
 import { AnchorService } from '@shared/anchor/anchor.service';
 import { NgxGoogleAnalyticsModule } from 'ngx-google-analytics';
 import { environment } from '@environments/environment';
+import { AlertModule } from '@components/alert/alert.module';
 // NgModule
 @NgModule({
   imports: [
     AnchorModule,
     AuthModule,
+    AlertModule,
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
