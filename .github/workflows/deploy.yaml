@@ -1,0 +1,50 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main # Or your main development branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Build Angular Frontend (SSR)
+        working-directory: ghost-blogs-fe
+        run: |
+          npm install
+          npm run build
+
+      - name: Package Application
+        run: |
+          mkdir -p deploy
+          cp -r ghost-blogs-fe/dist/ghost-blogs-fe deploy/ghost-blogs-fe
+
+      - name: SSH and Deploy to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: deploy
+          target: /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}/ghost-blogs-fe
+
+      - name: SSH and Restart Application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}/ghost-blogs-fe
+            pm2 reload ghost-blogs-fe
+            echo "Deployment successful!"
