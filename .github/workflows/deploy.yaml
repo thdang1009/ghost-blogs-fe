@@ -19,7 +19,7 @@ jobs:
           node-version: '18.x'
 
       - name: Build Angular Frontend (SSR)
-        working-directory: ghost-blogs-fe
+        working-directory: ../../
         run: |
           npm install
           npm run build
