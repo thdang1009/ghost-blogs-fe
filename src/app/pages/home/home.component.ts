@@ -19,10 +19,9 @@ export class HomeComponent implements OnInit {
   isLoadingResults = true;
   thisYear = (new Date).getFullYear();
   posts: Post[] = [];
-  allPosts: Post[] = [];
   isFilteredByTag = false;
   pageIndex = 1;
-  numberOfAllPost = 0;
+  pageSize = 5;
   isRunning = false;
 
   @HostListener('window:scroll', ['$event'])
@@ -52,11 +51,14 @@ export class HomeComponent implements OnInit {
         if (currentPath && currentPath.includes('tag')) {
           this.isFilteredByTag = true;
         }
-        this.postService.getPublicPosts(params)
+        const req = {
+          page: this.pageIndex,
+          limit: this.pageSize,
+          ...params
+        }
+        this.postService.getPublicPosts(req)
           .subscribe(posts => {
-            this.allPosts = (posts || []).reverse();
-            this.numberOfAllPost = posts.length;
-            this.posts = this.getMorePosts().filter((post): post is Post => post !== undefined);
+            this.posts = posts;
           });
       })
 
@@ -68,27 +70,21 @@ export class HomeComponent implements OnInit {
 
   backToHome() {
     this.isFilteredByTag = false;
+    this.pageIndex = 1;
     this.router.navigate(['home']);
   }
 
-  getMorePosts(pageSize = 4) {
-    let count = 0;
-    const tempArray: Post[] = [];
-    while (count < pageSize && this.allPosts.length) {
-      count++;
-      const post = this.allPosts.pop();
-      if (post) {
-        tempArray.push(post);
-      }
-    }
-    return tempArray;
+  getMorePosts(pageSize = 5) {
+
   }
 
   showMorePost() {
-    if (this.posts?.length < this.numberOfAllPost) {
-      const newPosts = this.getMorePosts(5).filter((post): post is Post => post !== undefined);
-      this.posts = [...this.posts, ...newPosts];
-    }
+    this.postService.getPublicPosts({
+      page: ++this.pageIndex,
+      limit: this.pageSize
+    }).subscribe(posts => {
+      this.posts = [...this.posts, ...posts];
+    });
   }
   debouceFunc = debounce(this.showMorePost.bind(this), 500);
 }
