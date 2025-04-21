@@ -54,7 +54,7 @@ export class HomeComponent implements OnInit {
         }
         this.postService.getPublicPosts(params)
           .subscribe(posts => {
-            this.allPosts = (posts || []).reverse();
+            this.allPosts = JSON.parse(JSON.stringify(posts));
             this.numberOfAllPost = posts.length;
             this.posts = this.getMorePosts().filter((post): post is Post => post !== undefined);
           });
@@ -72,15 +72,7 @@ export class HomeComponent implements OnInit {
   }
 
   getMorePosts(pageSize = 4) {
-    let count = 0;
-    const tempArray: Post[] = [];
-    while (count < pageSize && this.allPosts.length) {
-      count++;
-      const post = this.allPosts.pop();
-      if (post) {
-        tempArray.push(post);
-      }
-    }
+    const tempArray: Post[] = this.allPosts.splice(0, pageSize);
     return tempArray;
   }
 
@@ -90,5 +82,5 @@ export class HomeComponent implements OnInit {
       this.posts = [...this.posts, ...newPosts];
     }
   }
-  debouceFunc = debounce(this.showMorePost.bind(this), 500);
+  debouceFunc = debounce(this.showMorePost.bind(this), 800);
 }
