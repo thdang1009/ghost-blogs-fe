@@ -92,7 +92,7 @@ export interface DashboardData {
 export class AnalyticsService {
   private readonly apiBaseUrl = 'https://analyticsdata.googleapis.com/v1beta1/properties';
   private readonly propertyId = environment.googleAnalytics?.propertyId || '';
-  private apiUrl = `${environment.apiUrl}/analytics`;
+  private apiUrl = environment.apiUrl + '/v1/analytic';
 
   constructor(private http: HttpClient) { }
 
