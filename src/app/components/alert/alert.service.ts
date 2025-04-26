@@ -1,8 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, Optional, PLATFORM_ID } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID, inject } from '@angular/core';
 import { Alert, AlertType } from '@models/_index';
 
 /**
@@ -10,12 +9,17 @@ import { Alert, AlertType } from '@models/_index';
  */
 export type NotiType = 'danger' | 'success' | 'error' | 'warning' | 'info';
 
+const defaultTimer = 2 * 1000;
+
 @Injectable({ providedIn: 'root' })
 export class AlertService {
   private subject = new Subject<Alert>();
   private defaultId = 'default-alert';
+  private isBrowser: boolean;
 
-  constructor() {}
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   // enable subscribing to alerts observable
   onAlert(id = this.defaultId): Observable<Alert> {
@@ -29,7 +33,7 @@ export class AlertService {
    * @param timer Auto-close time in milliseconds
    * @param title Optional title for the notification
    */
-  showNoti(content: string, type: NotiType, timer = 3000, title = 'Notifications'): void {
+  showNoti(content: string, type: NotiType, timer = defaultTimer, title = 'Notifications'): void {
     this.showNotification('top', 'right', title, content, type, timer);
   }
 
@@ -40,7 +44,7 @@ export class AlertService {
    * @param timer Auto-close time in milliseconds
    * @param title Optional title for the notification
    */
-  showNotiSocket(content: string, type: NotiType, timer = 3000, title = 'Notifications'): void {
+  showNotiSocket(content: string, type: NotiType, timer = defaultTimer, title = 'Notifications'): void {
     this.showNotification('top', 'left', title, content, type, timer);
   }
 
@@ -53,10 +57,9 @@ export class AlertService {
    * @param type Type of notification (success, error, warning, info)
    * @param timer Auto-close time in milliseconds
    */
-  showNotification(from: string, align: string, title: string, content: string, type: NotiType, timer = 3000): void {
+  showNotification(from: string, align: string, title: string, content: string, type: NotiType, timer = defaultTimer): void {
     // Skip in SSR mode
-    const platformId = inject(PLATFORM_ID);
-    if (!isPlatformBrowser(platformId)) {
+    if (!this.isBrowser) {
       return;
     }
 
@@ -127,7 +130,7 @@ export class AlertService {
     }
 
     if (alert.timer === undefined) {
-      alert.timer = 3000; // Default 3 seconds
+      alert.timer = defaultTimer; // Default 3 seconds
     }
 
     if (alert.position === undefined) {

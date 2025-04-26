@@ -645,6 +645,10 @@ mat-tab-group {
   margin-top: 10px; /* Add some space between image and text if needed */
   position: fixed;
 }
+.app-alert {
+  position: fixed;
+  z-index: 100000;
+}
 
 @media (min-width: 992px) {
   app-json-beautifier {

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MyFile } from '@models/_index';
 import { FileService, ConfigService, AlertService } from '@services/_index';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-coupon-settings',
@@ -53,10 +54,11 @@ import { FileService, ConfigService, AlertService } from '@services/_index';
     }
   `]
 })
-export class CouponSettingsComponent implements OnInit {
+export class CouponSettingsComponent implements OnInit, OnDestroy {
   configForm: UntypedFormGroup;
   imageFiles: MyFile[] = [];
   selectedImagePreview: string | null = null;
+  private subscriptions: Subscription = new Subscription();
 
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -73,7 +75,7 @@ export class CouponSettingsComponent implements OnInit {
     this.loadImages();
 
     // Update preview when selection changes
-    this.configForm.get('defaultCouponImage')?.valueChanges.subscribe(file => {
+    const valueChangesSub = this.configForm.get('defaultCouponImage')?.valueChanges.subscribe(file => {
       console.log('dangth file', file);
       if (file) {
         this.selectedImagePreview = file.urlGet;
@@ -81,10 +83,19 @@ export class CouponSettingsComponent implements OnInit {
         this.selectedImagePreview = null;
       }
     });
+
+    if (valueChangesSub) {
+      this.subscriptions.add(valueChangesSub);
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Unsubscribe from all subscriptions when component is destroyed
+    this.subscriptions.unsubscribe();
   }
 
   loadImages(): void {
-    this.fileService.getMyFile({
+    const sub = this.fileService.getMyFile({
       type: 'Image'
     }).subscribe(
       (files: MyFile[]) => {
@@ -95,10 +106,12 @@ export class CouponSettingsComponent implements OnInit {
         this.alertService.showNoti('Failed to load images: ' + error, 'danger');
       }
     );
+
+    this.subscriptions.add(sub);
   }
 
   loadCurrentConfig(): void {
-    this.configService.getConfig(['defaultCouponImage']).subscribe(
+    const sub = this.configService.getConfig(['defaultCouponImage']).subscribe(
       configs => {
         const config = configs[0];
         if (config && config.defaultCouponImage) {
@@ -112,6 +125,8 @@ export class CouponSettingsComponent implements OnInit {
         this.alertService.showNoti('Failed to load current configuration: ' + error, 'danger');
       }
     );
+
+    this.subscriptions.add(sub);
   }
 
   saveConfig(): void {
@@ -119,7 +134,7 @@ export class CouponSettingsComponent implements OnInit {
       defaultCouponImage: this.configForm.value.defaultCouponImage.urlGet
     };
 
-    this.configService.saveConfig(config).subscribe(
+    const sub = this.configService.saveConfig(config).subscribe(
       () => {
         this.alertService.showNoti('Default coupon image configuration saved successfully', 'success');
       },
@@ -127,5 +142,7 @@ export class CouponSettingsComponent implements OnInit {
         this.alertService.showNoti('Failed to save configuration: ' + error, 'danger');
       }
     );
+
+    this.subscriptions.add(sub);
   }
 }

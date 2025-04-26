@@ -14,8 +14,7 @@ import { GuestLayoutComponent } from './layouts/guest-layout/guest-layout.compon
 import { TokenInterceptor } from './helpers/_index';
 import { CommonModule, DatePipe } from '@angular/common';
 import {
-  AuthService,
-  AlertService
+  AuthService
 } from './services/_index';
 import { markedOptionsFactory } from './pages/blogs/blog.module';
 
@@ -71,7 +70,6 @@ import { AlertModule } from '@components/alert/alert.module';
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     DatePipe,
     AuthService,
-    AlertService,
     provideClientHydration(),
   ],
   bootstrap: [AppComponent],

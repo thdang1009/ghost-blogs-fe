@@ -2,7 +2,9 @@
   position: fixed;
   z-index: 1050;
   max-width: 400px;
-  box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 4px 20px 0px rgba(0, 0, 0, 0.14),
+    0 7px 10px -5px rgba(0, 0, 0, 0.1);
   padding: 15px;
   border-radius: 3px;
 }
@@ -39,7 +41,6 @@
 
 .alert-with-icon {
   padding-left: 65px;
-  position: relative;
 }
 
 .alert-with-icon i[data-notify="icon"] {
@@ -66,14 +67,14 @@
   left: 0;
   right: 0;
   height: 4px;
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0, 0, 0, 0.1);
   margin-bottom: 0;
   border-radius: 0 0 3px 3px;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: rgba(255,255,255,0.5);
+  background-color: rgba(255, 255, 255, 0.5);
   border-radius: 0 0 3px 3px;
   transition: width 0.3s linear;
 }

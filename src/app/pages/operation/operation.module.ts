@@ -7,13 +7,13 @@ import { ComponentsModule } from '@components/components.module';
 import { TodoLabelListComponent } from './todo-label/todo-label-list/todo-label-list.component';
 import { AddTodoLabelComponent } from './todo-label/add-todo-label/add-todo-label.component';
 import { ReuseComponentModule } from '@reuse/reuse.module';
-
-
+import { CouponSettingsComponent } from './coupon-settings/coupon-settings.component';
 
 @NgModule({
   declarations: [
     TodoLabelListComponent,
     AddTodoLabelComponent,
+    CouponSettingsComponent,
   ],
   imports: [
     CommonModule,
