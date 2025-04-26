@@ -6,6 +6,39 @@
   margin-bottom: 0;
 }
 
+// Date range picker styles
+.date-range-container {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+
+  mat-form-field {
+    width: 150px;
+    margin-bottom: -20px; // Adjust for Material's default margin
+
+    ::ng-deep .mat-form-field-wrapper {
+      padding-bottom: 0;
+    }
+
+    ::ng-deep .mat-form-field-outline {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+    }
+
+    ::ng-deep .mat-form-field-infix {
+      padding: 0.5em 0;
+    }
+
+    ::ng-deep .mat-form-field-label {
+      top: 1.5em;
+    }
+  }
+
+  button {
+    height: 36px;
+  }
+}
+
 // Custom styles for chart displays
 .chart-container {
   display: flex;
@@ -52,4 +85,30 @@
 
 .card-stats .card-footer .stats {
   font-size: 12px;
+}
+
+// Responsive adjustments
+@media (max-width: 992px) {
+  .card-header .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .date-range-container {
+    margin-top: 15px;
+    width: 100%;
+
+    form {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    mat-form-field {
+      width: calc(50% - 10px);
+    }
+
+    button {
+      margin-top: 8px;
+    }
+  }
 }

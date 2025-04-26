@@ -50,7 +50,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadDashboardData(): void {
     this.loading = true;
-    this.analyticsService.getDashboardData(this.dateRange)
+
+    // Create a deep copy of dateRange to ensure we're using formatted dates
+    const formattedDateRange: DateRange = {
+      startDate: this.formatDate(this.dateRange.startDate),
+      endDate: this.formatDate(this.dateRange.endDate)
+    };
+
+    this.analyticsService.getDashboardData(formattedDateRange)
       .pipe(takeUntil(this.destroy$))
       .subscribe((data: DashboardData) => {
         this.dashboardData = data;
@@ -60,6 +67,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.alertService.showNoti('Failed to load analytics data', 'danger');
         this.loading = false;
       });
+  }
+
+  // Called when either date in the range changes
+  onDateRangeChange(): void {
+    // Validate date range
+    if (this.isValidDateRange()) {
+      // Optionally auto-load data when dates change
+      // this.loadDashboardData();
+    }
+  }
+
+  // Validate date range (end date should be after start date)
+  isValidDateRange(): boolean {
+    if (!this.dateRange.startDate || !this.dateRange.endDate) {
+      return false;
+    }
+
+    const startDate = new Date(this.formatDate(this.dateRange.startDate));
+    const endDate = new Date(this.formatDate(this.dateRange.endDate));
+
+    if (endDate < startDate) {
+      this.alertService.showNoti('End date must be after start date', 'warning');
+      return false;
+    }
+
+    return true;
   }
 
   // Helper method to format time in minutes:seconds
@@ -91,12 +124,40 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Date helpers
   private getCurrentDate(): string {
     const today = new Date();
-    return today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    return this.formatDate(today);
   }
 
   private getLastMonthDate(): string {
     const today = new Date();
     const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-    return lastMonth.toISOString().split('T')[0]; // YYYY-MM-DD format
+    return this.formatDate(lastMonth);
+  }
+
+  // Format date to YYYY-MM-DD string
+  private formatDate(date: string | Date): string {
+    if (!date) {
+      return '';
+    }
+
+    let d: Date;
+    if (typeof date === 'string') {
+      // Handle string dates
+      if (date.includes('T')) {
+        // ISO format
+        d = new Date(date);
+      } else {
+        // YYYY-MM-DD format
+        d = new Date(date);
+      }
+    } else {
+      // Handle Date objects
+      d = date;
+    }
+
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 }
