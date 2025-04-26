@@ -16,3 +16,4 @@ export * from './book/book.service';
 export * from './coupon/coupon.service';
 export * from './reward/reward.service';
 export * from './config/config.service';
+export * from './analytics/analytics.service';
