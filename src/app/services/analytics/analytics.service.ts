@@ -91,7 +91,7 @@ export interface DashboardData {
 })
 export class AnalyticsService {
   private readonly apiBaseUrl = 'https://analyticsdata.googleapis.com/v1beta1/properties';
-  private readonly propertyId = environment.googleAnalytics?.propertyId || ''; // Add this to your environment config
+  private readonly propertyId = environment.googleAnalytics?.propertyId || '';
   private apiUrl = `${environment.apiUrl}/analytics`;
 
   constructor(private http: HttpClient) { }
