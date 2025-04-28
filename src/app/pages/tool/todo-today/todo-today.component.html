@@ -3,6 +3,24 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="card">
+					<div class="card-header">
+						<h4 class="card-title">Todo Today</h4>
+						<div class="d-flex align-items-center">
+							<button (click)="addToDoToDay()"
+								matTooltip="Add new todo"
+								class="btn btn-primary btn-round">
+								<i class="material-icons">add</i>
+							</button>
+							<button [class.listening]="isListening"
+								(click)="toggleVoiceRecognition()"
+								matTooltip="Voice input"
+								class="btn btn-primary btn-round ml-2">
+								<i class="material-icons">
+									{{ isListening ? 'mic' : 'mic_none' }}
+								</i>
+							</button>
+						</div>
+					</div>
 					<form (ngSubmit)="searchToDoToDay()"
 						class="form-under-table-header row">
 						<div class="col-md-4 control-and-btn-container">

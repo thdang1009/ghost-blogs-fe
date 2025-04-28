@@ -30,11 +30,68 @@ export class TodoTodayComponent implements OnInit {
   previousStatus = previousStatus;
   TDTD_STATUS = TDTD_STATUS;
 
+  // Voice recognition properties
+  isListening = false;
+  recognition: any;
+  currentLanguage: 'en' | 'vi' = 'vi';
+  statusKeywords = {
+    en: ['todo', 'add', 'new', 'complete', 'done', 'in progress', 'update to', 'set to'],
+    vi: ['thêm', 'mới', 'hoàn thành', 'xong', 'đang làm', 'cập nhật', 'chuyển']
+  };
+
+  // Language-specific messages
+  messages = {
+    en: {
+      noMatch: 'No matching todo found',
+      statusUpdated: 'Todo status updated',
+      updateFailed: 'Failed to update todo status',
+      multipleMatches: 'Multiple matching todos found. Please be more specific',
+      newTodoAdded: 'New todo added',
+      addFailed: 'Failed to add new todo',
+      languageChanged: 'Language changed to English',
+      voiceError: 'Error with voice recognition: ',
+      browserNotSupported: 'Voice recognition is not supported in your browser'
+    },
+    vi: {
+      noMatch: 'Không tìm thấy công việc phù hợp',
+      statusUpdated: 'Đã cập nhật trạng thái công việc',
+      updateFailed: 'Không thể cập nhật trạng thái công việc',
+      multipleMatches: 'Tìm thấy nhiều công việc phù hợp. Vui lòng nói rõ hơn',
+      newTodoAdded: 'Đã thêm công việc mới',
+      addFailed: 'Không thể thêm công việc mới',
+      languageChanged: 'Đã chuyển sang tiếng Việt',
+      voiceError: 'Lỗi nhận dạng giọng nói: ',
+      browserNotSupported: 'Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói'
+    }
+  };
+
   constructor(
     private todoTodayService: TodoTodayService,
     private todoLabelService: TodoLabelService,
     private alertService: AlertService
-  ) { }
+  ) {
+    // Initialize speech recognition
+    if ('webkitSpeechRecognition' in window) {
+      this.recognition = new (window as any).webkitSpeechRecognition();
+      this.recognition.continuous = false;
+      this.recognition.interimResults = false;
+      this.setLanguage(this.currentLanguage);
+
+      this.recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        this.processVoiceInput(transcript);
+      };
+
+      this.recognition.onend = () => {
+        this.isListening = false;
+      };
+
+      this.recognition.onerror = (event: any) => {
+        this.isListening = false;
+        this.alertService.showNoti(this.messages[this.currentLanguage].voiceError + event.error, 'danger');
+      };
+    }
+  }
 
   ngOnInit() {
     this.searchToDoToDay();
@@ -191,5 +248,107 @@ export class TodoTodayComponent implements OnInit {
   }
   decreaseStatus() {
     this.searchStatus = this.previousStatus(this.searchStatus!);
+  }
+
+  setLanguage(lang: 'en' | 'vi') {
+    this.currentLanguage = lang;
+    if (this.recognition) {
+      this.recognition.lang = lang === 'en' ? 'en-US' : 'vi-VN';
+    }
+  }
+
+  processVoiceInput(transcript: string) {
+    // Handle language change commands
+    if (transcript.includes('set language to')) {
+      if (transcript.includes('english')) {
+        this.setLanguage('en');
+        this.alertService.showNoti(this.messages.en.languageChanged, 'success');
+        return;
+      } else if (transcript.includes('vietnamese') || transcript.includes('vietnam')) {
+        this.setLanguage('vi');
+        this.alertService.showNoti(this.messages.vi.languageChanged, 'success');
+        return;
+      }
+    }
+
+    // Split the transcript into words
+    const words = transcript.split(' ');
+    const firstWord = words[0].toLowerCase();
+    const content = words.slice(1).join(' ');
+
+    // Check if it's a status update command
+    const allKeywords = [...this.statusKeywords.en, ...this.statusKeywords.vi];
+    if (allKeywords.includes(firstWord)) {
+      if (['complete', 'done', 'hoàn thành', 'xong'].includes(firstWord)) {
+        this.updateTodoStatus(content, TDTD_STATUS.DONE);
+      } else if (['in progress', 'đang làm'].includes(firstWord)) {
+        this.updateTodoStatus(content, TDTD_STATUS.NEW);
+      } else if (['todo', 'add', 'new', 'thêm', 'mới'].includes(firstWord)) {
+        this.addNewTodo(content);
+      }
+    } else {
+      // If no status keyword is found, treat it as a new todo
+      this.addNewTodo(transcript);
+    }
+  }
+
+  updateTodoStatus(content: string, newStatus: string) {
+    const matchingTodos = this.data.filter(todo =>
+      todo.content?.toLowerCase().includes(content.toLowerCase())
+    );
+
+    if (matchingTodos.length === 0) {
+      this.alertService.showNoti(this.messages[this.currentLanguage].noMatch, 'warning');
+    } else if (matchingTodos.length === 1) {
+      const todo = matchingTodos[0];
+      const index = this.data.findIndex(t => t.id === todo.id);
+      if (index !== -1) {
+        const updatedTodo = { ...todo, status: newStatus };
+        this.todoTodayService.updateTodoToday(todo.id!, updatedTodo)
+          .subscribe(
+            (res: any) => {
+              this.setChangedLineOnly(res, index);
+              this.alertService.showNoti(this.messages[this.currentLanguage].statusUpdated, 'success');
+            },
+            err => {
+              this.alertService.showNoti(this.messages[this.currentLanguage].updateFailed, 'danger');
+            }
+          );
+      }
+    } else {
+      this.alertService.showNoti(this.messages[this.currentLanguage].multipleMatches, 'warning');
+    }
+  }
+
+  addNewTodo(content: string) {
+    const newTodo: TodoToday = {
+      content: content,
+      status: TDTD_STATUS.NEW
+    };
+
+    this.todoTodayService.addTodoToday(newTodo)
+      .subscribe(
+        (res: any) => {
+          this.data.push(res);
+          this.alertService.showNoti(this.messages[this.currentLanguage].newTodoAdded, 'success');
+        },
+        err => {
+          this.alertService.showNoti(this.messages[this.currentLanguage].addFailed, 'danger');
+        }
+      );
+  }
+
+  toggleVoiceRecognition() {
+    if (!this.recognition) {
+      this.alertService.showNoti(this.messages[this.currentLanguage].browserNotSupported, 'warning');
+      return;
+    }
+
+    if (this.isListening) {
+      this.recognition.stop();
+    } else {
+      this.isListening = true;
+      this.recognition.start();
+    }
   }
 }
