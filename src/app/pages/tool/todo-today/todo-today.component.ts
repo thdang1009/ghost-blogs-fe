@@ -3,10 +3,14 @@ import { UntypedFormControl } from '@angular/forms';
 import { TodoLabel, TodoToday } from '@models/_index';
 import * as dateFns from 'date-fns';
 import { AlertService, TodoLabelService, TodoTodayService } from '@services/_index';
-import { isImportant, nextStatus, previousStatus, toggleStatus } from '@shared/common';
+import { isImportant, nextStatus, previousStatus, toggleStatus, calculateSimilarity } from '@shared/common';
 import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
+const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold
+const FINISH_WORDS = ['done', 'xong', 'finish', 'completed', 'đã'];
+const INPUT_WORDS = ['add', 'new', 'thêm', 'mới', 'tạo'];
+const IN_PROGRESS_WORDS = ['progress', 'đang', 'chưa'];
 @Component({
   selector: 'app-todo-today',
   templateUrl: './todo-today.component.html',
@@ -32,12 +36,10 @@ export class TodoTodayComponent implements OnInit {
 
   // Voice recognition properties
   isListening = false;
+  showTranscript = '';
   recognition: any;
   currentLanguage: 'en' | 'vi' = 'vi';
-  statusKeywords = {
-    en: ['todo', 'add', 'new', 'complete', 'done', 'in progress', 'update to', 'set to'],
-    vi: ['thêm', 'mới', 'hoàn thành', 'xong', 'đang làm', 'cập nhật', 'chuyển']
-  };
+  statusKeywords = [...FINISH_WORDS, ...IN_PROGRESS_WORDS, ...INPUT_WORDS];
 
   // Language-specific messages
   messages = {
@@ -258,6 +260,7 @@ export class TodoTodayComponent implements OnInit {
   }
 
   processVoiceInput(transcript: string) {
+    this.showTranscript = transcript;
     // Handle language change commands
     if (transcript.includes('set language to')) {
       if (transcript.includes('english')) {
@@ -277,13 +280,19 @@ export class TodoTodayComponent implements OnInit {
     const content = words.slice(1).join(' ');
 
     // Check if it's a status update command
-    const allKeywords = [...this.statusKeywords.en, ...this.statusKeywords.vi];
+    const allKeywords = [...this.statusKeywords];
+    // console.log('dangth, firstWord', firstWord);
+    // console.log('dangth, allKeywords', allKeywords);
+    // console.log('dangth, FINISH_WORDS', FINISH_WORDS);
+    // console.log('dangth, IN_PROGRESS_WORDS', IN_PROGRESS_WORDS);
+    // console.log('dangth, INPUT_WORDS', INPUT_WORDS);
+    // console.log('dangth, content', content);
     if (allKeywords.includes(firstWord)) {
-      if (['complete', 'done', 'hoàn thành', 'xong'].includes(firstWord)) {
+      if (FINISH_WORDS.includes(firstWord)) {
         this.updateTodoStatus(content, TDTD_STATUS.DONE);
-      } else if (['in progress', 'đang làm'].includes(firstWord)) {
+      } else if (IN_PROGRESS_WORDS.includes(firstWord)) {
         this.updateTodoStatus(content, TDTD_STATUS.NEW);
-      } else if (['todo', 'add', 'new', 'thêm', 'mới'].includes(firstWord)) {
+      } else if (INPUT_WORDS.includes(firstWord)) {
         this.addNewTodo(content);
       }
     } else {
@@ -293,9 +302,12 @@ export class TodoTodayComponent implements OnInit {
   }
 
   updateTodoStatus(content: string, newStatus: string) {
-    const matchingTodos = this.data.filter(todo =>
-      todo.content?.toLowerCase().includes(content.toLowerCase())
-    );
+    console.log('dangth, content', content, newStatus);
+    const matchingTodos = this.data.filter(todo => {
+      if (!todo.content) return false;
+      const similarity = calculateSimilarity(content, todo.content);
+      return similarity >= SIMILARITY_THRESHOLD;
+    });
 
     if (matchingTodos.length === 0) {
       this.alertService.showNoti(this.messages[this.currentLanguage].noMatch, 'warning');
