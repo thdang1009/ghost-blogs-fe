@@ -636,7 +636,8 @@ mat-tab-group {
 }
 
 .coupon-description-overlay p {
-  color: black;
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
   font-size: 1.5em; /* Adjust as needed */
   font-weight: bold;
   padding: 10px;
