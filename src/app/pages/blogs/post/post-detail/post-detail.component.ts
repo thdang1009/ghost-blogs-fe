@@ -54,18 +54,18 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       // this.currentPageUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
       // However, for the client-side rendering after SSR, we'll use PlatformLocation
       this.currentPageUrl = environment.production ?
-        this.platformLocation.href : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+        this.platformLocation.href.replace('http://', 'https://') : 'https://dangtrinh.site/blogs/test-post-and-markdown';
     } else {
       // This code will run on the client
       this.currentPageUrl = environment.production ?
-        this.platformLocation.href : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+        this.platformLocation.href.replace('http://', 'https://') : 'https://dangtrinh.site/blogs/test-post-and-markdown';
     }
 
     // Update the URL when the route changes (optional, for single-page applications)
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.currentPageUrl = this.platformLocation.href;
+      this.currentPageUrl = this.platformLocation.href.replace('http://', 'https://');
     });
   }
 
