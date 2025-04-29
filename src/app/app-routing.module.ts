@@ -7,10 +7,6 @@ import { LoginGuard } from '@guards/login.guard';
 
 const routes1: Routes = [
   {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full',
-  }, {
     path: 'admin',
     component: AdminLayoutComponent,
     children: [{
@@ -18,7 +14,8 @@ const routes1: Routes = [
       loadChildren: () => import('@layouts/admin-layout/admin-layout.module').then(m => m.AdminLayoutModule),
       canActivate: [LoginGuard]
     }]
-  }, {
+  },
+  {
     path: '',
     component: GuestLayoutComponent,
     children: [{
@@ -30,12 +27,16 @@ const routes1: Routes = [
     path: '**',
     redirectTo: 'home',
     pathMatch: 'full'
-  },
+  }
 ];
 
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes1, { enableTracing: true, initialNavigation: 'enabledBlocking' })
+    RouterModule.forRoot(routes1, {
+      enableTracing: true,
+      initialNavigation: 'enabledBlocking',
+      paramsInheritanceStrategy: 'always'
+    })
   ],
   exports: [
   ],

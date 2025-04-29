@@ -56,7 +56,10 @@ export class AuthService {
     this.isLoggedIn.emit(true);
     this.saveUserLoginInfo(resp.data); // <- before check isAdminE
     this.isAdminE.emit(this.isAdmin());
-    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+
+    // Use the stored redirect URL if available, otherwise use the returnUrl from query params
+    const returnUrl = this.redirectUrl || this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+    this.redirectUrl = null; // Clear the stored URL
     this.router.navigateByUrl(returnUrl);
   }
 
