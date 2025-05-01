@@ -12,6 +12,11 @@ import { DataDeletionComponent } from '@pages/data-deletion/data-deletion.compon
 
 export const GuestLayoutRoutes: Routes = [
   {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
+  {
     path: 'blogs/:ref',
     title: 'Ghost\'s Posts',
     component: PostDetailComponent,
