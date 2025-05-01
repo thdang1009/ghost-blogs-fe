@@ -2,6 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '@services/_index';
 import { checkIsInPDFView } from '@shared/common';
+import { SearchService } from '@services/search/search.service';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { AlertService } from '@components/alert/alert.service';
 
 declare const $: any;
 declare interface RouteInfo {
@@ -49,7 +53,11 @@ export class GuestSidebarComponent implements OnInit {
   isLogined = false;
   stringToSearch = '';
   isMember = false;
-  constructor(private router: Router, private activatedRoute: ActivatedRoute, private authService: AuthService) {
+  showSuggestions: boolean = false;
+  searchSuggestions: string[] = [];
+  private searchTerms = new Subject<string>();
+
+  constructor(private router: Router, private activatedRoute: ActivatedRoute, private authService: AuthService, private searchService: SearchService, private alertService: AlertService) {
     this.isLogined = this.authService.isLogin();
     this.isMember = this.authService.isMember();
     if (this.isLogined) {
@@ -63,6 +71,20 @@ export class GuestSidebarComponent implements OnInit {
       tempMenu = ROUTES.filter(el => el && el.path !== 'admin/dashboard');
     }
     this.menuItems = tempMenu;
+
+    // Setup search term debounce for suggestions
+    this.searchTerms.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      if (term.length > 2) {
+        this.getSuggestions(term);
+      } else {
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    });
+
     this.router.events.subscribe((event: any) => {
       if (event instanceof NavigationEnd) {
         this._isInPDFView = checkIsInPDFView(event.url);
@@ -71,7 +93,12 @@ export class GuestSidebarComponent implements OnInit {
   }
 
   search() {
-    // alert(this.stringToSearch)
+    // Validate search term length
+    if (this.stringToSearch && this.stringToSearch.trim().length < 4) {
+      this.alertService.warn('Search term must be at least 4 characters');
+      return;
+    }
+
     if (this._isInPDFView) {
       // call search in pdf
       // just update the ?searchInPDF=...
@@ -83,8 +110,44 @@ export class GuestSidebarComponent implements OnInit {
           queryParamsHandling: 'merge'
         });
     } else {
-      // call search normal in all page
+      // Navigate to search results page with the search term
+      if (this.stringToSearch && this.stringToSearch.trim() !== '') {
+        this.router.navigate(['/search'], { queryParams: { q: this.stringToSearch } });
+        this.showSuggestions = false;
+      }
     }
+  }
+
+  // Handle input changes for search suggestions
+  onSearchInput(term: string) {
+    if (term.length > 2) {
+      this.searchTerms.next(term);
+    } else {
+      this.searchSuggestions = [];
+      this.showSuggestions = false;
+    }
+  }
+
+  // Get search suggestions
+  getSuggestions(term: string) {
+    this.searchService.getSuggestions(term).subscribe(
+      suggestions => {
+        this.searchSuggestions = suggestions;
+        this.showSuggestions = suggestions.length > 0;
+      },
+      error => {
+        console.error('Error fetching suggestions:', error);
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    );
+  }
+
+  // Select a suggestion
+  selectSuggestion(suggestion: string) {
+    this.stringToSearch = suggestion;
+    this.showSuggestions = false;
+    this.search();
   }
 
   isMobileMenu() {

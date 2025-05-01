@@ -2,9 +2,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, ElementRef, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { checkIsInPDFView } from '@shared/common';
-import { AuthService } from '@services/_index';
+import { AuthService, SearchService } from '@services/_index';
 import { ROUTES } from '../guest-sidebar/guest-sidebar.component';
 import { DOCUMENT } from '@angular/common';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { AlertService } from '@components/alert/alert.service';
 
 @Component({
   selector: 'app-guest-navbar',
@@ -19,14 +22,19 @@ export class GuestNavbarComponent implements OnInit {
   private sidebarVisible: boolean = true;
   stringToSearch = '';
   _isInPDFView = false;
+  showSuggestions: boolean = false;
+  searchSuggestions: string[] = [];
+  private searchTerms = new Subject<string>();
 
   constructor(
     private authService: AuthService,
+    private searchService: SearchService,
     private router: Router,
     private element: ElementRef,
     private activatedRoute: ActivatedRoute,
     @Inject(PLATFORM_ID) private platformId: Object,
-    @Inject(DOCUMENT) private document: Document
+    @Inject(DOCUMENT) private document: Document,
+    private alertService: AlertService
   ) { }
 
   ngOnInit(): void {
@@ -51,9 +59,28 @@ export class GuestNavbarComponent implements OnInit {
         this._isInPDFView = checkIsInPDFView(event.url);
       }
     });
+
+    // Setup search term debounce for suggestions
+    this.searchTerms.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      if (term.length > 2) {
+        this.getSuggestions(term);
+      } else {
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    });
   }
 
   search() {
+    // Validate search term length
+    if (this.stringToSearch && this.stringToSearch.trim().length < 4) {
+      this.alertService.warn('Search term must be at least 4 characters');
+      return;
+    }
+
     if (this._isInPDFView) {
       // call search in pdf
       // just update the ?searchInPDF=...
@@ -65,8 +92,44 @@ export class GuestNavbarComponent implements OnInit {
           queryParamsHandling: 'merge'
         });
     } else {
-      // call search normal in all page
+      // Navigate to search results page with the search term
+      if (this.stringToSearch && this.stringToSearch.trim() !== '') {
+        this.router.navigate(['/search'], { queryParams: { q: this.stringToSearch } });
+        this.showSuggestions = false;
+      }
     }
+  }
+
+  // Handle input changes for search suggestions
+  onSearchInput(term: string) {
+    if (term.length > 2) {
+      this.searchTerms.next(term);
+    } else {
+      this.searchSuggestions = [];
+      this.showSuggestions = false;
+    }
+  }
+
+  // Get search suggestions
+  getSuggestions(term: string) {
+    this.searchService.getSuggestions(term).subscribe(
+      suggestions => {
+        this.searchSuggestions = suggestions;
+        this.showSuggestions = suggestions.length > 0;
+      },
+      error => {
+        console.error('Error fetching suggestions:', error);
+        this.searchSuggestions = [];
+        this.showSuggestions = false;
+      }
+    );
+  }
+
+  // Select a suggestion
+  selectSuggestion(suggestion: string) {
+    this.stringToSearch = suggestion;
+    this.showSuggestions = false;
+    this.search();
   }
 
   gotoAdminView() {

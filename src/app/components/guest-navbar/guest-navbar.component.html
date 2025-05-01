@@ -17,19 +17,31 @@
 		</button>
 		<div class="collapse navbar-collapse justify-content-end"
 			id="navigation">
-			<form (ngSubmit)="search()"
-				class="navbar-form">
-				<div class="input-group no-border">
+			<form class="navbar-form search-form"
+				(ngSubmit)="search()">
+				<div class="input-group no-border search-input-container">
 					<input [(ngModel)]="stringToSearch"
 						[ngModelOptions]="{standalone: true}"
+						(input)="onSearchInput(stringToSearch)"
 						type="text"
-						class="form-control"
+						class="form-control search-input"
 						placeholder="{{ _isInPDFView ? 'Search in PDF' : 'Search in all page...' }}">
 					<button type="submit"
-						class="btn btn-white btn-round btn-just-icon">
+						class="btn btn-white btn-round btn-just-icon search-button">
 						<i class="material-icons">search</i>
 						<div class="ripple-container"></div>
 					</button>
+
+					<!-- Search Suggestions Dropdown -->
+					<div *ngIf="showSuggestions && searchSuggestions.length > 0"
+						class="search-suggestions">
+						<div *ngFor="let suggestion of searchSuggestions"
+							(click)="selectSuggestion(suggestion)"
+							class="search-suggestion-item">
+							<i class="material-icons">search</i>
+							<span>{{ suggestion }}</span>
+						</div>
+					</div>
 				</div>
 			</form>
 			<ul class="navbar-nav">

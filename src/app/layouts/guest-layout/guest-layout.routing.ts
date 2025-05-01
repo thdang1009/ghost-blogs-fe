@@ -9,6 +9,7 @@ import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-passwor
 import { PostDetailComponent } from '@pages/blogs/post/post-detail/post-detail.component';
 import { ConfirmEmailComponent } from '@pages/user/confirm-email/confirm-email.component';
 import { DataDeletionComponent } from '@pages/data-deletion/data-deletion.component';
+import { SearchResultsComponent } from '@components/search-results/search-results.component';
 
 export const GuestLayoutRoutes: Routes = [
   {
@@ -25,6 +26,11 @@ export const GuestLayoutRoutes: Routes = [
     path: 'home',
     title: 'Ghost\'s Blogs',
     component: HomeComponent
+  },
+  {
+    path: 'search',
+    title: 'Search Results',
+    component: SearchResultsComponent
   },
   {
     path: 'reset-password',

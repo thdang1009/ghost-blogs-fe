@@ -7,6 +7,7 @@ import { NavbarComponent } from './navbar/navbar.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { GuestNavbarComponent } from './guest-navbar/guest-navbar.component';
 import { GuestSidebarComponent } from './guest-sidebar/guest-sidebar.component';
+import { SearchResultsComponent } from './search-results/search-results.component';
 import { FormsModule } from '@angular/forms';
 import { ProgressWithLabelComponent } from './progress-with-label/progress-with-label.component';
 import { GhostSiteBtnComponent } from './ghost-site-btn/ghost-site-btn.component';
@@ -27,6 +28,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     SidebarComponent,
     GuestNavbarComponent,
     GuestSidebarComponent,
+    SearchResultsComponent,
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
@@ -37,6 +39,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     SidebarComponent,
     GuestNavbarComponent,
     GuestSidebarComponent,
+    SearchResultsComponent,
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,

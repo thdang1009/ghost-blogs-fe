@@ -1,5 +1,90 @@
 .stick-top {
-    position: sticky;
-    top: 0;
-    z-index: 100;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* The search-related CSS has been moved to the global styles.scss file */
+
+/* Add these styles for the search functionality */
+.search-form {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+.search-input {
+  transition: width 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border-radius: 20px !important;
+}
+
+.search-button {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Active Search State - Animation */
+.search-form.search-active .search-input {
+  width: calc(100% + 40px) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  border-color: #9c27b0;
+}
+
+.search-form.search-active .search-button {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* Search Suggestions Dropdown */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.search-suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-suggestion-item:hover {
+  background-color: rgba(156, 39, 176, 0.1);
+}
+
+.search-suggestion-item i {
+  font-size: 18px;
+  margin-right: 10px;
+  color: #9c27b0;
+  opacity: 0.7;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Make sure the hover pointer class is working correctly */
+.hover-pointer {
+  cursor: pointer;
 }
