@@ -7,12 +7,18 @@ import { openNewTab } from '@shared/common';
   styleUrls: ['./donation.component.scss']
 })
 export class DonationComponent implements OnInit {
+  private readonly buyMeCoffeeUrl = 'https://www.buymeacoffee.com/thdang1009';
 
   constructor(private renderer: Renderer2) { }
 
   ngOnInit(): void {
-    const url = 'https://www.buymeacoffee.com/thdang1009';
-    openNewTab(this.renderer, url);
+    // No longer auto-open the tab
   }
 
+  /**
+   * Opens the Buy Me a Coffee page in a new tab and focuses on it
+   */
+  openBuyMeCoffee(): void {
+    openNewTab(this.renderer, this.buyMeCoffeeUrl);
+  }
 }

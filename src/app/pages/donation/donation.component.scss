@@ -1,7 +1,39 @@
 .zalopay-qr-bmc {
     height: 50vh;
 }
-.donaion-container {
+
+.donation-container {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.donation-options {
+    margin-bottom: 30px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.buy-coffee-btn {
+    font-size: 1.1rem;
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    background-color: #ff813f;
+    border-color: #ff813f;
+}
+
+.buy-coffee-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #ff6a1f;
+    border-color: #ff6a1f;
+}
+
+h2 {
+    margin: 20px 0;
+    font-weight: 500;
 }
