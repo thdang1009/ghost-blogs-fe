@@ -14,6 +14,12 @@ A modern, feature-rich blog platform built with Angular. This project provides a
 - User management with role-based access
 - Analytics integration with Google Analytics
 - Server-side rendering (SSR) for improved SEO
+- Todo today management with recurring task support
+- Note taking functionality with categorization
+- Reading list and book management system
+- Comprehensive analytics dashboard
+- Donation and support options
+- Coupon and reward system for users
 
 ## Tech Stack
 
@@ -90,12 +96,51 @@ ghost-blogs-fe/
   - `SearchService`: Provides search functionality
   - `FileService`: Handles file uploads and management
   - `AnalyticsService`: Tracks user interactions
+  - `TodoTodayService`: Manages daily tasks and recurring items
+  - `NoteService`: Handles note creation and management
+  - `BookService`: Manages reading lists and book tracking
+  - `RewardService`: Handles user rewards and points system
+  - `CouponService`: Manages coupons and promotional offers
 
 - **Feature Modules**:
   - Blog module for post viewing and creation
   - User management module
   - File management module
-  - Analytics module
+  - Analytics dashboard module
+  - Todo management with recurring tasks and labels
+  - Note taking system with organization features
+  - Book tracking and reading progress module
+  - Donation and support options
+
+## Productivity Tools
+
+The platform includes several productivity tools designed to enhance user experience:
+
+### Todo Today
+- Daily task management with status tracking
+- Recurring task support with customizable patterns:
+  - Daily, weekday, weekend, monthly, and custom intervals
+  - Automatic creation of recurring tasks via cron jobs
+- Task labeling and categorization
+- Deadline management and priority setting
+
+### Notes System
+- Rich text note creation and editing
+- Organization with categories and tags
+- Search functionality across all notes
+- Archive and retrieve capability
+
+### Reading Management
+- Book tracking with progress indicators
+- Reading statistics and analytics
+- Custom reading lists and collections
+- Reading time estimation and tracking
+
+### Rewards and Coupons
+- User achievement system
+- Customizable reward points for actions
+- Coupon generation and redemption
+- Promotional offers management
 
 ## Building and Deployment
 

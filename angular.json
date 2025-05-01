@@ -48,7 +48,6 @@
             "styles": [
               "src/styles.scss",
               "src/assets/scss/material-dashboard.scss",
-              "src/assets/css/demo.css",
               "src/assets/css/w3.css",
               "node_modules/prismjs/themes/prism-okaidia.css",
               "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
