@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '@environments/environment';
-import { Subscription } from '@models/_index';
+import { Subscription, SubscriptionDisplay } from '@models/_index';
 import { ghostLog, handleError } from '@shared/common';
 
 const apiUrl = environment.apiUrl + '/v1/subscribe';
@@ -19,11 +19,11 @@ export class SubscriptionService {
    * Gets all subscriptions for a user
    * @param userId User ID to get subscriptions for
    */
-  getUserSubscriptions(userId: string): Observable<Subscription[]> {
-    const url = `${apiUrl}?userId=${userId}`;
-    return this.http.get<Subscription[]>(url).pipe(
-      tap(_ => ghostLog(`fetched subscriptions for user ${userId}`)),
-      catchError(handleError<Subscription[]>(`getUserSubscriptions`, []))
+  getAllUserSubscriptions(): Observable<{ subscribe: SubscriptionDisplay[] }> {
+    const url = `${apiUrl}`;
+    return this.http.get<{ subscribe: SubscriptionDisplay[] }>(url).pipe(
+      tap(_ => ghostLog(`fetched all subscriptions`)),
+      catchError(handleError<{ subscribe: SubscriptionDisplay[] }>(`getAllUserSubscriptions`, { subscribe: [] }))
     );
   }
 
@@ -71,6 +71,14 @@ export class SubscriptionService {
     return this.http.delete<any>(url).pipe(
       tap(_ => ghostLog(`deleted subscription ${id}`)),
       catchError(handleError<any>('deleteSubscription'))
+    );
+  }
+
+  deleteSubscriptionByTagId(tagId: string): Observable<any> {
+    const url = `${apiUrl}/tag/${tagId}`;
+    return this.http.delete<any>(url).pipe(
+      tap(_ => ghostLog(`deleted subscription by tagId ${tagId}`)),
+      catchError(handleError<any>('deleteSubscriptionByTagId'))
     );
   }
 }

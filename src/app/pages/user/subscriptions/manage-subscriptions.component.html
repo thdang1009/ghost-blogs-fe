@@ -1,37 +1,54 @@
-<div class="container">
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-header">
-          <h4 class="card-title">Manage Tag Subscriptions</h4>
-          <p class="card-category">View and manage your tag subscriptions</p>
-        </div>
-        <div class="card-body">
-          <div *ngIf="isLoading" class="text-center">
-            <div class="spinner-border" role="status">
-              <span class="sr-only">Loading...</span>
-            </div>
-          </div>
-
-          <div *ngIf="!isLoading && subscriptions.length === 0" class="alert alert-info">
-            You are not subscribed to any tags. Browse posts to find tags to subscribe to.
-          </div>
-
-          <div *ngIf="!isLoading && subscriptions.length > 0">
-            <div *ngFor="let subscription of subscriptions" class="subscription-card">
-              <div class="subscription-header">
-                <h5>Subscription #{{ subscription._id }}</h5>
-                <p>Created: {{ subscription.createdAt | date }}</p>
-              </div>
-
-              <div class="tags-container">
-                <div *ngFor="let tagId of subscription.subscribe" class="tag-item">
-                  <span class="tag-name">{{ getTagName(tagId) }}</span>
-                  <button class="btn btn-danger btn-sm" (click)="unsubscribeFromTag(subscription._id!, tagId)">
-                    <i class="material-icons">close</i> Unsubscribe
-                  </button>
-                </div>
-              </div>
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead class=" text-primary">
+                  <th>
+                    #
+                  </th>
+                  <th>
+                    Tag
+                  </th>
+                  <th>
+                    Subscribers
+                  </th>
+                  <th>
+                    Action
+                  </th>
+                </thead>
+                <tbody>
+                  <ng-container *ngIf="subscriptions && subscriptions.length; else noDataBlock">
+                    <tr *ngFor="let subscription of subscriptions; let index = index" class="hover-pointer-td">
+                      <td>
+                        {{ index + 1 }}
+                      </td>
+                      <td>
+                        {{ subscription.name }}
+                      </td>
+                      <td>
+                        {{ subscription.subscribersDisplay?.join(', ') }}
+                      </td>
+                      <td>
+                        <button class="btn btn-danger" (click)="deleteSubscription(subscription.tagId!)">
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #noDataBlock>
+                    <tr class="text-center">
+                      <td colspan="100%" class="text-center">
+                        <app-table-loading (size)="'sm'"></app-table-loading>
+                        No data
+                      </td>
+                    </tr>
+                  </ng-template>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

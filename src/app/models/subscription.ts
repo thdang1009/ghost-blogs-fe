@@ -1,5 +1,3 @@
-import { Tag } from './_index';
-
 export class Subscription {
   _id?: string;
   userId?: string;
@@ -7,4 +5,15 @@ export class Subscription {
   subscribe?: string[]; // array of tag IDs
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export class SubscriptionDisplay {
+  _id?: string;
+  tagId?: string;
+  name?: string;
+  subscribers?: {
+    _id: string;
+    email: string;
+  }[];
+  subscribersDisplay?: string[];
 }

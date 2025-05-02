@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription, Tag } from '@models/_index';
-import { AlertService, AuthService, SubscriptionService, TagService } from '@services/_index';
-import { forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Subscription, SubscriptionDisplay, Tag } from '@models/_index';
+import { AlertService, AuthService, SubscriptionService } from '@services/_index';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-manage-subscriptions',
@@ -10,14 +9,12 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./manage-subscriptions.component.scss']
 })
 export class ManageSubscriptionsComponent implements OnInit {
-  subscriptions: Subscription[] = [];
-  tags: { [key: string]: Tag } = {};
+  subscriptions: SubscriptionDisplay[] = [];
   isLoading = true;
   userInfo: any;
 
   constructor(
     private subscriptionService: SubscriptionService,
-    private tagService: TagService,
     private authService: AuthService,
     private alertService: AlertService
   ) { }
@@ -28,62 +25,25 @@ export class ManageSubscriptionsComponent implements OnInit {
   }
 
   /**
-   * Load user's subscriptions and tag details
+   * Load user's subscriptions and compute tag display names
    */
   loadSubscriptions(): void {
-    this.isLoading = true;
-
-    if (!this.userInfo || !this.userInfo._id) {
-      this.alertService.error('User information not available');
-      this.isLoading = false;
-      return;
-    }
-
-    this.subscriptionService.getUserSubscriptions(this.userInfo._id)
+    this.subscriptionService.getAllUserSubscriptions()
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
       .subscribe(
-        (subscriptions) => {
-          this.subscriptions = subscriptions;
-
-          // Get all unique tag IDs
-          const tagIds = new Set<string>();
+        (response: { subscribe: SubscriptionDisplay[] }) => {
+          this.subscriptions = response.subscribe;
           this.subscriptions.forEach(sub => {
-            if (sub.subscribe) {
-              sub.subscribe.forEach(tagId => tagIds.add(tagId as string));
-            }
+            sub.subscribersDisplay = sub.subscribers?.map(subscriber => subscriber.email || subscriber._id);
           });
-
-          // If there are tags, load their details
-          if (tagIds.size > 0) {
-            // Create an array of observables for each tag
-            const tagObservables = Array.from(tagIds).map(tagId =>
-              this.tagService.getTag(tagId).pipe(
-                map(tag => ({ [tagId]: tag }))
-              )
-            );
-
-            // Execute all tag requests in parallel
-            forkJoin(tagObservables).subscribe(
-              tagResults => {
-                // Combine all tag results into a single object
-                tagResults.forEach(tagObj => {
-                  this.tags = { ...this.tags, ...tagObj };
-                });
-                this.isLoading = false;
-              },
-              error => {
-                console.error('Error loading tag details:', error);
-                this.alertService.error('Failed to load tag details');
-                this.isLoading = false;
-              }
-            );
-          } else {
-            this.isLoading = false;
-          }
         },
         error => {
           console.error('Error loading subscriptions:', error);
           this.alertService.error('Failed to load subscriptions');
-          this.isLoading = false;
         }
       );
   }
@@ -107,9 +67,20 @@ export class ManageSubscriptionsComponent implements OnInit {
   }
 
   /**
-   * Get tag name by ID
+   * Delete a subscription
    */
-  getTagName(tagId: string): string {
-    return this.tags[tagId]?.name as string || 'Unknown Tag';
+  deleteSubscription(tagId: string): void {
+    this.subscriptionService.deleteSubscriptionByTagId(tagId)
+      .subscribe(
+        () => {
+          this.alertService.success('Successfully deleted subscription');
+          this.loadSubscriptions();
+        },
+        error => {
+          console.error('Error deleting subscription:', error);
+          this.alertService.error('Failed to delete subscription');
+        }
+      );
   }
+
 }

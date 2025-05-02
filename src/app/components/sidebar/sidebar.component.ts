@@ -24,10 +24,10 @@ export const ROUTES: RouteInfo[] = [
     path: 'user', title: 'User', icon: 'people', class: '', permission: 'isGrandAdmin', hasChild: true,
     children: [
       { path: 'user/add-user', title: 'Add User', icon: 'person_add', class: '', permission: 'isGrandAdmin' },
-      { path: 'user/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' }
+      { path: 'user/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' },
+      { path: 'user/subscriptions', title: 'Subscriptions', icon: 'notifications', class: '', permission: 'isMember' },
     ]
   },
-  { path: 'user/subscriptions', title: 'My Subscriptions', icon: 'notifications', class: '', permission: 'isMember', hasChild: false },
   {
     path: 'tool', title: 'Tool', icon: 'handyman', class: '', permission: 'isMember', hasChild: true,
     children: [
