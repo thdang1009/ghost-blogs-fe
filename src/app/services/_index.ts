@@ -18,3 +18,4 @@ export * from './reward/reward.service';
 export * from './config/config.service';
 export * from './analytics/analytics.service';
 export * from './search/search.service';
+export * from './subscription/subscription.service';

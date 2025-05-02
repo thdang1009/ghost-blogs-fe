@@ -1,0 +1,41 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Manage Tag Subscriptions</h4>
+          <p class="card-category">View and manage your tag subscriptions</p>
+        </div>
+        <div class="card-body">
+          <div *ngIf="isLoading" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!isLoading && subscriptions.length === 0" class="alert alert-info">
+            You are not subscribed to any tags. Browse posts to find tags to subscribe to.
+          </div>
+
+          <div *ngIf="!isLoading && subscriptions.length > 0">
+            <div *ngFor="let subscription of subscriptions" class="subscription-card">
+              <div class="subscription-header">
+                <h5>Subscription #{{ subscription._id }}</h5>
+                <p>Created: {{ subscription.createdAt | date }}</p>
+              </div>
+
+              <div class="tags-container">
+                <div *ngFor="let tagId of subscription.subscribe" class="tag-item">
+                  <span class="tag-name">{{ getTagName(tagId) }}</span>
+                  <button class="btn btn-danger btn-sm" (click)="unsubscribeFromTag(subscription._id!, tagId)">
+                    <i class="material-icons">close</i> Unsubscribe
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

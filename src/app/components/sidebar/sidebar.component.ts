@@ -27,6 +27,7 @@ export const ROUTES: RouteInfo[] = [
       { path: 'user/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' }
     ]
   },
+  { path: 'user/subscriptions', title: 'My Subscriptions', icon: 'notifications', class: '', permission: 'isMember', hasChild: false },
   {
     path: 'tool', title: 'Tool', icon: 'handyman', class: '', permission: 'isMember', hasChild: true,
     children: [

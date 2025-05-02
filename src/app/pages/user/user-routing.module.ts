@@ -3,6 +3,8 @@ import { RouterModule, Routes } from '@angular/router';
 import { GrandAdminGuard } from '@guards/grand-admin.guard';
 import { AddUserComponent } from './add-user/add-user.component';
 import { UserListComponent } from './user-list/user-list.component';
+import { ManageSubscriptionsComponent } from './subscriptions/manage-subscriptions.component';
+import { LoginGuard } from '@guards/login.guard';
 
 const routes: Routes = [
   {
@@ -16,6 +18,12 @@ const routes: Routes = [
     title: 'List User',
     component: UserListComponent,
     canActivate: [GrandAdminGuard]
+  },
+  {
+    path: 'subscriptions',
+    title: 'Manage Tag Subscriptions',
+    component: ManageSubscriptionsComponent,
+    canActivate: [LoginGuard]
   },
 ];
 

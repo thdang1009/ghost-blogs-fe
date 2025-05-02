@@ -7,13 +7,15 @@ import { AddUserComponent } from './add-user/add-user.component';
 import { SharedModule } from '@shared/shared-module.module';
 import { ConfirmEmailComponent } from './confirm-email/confirm-email.component';
 import { ReuseComponentModule } from '@reuse/reuse.module';
+import { ManageSubscriptionsComponent } from './subscriptions/manage-subscriptions.component';
 
 
 @NgModule({
   declarations: [
     UserListComponent,
     AddUserComponent,
-    ConfirmEmailComponent
+    ConfirmEmailComponent,
+    ManageSubscriptionsComponent
   ],
   imports: [
     CommonModule,

@@ -11,3 +11,4 @@ export * from './book';
 export * from './user';
 export * from './coupon';
 export * from './reward';
+export * from './subscription';
