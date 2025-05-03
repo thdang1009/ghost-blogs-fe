@@ -62,18 +62,31 @@ export class PostBySeriesComponent implements OnInit {
     // Update meta tags
     this.meta.updateTag({ name: 'description', content: this.series.description || `Posts in the ${this.series.name} series` });
 
+    // Ensure image URL is absolute
+    const imageUrl = this.series.imageUrl || '';
+    const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${environment.siteUrl}${imageUrl}`;
+
+    // Construct the absolute URL for the current page
+    const currentUrl = `${environment.siteUrl}/post-by-series?series=${this.series.slug}`;
+
     // Update Open Graph tags
     this.meta.updateTag({ property: 'og:title', content: `${this.series.name} - Blog Series` });
     this.meta.updateTag({ property: 'og:description', content: this.series.description || `Posts in the ${this.series.name} series` });
-    this.meta.updateTag({ property: 'og:url', content: `${environment.siteUrl}/post-by-series?series=${this.series.slug}` });
-    this.meta.updateTag({ property: 'og:image', content: this.series.imageUrl || '' });
-    this.meta.updateTag({ property: 'og:type', content: 'website' });
+    this.meta.updateTag({ property: 'og:url', content: currentUrl });
+    this.meta.updateTag({ property: 'og:image', content: absoluteImageUrl });
+    this.meta.updateTag({ property: 'og:image:width', content: '1200' });
+    this.meta.updateTag({ property: 'og:image:height', content: '630' });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:site_name', content: 'Ghost Site' });
+
+    // Add Facebook app ID
+    this.meta.updateTag({ property: 'fb:app_id', content: '598355823212592' });
 
     // Update Twitter Card tags
     this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
     this.meta.updateTag({ name: 'twitter:title', content: `${this.series.name} - Blog Series` });
     this.meta.updateTag({ name: 'twitter:description', content: this.series.description || `Posts in the ${this.series.name} series` });
-    this.meta.updateTag({ name: 'twitter:image', content: this.series.imageUrl || '' });
+    this.meta.updateTag({ name: 'twitter:image', content: absoluteImageUrl });
   }
 
   backToHome() {
