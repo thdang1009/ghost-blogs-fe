@@ -3,46 +3,50 @@
 		<div class="row">
 			<div class="col-md-12">
 				<div class="card">
+					<div class="card-header">
+						<h4 class="card-title">Tag Management</h4>
+						<button type="button" class="btn btn-primary float-right" routerLink="/admin/blog/tag">
+							<i class="material-icons">add</i> New Tag
+						</button>
+					</div>
 					<div class="card-body">
-						<div class="table-responsive">
-							<table class="table">
-								<thead class=" text-primary">
+						<div *ngIf="loading" class="text-center my-3">
+							<div class="spinner-border text-primary" aria-live="polite">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
+						<table class="table table-striped" *ngIf="!loading && tags && tags.length > 0">
+							<thead class="text-primary">
+								<tr>
 									<th>Name</th>
 									<th>Description</th>
 									<th>Content</th>
-									<th>imgUrl</th>
-								</thead>
-								<tbody>
-									<ng-container *ngIf="tags && tags.length; else noDataBlock">
-										<tr *ngFor="let tag of tags; let index = index"
-											class="hover-pointer-td">
-											<td (click)="edit(tag)">{{ tag.name }}</td>
-											<td (click)="edit(tag)">
-												{{ tag.description }}
-											</td>
-											<td (click)="edit(tag)">{{ tag.content }}</td>
-											<td (click)="edit(tag)">{{ tag.imgUrl}}</td>
+									<th>Image URL</th>
+									<th>Actions</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr *ngFor="let tag of tags" class="hover-pointer-td">
+									<td (click)="edit(tag)">{{ tag.name }}</td>
+									<td (click)="edit(tag)">{{ tag.description }}</td>
+									<td (click)="edit(tag)">{{ tag.content }}</td>
+									<td (click)="edit(tag)">
+										<img [src]="tag.imgUrl" alt="Tag image" class="tag-thumb" *ngIf="tag.imgUrl" style="max-width: 60px;">
+										<span *ngIf="!tag.imgUrl">No image</span>
+									</td>
+									<td>
+										<button (click)="delete(tag)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+											<div class="mdc-icon-button__ripple"></div>
+											delete
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
 
-											<button (click)="delete(tag)"
-												type="button"
-												matTooltip="Delete"
-												class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-												<div class="mdc-icon-button__ripple"></div>
-												delete
-											</button>
-										</tr>
-									</ng-container>
-									<ng-template #noDataBlock>
-										<tr class="text-center">
-											<td colspan="100%"
-												class="text-center">
-												<app-table-loading (size)="'sm'"></app-table-loading>
-												No data
-											</td>
-										</tr>
-									</ng-template>
-								</tbody>
-							</table>
+						<div *ngIf="!loading && (!tags || tags.length === 0)" class="alert alert-info">
+							No tags found. Create your first tag by clicking the "New Tag" button.
 						</div>
 					</div>
 				</div>

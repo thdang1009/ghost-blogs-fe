@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Post } from '@models/_index';
 import { PostService } from '@services/_index';
 
@@ -12,7 +12,8 @@ export class PostByComponent implements OnInit {
   posts: Post[] = [];
   constructor(
     private postService: PostService,
-    private activeRoute: ActivatedRoute) { }
+    private activeRoute: ActivatedRoute,
+    private router: Router) { }
 
   ngOnInit(): void {
     this.activeRoute.queryParams
@@ -24,4 +25,9 @@ export class PostByComponent implements OnInit {
       });
   }
 
+  openPost(post: Post): void {
+    if (post && post.postReference) {
+      this.router.navigate(['/blogs', post.postReference]);
+    }
+  }
 }

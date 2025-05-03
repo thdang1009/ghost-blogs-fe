@@ -46,6 +46,96 @@ textarea.jsoneditor-text {
   opacity: 0.5;
 }
 
+/* Hover effect for table rows */
+.hover-pointer-td td:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Common card styling */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Form styling */
+.example-full-width {
+  width: 100%;
+}
+
+.button-row {
+  margin-top: 20px;
+}
+
+.button-row button {
+  margin-right: 10px;
+}
+
+/* Image and thumbnail styling */
+.image-preview {
+  max-width: 200px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.tag-thumb, .category-thumb, .item-thumb {
+  max-width: 60px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.item-thumb {
+  display: inline-block;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+/* User status styling */
+.user-status-active {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.user-status-inactive {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.user-status-pending {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+/* User permission badges */
+.user-permission {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  text-transform: uppercase;
+  background-color: #e0e0e0;
+}
+
+.user-permission.admin {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.user-permission.editor {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.user-permission.viewer {
+  background-color: #f5f5f5;
+  color: #616161;
+}
+
 pdf-viewer {
   height: calc(100vh - 55px - 55.5px) !important;
   width: auto !important;
@@ -649,6 +739,43 @@ mat-tab-group {
 .app-alert {
   position: fixed;
   z-index: 100000;
+}
+
+/* Styles for spinner with accessibility */
+.loading-container {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.spinner-border[aria-live="polite"] {
+  color: #0068ff;
+}
+
+/* Admin UI component styles */
+.admin-list-container .card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.admin-list-container .card-header {
+  background-color: #f5f5f5;
+  padding: 15px 20px;
+}
+
+.admin-list-container .card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.admin-list-container .table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.admin-list-container .table th {
+  border-top: none;
+  font-weight: 500;
 }
 
 @media (min-width: 992px) {

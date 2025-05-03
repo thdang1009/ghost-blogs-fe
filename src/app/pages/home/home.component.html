@@ -81,6 +81,12 @@
 							</a>
 						</div>
 					</ng-container>
+					<div *ngIf="post.series" class="series-info">
+						<i class="material-icons" aria-hidden="true">library_books</i>
+						<a [routerLink]="'/post-by-series'" [queryParams]="{ series: post.series.slug }" class="series-link">
+							Part of series: {{post.series.name}}
+						</a>
+					</div>
 				</div>
 			</article>
 		</div>

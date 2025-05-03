@@ -15,6 +15,10 @@ import { TagListComponent } from './tag/tag-list/tag-list.component';
 import { AddTagComponent } from './tag/add-tag/add-tag.component';
 import { PostEditComponent } from './post/post-edit/post-edit.component';
 import { PostListComponent } from './post/post-list/post-list.component';
+import { SeriesListComponent } from './series/series-list/series-list.component';
+import { SeriesAddComponent } from './series/series-add/series-add.component';
+import { PostBySeriesComponent } from './post/post-by-series/post-by-series.component';
+import { PostByComponent } from './post/post-by/post-by.component';
 
 
 export function markedOptionsFactory(anchorService: AnchorService): MarkedOptions {
@@ -37,6 +41,10 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
     AddCategoryComponent,
     CategoryListComponent,
     PostEditComponent,
+    SeriesListComponent,
+    SeriesAddComponent,
+    PostBySeriesComponent,
+    PostByComponent
   ],
   imports: [
 

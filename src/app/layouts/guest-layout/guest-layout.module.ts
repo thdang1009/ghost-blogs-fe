@@ -8,6 +8,7 @@ import { ReuseComponentModule } from '@reuse/reuse.module';
 import { SharedModule } from '@shared/shared-module.module';
 import { AuthModule } from '@pages/auth/auth.module';
 import { DataDeletionModule } from '@pages/data-deletion/data-deletion.module';
+import { BlogManagementModule } from '@pages/blogs/blog.module';
 
 @NgModule({
   imports: [
@@ -18,7 +19,8 @@ import { DataDeletionModule } from '@pages/data-deletion/data-deletion.module';
     SharedModule,
     AuthModule,
     DataDeletionModule,
-    RouterModule
+    RouterModule,
+    BlogManagementModule
   ],
   declarations: [
     HomeComponent,

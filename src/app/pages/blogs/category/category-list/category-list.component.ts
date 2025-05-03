@@ -5,12 +5,13 @@ import { AlertService, CategoryService } from '@services/_index';
 
 @Component({
   selector: 'app-category-list',
-  templateUrl: './category-list.component.html'
+  templateUrl: './category-list.component.html',
+  styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent implements OnInit {
-
-
   categories: Category[] = [];
+  loading = false;
+
   constructor(
     private categoryService: CategoryService,
     private router: Router,
@@ -18,30 +19,41 @@ export class CategoryListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.getCategorys();
+    this.getCategories();
   }
-  getCategorys() {
-    this.categoryService.getCategorys().subscribe(categories => {
-      this.categories = categories;
-    }, (err) => {
-      console.log(err);
-      this.alertService.showNoti(`Create category fail!`, 'danger');
-    });
+
+  getCategories() {
+    this.loading = true;
+    this.categoryService.getCategorys().subscribe(
+      (categories: Category[]) => {
+        this.categories = categories;
+        this.loading = false;
+      },
+      (err: any) => {
+        console.log(err);
+        this.alertService.showNoti(`Get categories fail!`, 'danger');
+        this.loading = false;
+      }
+    );
   }
+
   delete(category: Category) {
     if (!category) {
       return;
     }
     const id = category._id;
     if (category) {
+      this.loading = true;
       this.categoryService.deleteCategory(id)
         .subscribe((_: any) => {
           this.alertService.showNoti('Category deleted!', 'success');
-          this.getCategorys();
+          this.getCategories();
         }, err => {
+          this.loading = false;
         });
     }
   }
+
   edit(category: Category) {
     if (!category) {
       return;

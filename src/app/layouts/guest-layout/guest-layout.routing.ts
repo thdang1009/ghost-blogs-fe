@@ -7,6 +7,7 @@ import { LogoutComponent } from '@pages/auth/logout/logout.component';
 import { DonationComponent } from '@pages/donation/donation.component';
 import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-password.component';
 import { PostDetailComponent } from '@pages/blogs/post/post-detail/post-detail.component';
+import { PostBySeriesComponent } from '@pages/blogs/post/post-by-series/post-by-series.component';
 import { ConfirmEmailComponent } from '@pages/user/confirm-email/confirm-email.component';
 import { DataDeletionComponent } from '@pages/data-deletion/data-deletion.component';
 import { SearchResultsComponent } from '@components/search-results/search-results.component';
@@ -26,6 +27,11 @@ export const GuestLayoutRoutes: Routes = [
     path: 'home',
     title: 'Ghost\'s Blogs',
     component: HomeComponent
+  },
+  {
+    path: 'post-by-series',
+    title: 'Blog Series',
+    component: PostBySeriesComponent
   },
   {
     path: 'search',

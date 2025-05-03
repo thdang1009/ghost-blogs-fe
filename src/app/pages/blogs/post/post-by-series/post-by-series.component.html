@@ -1,0 +1,65 @@
+<div class="content-box">
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-border text-primary" aria-live="polite">
+      <span class="sr-only">Loading...</span>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <div *ngIf="series && !loading" class="series-header">
+    <div class="series-back">
+      <a (click)="backToHome()">
+        ← Back to the Blog Home
+      </a>
+    </div>
+    <div class="series-info">
+      <img [src]="series!.imageUrl" [alt]="series!.name" class="series-image" />
+      <div class="series-details">
+        <h1 class="series-title">{{ series!.name }}</h1>
+        <p class="series-description" *ngIf="series!.description">{{ series!.description }}</p>
+        <div class="series-tags" *ngIf="series.baseTags && series.baseTags.length">
+          <span>Series Tags:</span>
+          <div class="tag-list">
+            <div class="tagging" *ngFor="let tag of series.baseTags">
+              <a class="tagging__item" [href]="'/home?tag=' + tag.name">#{{ tag.name }}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="posts && posts.length && !loading" class="posts-container">
+    <h2 class="posts-title">Posts in this series</h2>
+    <div class="list-post" *ngFor="let post of posts">
+      <article class="post">
+        <a class="post-thumbnail" [href]="'blogs/' + post.postReference" [ngStyle]="{
+              'background-image': 'url(' + post.postBackgroundImg + ')'
+            }" [attr.aria-label]="'Read post: ' + post.title"></a>
+        <div class="post-content">
+          <h2 class="post-title">
+            <a [href]="'blogs/' + post.postReference">{{post.title}}</a>
+          </h2>
+          <p>{{post.description}}</p>
+          <span class="post-date">
+            {{post.author}}
+            wrote at
+            {{post.createdAt | date}}
+          </span>
+          <ng-container *ngIf="post && post.tags && post.tags.length">
+            <div class="tagging" *ngFor="let tag of post.tags">
+              <a class="tagging__item" href="{{'/home?tag=' + tag.name}}">#{{tag.name}}</a>
+            </div>
+          </ng-container>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div *ngIf="posts && !posts.length && !loading" class="no-posts">
+    <p>No posts found in this series.</p>
+  </div>
+</div>

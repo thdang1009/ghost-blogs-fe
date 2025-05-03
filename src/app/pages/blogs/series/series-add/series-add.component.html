@@ -1,0 +1,90 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header card-header-info">
+            <h4 class="card-title">
+              {{ isUpdate ? 'Update' : 'New' }} Series
+            </h4>
+          </div>
+          <div class="card-body">
+            <div *ngIf="loading" class="text-center my-3">
+              <div class="spinner-border text-primary" aria-live="polite">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+
+            <form [formGroup]="seriesForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-12">
+                  <mat-form-field class="example-full-width">
+                    <input matInput
+                      type="text"
+                      placeholder="Name"
+                      formControlName="name">
+                    <mat-error>
+                      <span *ngIf="!seriesForm.get('name')?.valid && seriesForm.get('name')?.touched">Series name is required.</span>
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-12">
+                  <mat-form-field class="example-full-width">
+                    <textarea matInput
+                      placeholder="Description"
+                      formControlName="description"
+                      rows="3"></textarea>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-12">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Series Image</mat-label>
+                    <mat-select formControlName="imageUrl">
+                      <mat-option value="">-- Select an image --</mat-option>
+                      <mat-option *ngFor="let file of listFileOnServer" [value]="file.url">
+                        {{ file.originName }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error>
+                      <span *ngIf="!seriesForm.get('imageUrl')?.valid && seriesForm.get('imageUrl')?.touched">Image selection is required</span>
+                    </mat-error>
+                  </mat-form-field>
+                  <div class="image-preview mt-3" *ngIf="seriesForm.get('imageUrl')?.value">
+                    <img [src]="seriesForm.get('imageUrl')?.value" alt="Selected image" class="img-fluid">
+                  </div>
+                </div>
+
+                <div class="col-md-12">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>Base Tags</mat-label>
+                    <mat-select multiple formControlName="baseTags" [compareWith]="compareTagFn">
+                      <mat-option *ngFor="let tag of allTags" [value]="tag">
+                        {{ tag.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-12">
+                  <mat-checkbox formControlName="active">Active Series</mat-checkbox>
+                </div>
+              </div>
+
+              <div class="button-row mt-4">
+                <button [disabled]="!seriesForm.valid || loading" type="submit" class="btn btn-info">
+                  <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1" aria-hidden="true"></span>
+                  {{ isUpdate ? 'Update' : 'Create' }}
+                </button>
+                <button type="button" class="btn btn-secondary ml-2" (click)="cancel()">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

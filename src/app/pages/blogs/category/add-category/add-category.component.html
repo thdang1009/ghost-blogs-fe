@@ -9,15 +9,20 @@
 						</h4>
 					</div>
 					<div class="card-body">
+						<div *ngIf="isLoadingResults" class="text-center my-3">
+							<div class="spinner-border text-primary" aria-live="polite">
+								<span class="sr-only">Loading...</span>
+							</div>
+						</div>
+
 						<form [formGroup]="registerForm"
 							(ngSubmit)="onFormSubmit(registerForm.value)">
 							<div class="row">
 								<div class="col-md-12">
-
 									<mat-form-field class="example-full-width">
+										<mat-label>Name</mat-label>
 										<input matInput
 											type="text"
-											placeholder="Name"
 											formControlName="name">
 										<mat-error>
 											<span *ngIf="!registerForm.get('name')?.valid && registerForm.get('name')?.touched">Please enter name.</span>
@@ -25,12 +30,11 @@
 									</mat-form-field>
 								</div>
 								<div class="col-md-12">
-
 									<mat-form-field class="example-full-width">
-										<input matInput
-											type="text"
-											placeholder="Description"
-											formControlName="description">
+										<mat-label>Description</mat-label>
+										<textarea matInput
+											formControlName="description"
+											rows="3"></textarea>
 										<mat-error>
 											<span *ngIf="!registerForm.get('description')?.valid && registerForm.get('description')?.touched">
 												Please enter your description.
@@ -39,26 +43,27 @@
 									</mat-form-field>
 								</div>
 								<div class="col-md-12">
-
 									<mat-form-field class="example-full-width">
+										<mat-label>Image URL</mat-label>
 										<input matInput
 											type="text"
-											placeholder="imgUrl"
 											formControlName="imgUrl">
 										<mat-error>
 											<span *ngIf="!registerForm.get('imgUrl')?.valid && registerForm.get('imgUrl')?.touched">
-												Please enter your imgUrl.
+												Please enter the image URL.
 											</span>
 										</mat-error>
 									</mat-form-field>
+									<div class="image-preview mt-3" *ngIf="registerForm.get('imgUrl')?.value">
+										<img [src]="registerForm.get('imgUrl')?.value" alt="Category image" class="img-fluid" style="max-width: 200px;">
+									</div>
 								</div>
 								<div class="col-md-12">
-
 									<mat-form-field class="example-full-width">
-										<input matInput
-											type="text"
-											placeholder="content"
-											formControlName="content">
+										<mat-label>Content</mat-label>
+										<textarea matInput
+											formControlName="content"
+											rows="3"></textarea>
 										<mat-error>
 											<span *ngIf="!registerForm.get('content')?.valid && registerForm.get('content')?.touched">
 												Please enter your content.
@@ -67,11 +72,15 @@
 									</mat-form-field>
 								</div>
 							</div>
-							<div class="button-row">
-								<button [disabled]="!registerForm.valid"
+							<div class="button-row mt-4">
+								<button [disabled]="!registerForm.valid || isLoadingResults"
 									type="submit"
-									class="btn btn-info pull-right btn-w100">
-									{{ isUpdate ? 'Update' : 'Create'}}
+									class="btn btn-info">
+									<span *ngIf="isLoadingResults" class="spinner-border spinner-border-sm mr-1" aria-hidden="true"></span>
+									{{ isUpdate ? 'Update' : 'Create' }} Category
+								</button>
+								<button type="button" class="btn btn-secondary ml-2" (click)="cancel()">
+									Cancel
 								</button>
 							</div>
 						</form>

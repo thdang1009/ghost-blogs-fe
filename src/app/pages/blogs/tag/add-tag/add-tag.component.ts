@@ -8,6 +8,7 @@ import { TagService, AlertService } from '@services/_index';
 @Component({
   selector: 'app-add-tag',
   templateUrl: './add-tag.component.html',
+  styleUrls: ['./add-tag.component.scss']
 })
 export class AddTagComponent implements OnInit {
 
@@ -39,11 +40,16 @@ export class AddTagComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
       if (id) {
+        this.isLoadingResults = true;
         this.tagService.getTag(id)
           .subscribe(res => {
             this.initFormWithData(res);
             this.isUpdate = true;
             this.id = id;
+            this.isLoadingResults = false;
+          }, error => {
+            this.isLoadingResults = false;
+            this.alertService.showNoti('Failed to load tag', 'danger');
           });
       }
     });
@@ -60,6 +66,7 @@ export class AddTagComponent implements OnInit {
       imgUrl: data.imgUrl,
       content: data.content
     }
+    this.isLoadingResults = true;
     this.isUpdate ? this.callUpdate(this.id!, newTag) : this.callCreate(newTag)
   }
   callUpdate(id: string, newValue: Tag) {
@@ -70,9 +77,11 @@ export class AddTagComponent implements OnInit {
           this.alertService.showNoti(`Update success`, 'success');
           this.router.navigate(['/admin/blog/tag-list']);
         }
+        this.isLoadingResults = false;
       }, (err) => {
         console.log(err);
         this.alertService.error(err.error);
+        this.isLoadingResults = false;
       });
   }
   callCreate(newValue: Tag) {
@@ -83,9 +92,15 @@ export class AddTagComponent implements OnInit {
           this.alertService.showNoti(`Success`, 'success');
           this.router.navigate(['/admin/blog/tag-list']);
         }
+        this.isLoadingResults = false;
       }, (err) => {
         console.log(err);
         this.alertService.error(err.error);
+        this.isLoadingResults = false;
       });
+  }
+
+  cancel() {
+    this.router.navigate(['/admin/blog/tag-list']);
   }
 }

@@ -1,4 +1,5 @@
 import { Tag } from "./_index";
+import { Series } from "./series";
 
 
 export class Post {
@@ -15,6 +16,7 @@ export class Post {
   postBackgroundImg?: String;
   isPinned?: Boolean;
   tags?: Tag[];
+  series?: Series;
   order?: Number;
   createdAt?: Date;
   updatedAt?: Date;

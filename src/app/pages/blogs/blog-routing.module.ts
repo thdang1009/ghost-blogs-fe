@@ -8,6 +8,8 @@ import { LoginGuard } from '@guards/login.guard';
 import { AddTagComponent } from './tag/add-tag/add-tag.component';
 import { CategoryListComponent } from './category/category-list/category-list.component';
 import { AddCategoryComponent } from './category/add-category/add-category.component';
+import { SeriesListComponent } from './series/series-list/series-list.component';
+import { SeriesAddComponent } from './series/series-add/series-add.component';
 
 const routes2: Routes = [
   { path: 'post-list', title: 'List Post', component: PostListComponent, canActivate: [LoginGuard] },
@@ -16,6 +18,8 @@ const routes2: Routes = [
   { path: 'tag', title: 'Add/Update Tag', component: AddTagComponent, canActivate: [AdminGuard] },
   { path: 'category-list', title: 'List Category', component: CategoryListComponent, canActivate: [AdminGuard] },
   { path: 'category', title: 'Add/Update Category', component: AddCategoryComponent, canActivate: [AdminGuard] },
+  { path: 'series-list', title: 'List Series', component: SeriesListComponent, canActivate: [AdminGuard] },
+  { path: 'series', title: 'Add/Update Series', component: SeriesAddComponent, canActivate: [AdminGuard] },
 ];
 
 @NgModule({

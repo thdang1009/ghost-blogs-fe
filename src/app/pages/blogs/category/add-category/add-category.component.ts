@@ -4,10 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from '@models/_index';
 import { CategoryService, AlertService } from '@services/_index';
 
-
 @Component({
   selector: 'app-add-category',
-  templateUrl: './add-category.component.html'
+  templateUrl: './add-category.component.html',
+  styleUrls: ['./add-category.component.scss']
 })
 export class AddCategoryComponent implements OnInit {
   registerForm!: UntypedFormGroup;
@@ -37,13 +37,16 @@ export class AddCategoryComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
       if (id) {
+        this.isLoadingResults = true;
         this.categoryService.getCategory(id)
           .subscribe(res => {
             this.initFormWithData(res);
             this.isUpdate = true;
             this.id = id;
-          }, err => {
-            console.log(err);
+            this.isLoadingResults = false;
+          }, error => {
+            this.isLoadingResults = false;
+            this.alertService.showNoti('Failed to load category', 'danger');
           });
       }
     });
@@ -54,37 +57,47 @@ export class AddCategoryComponent implements OnInit {
   }
 
   onFormSubmit(data: any) {
-    const newCategory: Category = {
+    this.isLoadingResults = true;
+    const updateObj: Category = {
       name: data.name,
+      content: data.content,
       description: data.description,
       imgUrl: data.imgUrl,
-      content: data.content
-    }
-    this.isUpdate ? this.callUpdate(this.id!, newCategory) : this.callCreate(newCategory)
+    };
+    this.isUpdate ? this.callUpdate(this.id!, updateObj) : this.callCreate(updateObj);
   }
-  callUpdate(id: string, newCategory: Category) {
-    this.categoryService.updateCategory(id, newCategory)
+
+  callUpdate(id: string, newValue: Category) {
+    this.categoryService.updateCategory(id, newValue)
       .subscribe(category => {
         if (category) {
           this.alertService.showNoti(`Update success`, 'success');
           this.router.navigate(['/admin/blog/category-list']);
         }
+        this.isLoadingResults = false;
       }, (err) => {
         console.log(err);
         this.alertService.error(err.error);
+        this.isLoadingResults = false;
       });
   }
 
-  callCreate(newCategory: Category) {
-    this.categoryService.addCategory(newCategory)
+  callCreate(newValue: Category) {
+    this.categoryService.addCategory(newValue)
       .subscribe(category => {
         if (category) {
-          this.alertService.showNoti(`Create success`, 'success');
+          this.alertService.showNoti(`Success`, 'success');
           this.router.navigate(['/admin/blog/category-list']);
         }
+        this.isLoadingResults = false;
       }, (err) => {
         console.log(err);
         this.alertService.error(err.error);
+        this.isLoadingResults = false;
       });
+  }
+
+  cancel() {
+    this.router.navigate(['/admin/blog/category-list']);
   }
 }

@@ -23,7 +23,6 @@ export const ROUTES: RouteInfo[] = [
   {
     path: 'user', title: 'User', icon: 'people', class: '', permission: 'isGrandAdmin', hasChild: true,
     children: [
-      { path: 'user/add-user', title: 'Add User', icon: 'person_add', class: '', permission: 'isGrandAdmin' },
       { path: 'user/user-list', title: 'List User', icon: 'people', class: '', permission: 'isGrandAdmin' },
       { path: 'user/subscriptions', title: 'Subscriptions', icon: 'notifications', class: '', permission: 'isMember' },
     ]
@@ -52,16 +51,14 @@ export const ROUTES: RouteInfo[] = [
     children: [
       { path: 'blog/post-list', title: 'List Post', icon: 'list', class: '', permission: 'isMember' },
       { path: 'blog/tag-list', title: 'List Tag', icon: 'list', class: '', permission: 'isAdmin' },
-      { path: 'blog/tag', title: 'Add A Tag', icon: 'local_offer', class: '', permission: 'isAdmin' },
       { path: 'blog/category-list', title: 'List Category', icon: 'list', class: '', permission: 'isAdmin' },
-      { path: 'blog/category', title: 'Add A Category', icon: 'category', class: '', permission: 'isAdmin' },
+      { path: 'blog/series-list', title: 'List Series', icon: 'collections_bookmark', class: '', permission: 'isAdmin' },
     ]
   },
   {
     path: 'operation', title: 'Operation', icon: 'engineering', class: '', permission: 'isMember', hasChild: true,
     children: [
       { path: 'operation/todo-label-list', title: 'List TodoLabel', icon: 'list', class: '', permission: 'isAdmin' },
-      { path: 'operation/todo-label', title: 'Add A TodoLabel', icon: 'local_offer', class: '', permission: 'isAdmin' },
       { path: 'operation/coupon-settings', title: 'Coupon Settings', icon: 'settings', class: '', permission: 'isGrandAdmin' },
     ]
   },

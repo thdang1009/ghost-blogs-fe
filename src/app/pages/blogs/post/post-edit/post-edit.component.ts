@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, ElementRef, inject, Inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { MyFile, Post } from '@models/_index';
+import { MyFile, Post, Series } from '@models/_index';
 import { EventEmitter } from '@angular/core';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
 import { DOCUMENT } from '@angular/common';
-import { TagService, CategoryService, FileService, AlertService } from '@services/_index';
+import { TagService, CategoryService, FileService, AlertService, SeriesService } from '@services/_index';
 import { compareWithFunc } from '@shared/common';
 import { Observable } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -41,6 +41,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
   ];
   allCategory: Category[] = [];
   allTags: Tag[] = [];
+  allSeries: Series[] = [];
   POST_STATUS = POST_STATUS;
   listFileOnServer: MyFile[] = [];
   compareWithFunc = compareWithFunc;
@@ -65,6 +66,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
     private tagService: TagService,
     private categoryService: CategoryService,
     private fileService: FileService,
+    private seriesService: SeriesService,
     private alertService: AlertService
   ) {
   }
@@ -74,6 +76,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
     this.getCategories();
     this.getTags();
+    this.getSeries();
     this.fileService.getMyFile({
       type: 'Image'
     }).subscribe((res: any) => {
@@ -120,6 +123,39 @@ export class PostEditComponent implements OnInit, OnDestroy {
         );
         this.tags = this.itemSelected.tags;
       });
+  }
+
+  getSeries() {
+    this.seriesService.getAllSeries()
+      .subscribe(allSeries => {
+        this.allSeries = allSeries;
+      }, error => {
+        this.alertService.showNoti('Failed to load series: ' + error, 'danger');
+      });
+  }
+
+  // When series changes, update the tags
+  onSeriesChange(seriesId: string) {
+    if (!seriesId) {
+      return;
+    }
+
+    // Find the selected series
+    const selectedSeries = this.allSeries.find(s => s._id === seriesId);
+    if (selectedSeries && selectedSeries.baseTags && selectedSeries.baseTags.length > 0) {
+      // Confirm with the user before replacing tags
+      if (this.tags && this.tags.length > 0) {
+        const confirmed = confirm('Selecting a series will replace all existing tags with the series base tags. Continue?');
+        if (!confirmed) {
+          // Reset series selection if user cancels
+          this.itemSelected.series = null;
+          return;
+        }
+      }
+
+      // Replace tags with series base tags
+      this.tags = [...selectedSeries.baseTags];
+    }
   }
 
   saveOnly() {

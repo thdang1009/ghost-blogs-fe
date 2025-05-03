@@ -3,7 +3,7 @@
     <article class="post">
       <a class="post-thumbnail" (click)="openPost(post)" [href]="'blogs/' + post.postReference" [ngStyle]="{
             'background-image': 'url(' + post.postBackgroundImg + ')'
-          }"></a>
+          }" [attr.aria-label]="'Read post: ' + post.title"></a>
       <div class="post-content">
         <h2 class="post-title">
           <a [href]="'blogs/' + post.postReference">{{post.title}}</a>
@@ -13,7 +13,7 @@
           write at
           {{post.createdAt | date }}
         </span>
-        <ng-container *ngIf="post && post.tags.length">
+        <ng-container *ngIf="post && post.tags && post.tags.length">
           <div class="tagging" *ngFor="let tag of post.tags">
             <a class="tagging__item" href="{{'/home?tag=' + tag.name}}">#{{tag.name}}</a>
           </div>
