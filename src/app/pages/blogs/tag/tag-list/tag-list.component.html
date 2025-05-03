@@ -25,25 +25,25 @@
 									<th>Image URL</th>
 									<th>Actions</th>
 								</tr>
-							</thead>
-							<tbody>
+								</thead>
+								<tbody>
 								<tr *ngFor="let tag of tags" class="hover-pointer-td">
-									<td (click)="edit(tag)">{{ tag.name }}</td>
+											<td (click)="edit(tag)">{{ tag.name }}</td>
 									<td (click)="edit(tag)">{{ tag.description }}</td>
 									<td (click)="edit(tag)">{{ tag.content }}</td>
-									<td (click)="edit(tag)">
+											<td (click)="edit(tag)">
 										<img [src]="tag.imgUrl" alt="Tag image" class="tag-thumb" *ngIf="tag.imgUrl" style="max-width: 60px;">
 										<span *ngIf="!tag.imgUrl">No image</span>
-									</td>
+											</td>
 									<td>
 										<button (click)="delete(tag)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-											<div class="mdc-icon-button__ripple"></div>
-											delete
-										</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+											</td>
+										</tr>
+								</tbody>
+							</table>
 
 						<div *ngIf="!loading && (!tags || tags.length === 0)" class="alert alert-info">
 							No tags found. Create your first tag by clicking the "New Tag" button.

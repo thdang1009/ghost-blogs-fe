@@ -43,7 +43,7 @@
                     <mat-label>Series Image</mat-label>
                     <mat-select formControlName="imageUrl">
                       <mat-option value="">-- Select an image --</mat-option>
-                      <mat-option *ngFor="let file of listFileOnServer" [value]="file.url">
+                      <mat-option *ngFor="let file of listFileOnServer" [value]="file.urlGet">
                         {{ file.originName }}
                       </mat-option>
                     </mat-select>

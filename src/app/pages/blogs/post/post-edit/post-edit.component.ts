@@ -74,6 +74,10 @@ export class PostEditComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.elem = document.getElementById('edit-post-container');
 
+    // Initialize tags and categories arrays from the model
+    this.tags = this.itemSelected.tags || [];
+    this.categories = this.itemSelected.category || [];
+
     this.getCategories();
     this.getTags();
     this.getSeries();
@@ -108,7 +112,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
           startWith(null),
           map<any, any>((category) => (category ? this._filterCategory(category) : this.allCategory.slice())),
         );
-        this.categories = this.itemSelected.category;
+
+        // Only initialize categories if not already set
+        if (!this.categories || this.categories.length === 0) {
+          this.categories = this.itemSelected.category || [];
+        }
       })
   }
 
@@ -121,7 +129,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
           startWith(null),
           map<any, any>((tag) => (tag ? this._filterTag(tag) : this.allTags.slice())),
         );
-        this.tags = this.itemSelected.tags;
+
+        // Only initialize tags if not already set
+        if (!this.tags || this.tags.length === 0) {
+          this.tags = this.itemSelected.tags || [];
+        }
       });
   }
 
@@ -143,18 +155,35 @@ export class PostEditComponent implements OnInit, OnDestroy {
     // Find the selected series
     const selectedSeries = this.allSeries.find(s => s._id === seriesId);
     if (selectedSeries && selectedSeries.baseTags && selectedSeries.baseTags.length > 0) {
-      // Confirm with the user before replacing tags
-      if (this.tags && this.tags.length > 0) {
-        const confirmed = confirm('Selecting a series will replace all existing tags with the series base tags. Continue?');
-        if (!confirmed) {
-          // Reset series selection if user cancels
-          this.itemSelected.series = null;
-          return;
-        }
-      }
+      // Add only missing tags from the series base tags
+      const newTags: Tag[] = [...this.tags]; // Start with current tags
+      let tagsAdded = 0;
 
-      // Replace tags with series base tags
-      this.tags = [...selectedSeries.baseTags];
+      // Iterate through the series base tags
+      selectedSeries.baseTags.forEach(baseTag => {
+        // Check if this tag already exists in the current tags
+        const tagExists = this.tags.some(t =>
+          (t._id && baseTag._id && t._id.toString() === baseTag._id.toString()) ||
+          (t.name && baseTag.name && t.name.toString() === baseTag.name.toString())
+        );
+
+        // If it doesn't exist, add it
+        if (!tagExists) {
+          newTags.push(baseTag);
+          tagsAdded++;
+        }
+      });
+
+      // Update tags with the combined list
+      this.tags = newTags;
+
+      // Also update the itemSelected model so it will be sent to the server
+      this.itemSelected.tags = [...this.tags];
+
+      // Notify the user about tags added
+      if (tagsAdded > 0) {
+        this.alertService.showNoti(`Added ${tagsAdded} tag(s) from the series "${selectedSeries.name}"`, 'success');
+      }
     }
   }
 
@@ -305,7 +334,33 @@ export class PostEditComponent implements OnInit, OnDestroy {
   }
 
   private doBeforeSave() {
-    this.itemSelected.tags = this.tags;
-    this.itemSelected.category = this.categories;
+    // Set the tags and categories from our component state to the itemSelected model
+    // that will be sent to the server
+    this.itemSelected.tags = this.tags ? [...this.tags] : [];
+    this.itemSelected.category = this.categories ? [...this.categories] : [];
+
+    // If there's a selected series, ensure it's properly set in the model
+    if (this.itemSelected.series) {
+      // If series is stored as an object ID string, convert it to the proper format
+      // Many Angular Material selects return the value directly rather than the object
+      const seriesId = typeof this.itemSelected.series === 'string'
+        ? this.itemSelected.series
+        : this.itemSelected.series._id;
+
+      // Find the full series object if we only have the ID
+      if (typeof this.itemSelected.series === 'string' && this.allSeries && this.allSeries.length > 0) {
+        const selectedSeries = this.allSeries.find(s => s._id === seriesId);
+        if (selectedSeries) {
+          // Use the full series object if found
+          this.itemSelected.series = selectedSeries;
+        }
+      }
+    }
+
+    console.log('Data to be saved:', {
+      tags: this.itemSelected.tags,
+      categories: this.itemSelected.category,
+      series: this.itemSelected.series
+    });
   }
 }

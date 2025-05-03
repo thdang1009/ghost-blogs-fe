@@ -1,65 +1,65 @@
 <div class="main-content">
-  <div class="container-fluid">
-    <div class="row">
+<div class="container-fluid">
+  <div class="row">
       <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">Series Management</h4>
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title">Series Management</h4>
             <button type="button" class="btn btn-primary float-right" routerLink="/admin/blog/series">
-              <i class="material-icons">add</i> New Series
-            </button>
-          </div>
-          <div class="card-body">
-            <div *ngIf="loading" class="text-center my-3">
+            <i class="material-icons">add</i> New Series
+          </button>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center my-3">
               <div class="spinner-border text-primary" aria-live="polite">
-                <span class="sr-only">Loading...</span>
-              </div>
+              <span class="sr-only">Loading...</span>
             </div>
+          </div>
 
-            <table class="table table-striped" *ngIf="!loading && series.length > 0">
+          <table class="table table-striped" *ngIf="!loading && series.length > 0">
               <thead class="text-primary">
-                <tr>
-                  <th>Name</th>
-                  <th>Image</th>
-                  <th>Base Tags</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
+              <tr>
+                <th>Name</th>
+                <th>Image</th>
+                <th>Base Tags</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
                 <tr *ngFor="let item of series" class="hover-pointer-td">
                   <td (click)="edit(item)">{{ item.name }}</td>
                   <td (click)="edit(item)">
-                    <img [src]="item.imageUrl" alt="Series image" class="series-thumb" *ngIf="item.imageUrl">
-                    <span *ngIf="!item.imageUrl">No image</span>
-                  </td>
+                  <img [src]="item.imageUrl" alt="Series image" class="series-thumb" *ngIf="item.imageUrl">
+                  <span *ngIf="!item.imageUrl">No image</span>
+                </td>
                   <td (click)="edit(item)">
-                    <div class="tag-list">
-                      <span class="badge badge-info mr-1" *ngFor="let tag of item.baseTags">
-                        {{ tag.name }}
-                      </span>
-                      <span *ngIf="!item.baseTags || item.baseTags.length === 0">No tags</span>
-                    </div>
-                  </td>
-                  <td (click)="edit(item)">
-                    <span [ngClass]="item.active !== false ? 'badge badge-success' : 'badge badge-secondary'">
-                      {{ item.active !== false ? 'Active' : 'Inactive' }}
+                  <div class="tag-list">
+                    <span class="badge badge-info mr-1" *ngFor="let tag of item.baseTags">
+                      {{ tag.name }}
                     </span>
-                  </td>
-                  <td>
+                    <span *ngIf="!item.baseTags || item.baseTags.length === 0">No tags</span>
+                  </div>
+                </td>
+                  <td (click)="edit(item)">
+                  <span [ngClass]="item.active !== false ? 'badge badge-success' : 'badge badge-secondary'">
+                    {{ item.active !== false ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td>
                     <button (click)="delete(item)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
                       <div class="mdc-icon-button__ripple"></div>
                       delete
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-            <div *ngIf="!loading && series.length === 0" class="alert alert-info">
-              No series found. Create your first series by clicking the "New Series" button.
-            </div>
+          <div *ngIf="!loading && series.length === 0" class="alert alert-info">
+            No series found. Create your first series by clicking the "New Series" button.
           </div>
+        </div>
         </div>
       </div>
     </div>

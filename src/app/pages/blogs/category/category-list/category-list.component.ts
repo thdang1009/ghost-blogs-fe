@@ -26,11 +26,11 @@ export class CategoryListComponent implements OnInit {
     this.loading = true;
     this.categoryService.getCategorys().subscribe(
       (categories: Category[]) => {
-        this.categories = categories;
+      this.categories = categories;
         this.loading = false;
       },
       (err: any) => {
-        console.log(err);
+      console.log(err);
         this.alertService.showNoti(`Get categories fail!`, 'danger');
         this.loading = false;
       }

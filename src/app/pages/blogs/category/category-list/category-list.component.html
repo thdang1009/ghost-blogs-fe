@@ -25,25 +25,25 @@
 									<th>Image URL</th>
 									<th>Actions</th>
 								</tr>
-							</thead>
-							<tbody>
+								</thead>
+								<tbody>
 								<tr *ngFor="let category of categories" class="hover-pointer-td">
-									<td (click)="edit(category)">{{ category.name }}</td>
+											<td (click)="edit(category)">{{ category.name }}</td>
 									<td (click)="edit(category)">{{ category.description }}</td>
 									<td (click)="edit(category)">{{ category.content }}</td>
-									<td (click)="edit(category)">
+											<td (click)="edit(category)">
 										<img [src]="category.imgUrl" alt="Category image" class="category-thumb" *ngIf="category.imgUrl" style="max-width: 60px;">
 										<span *ngIf="!category.imgUrl">No image</span>
-									</td>
+											</td>
 									<td>
 										<button (click)="delete(category)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-											<div class="mdc-icon-button__ripple"></div>
-											delete
-										</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+											</td>
+										</tr>
+								</tbody>
+							</table>
 
 						<div *ngIf="!loading && (!categories || categories.length === 0)" class="alert alert-info">
 							No categories found. Create your first category by clicking the "New Category" button.

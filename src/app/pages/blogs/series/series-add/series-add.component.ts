@@ -66,19 +66,33 @@ export class SeriesAddComponent implements OnInit {
   }
 
   initFormWithData(data: Series) {
+    console.log('Series data for form:', data);
+
+    // Ensure baseTags is an array of tag objects
+    const baseTags = Array.isArray(data.baseTags) ? data.baseTags : [];
+
     this.seriesForm.patchValue({
       name: data.name,
       description: data.description,
       imageUrl: data.imageUrl,
-      baseTags: data.baseTags || [],
+      baseTags: baseTags,
       active: data.active !== false
     });
+
+    console.log('Form data after patch:', this.seriesForm.value);
   }
 
   loadTags() {
     this.tagService.getTags().subscribe(
       (tags) => {
+        console.log('Loaded tags:', tags);
         this.allTags = tags;
+
+        // If we're in update mode and have a selected series, re-apply the form data
+        // This ensures tags are correctly selected after they're loaded
+        if (this.isUpdate && this.selectedSeries) {
+          this.initFormWithData(this.selectedSeries);
+        }
       },
       (error: any) => {
         this.alertService.showNoti('Failed to load tags: ' + error, 'danger');
@@ -98,7 +112,13 @@ export class SeriesAddComponent implements OnInit {
   }
 
   compareTagFn(c1: any, c2: any): boolean {
-    return c1 && c2 ? c1.id === c2.id || c1._id === c2._id : c1 === c2;
+    if (!c1 || !c2) return false;
+
+    // Convert both to string for comparison to handle both String and string types
+    const id1 = c1._id ? c1._id.toString() : null;
+    const id2 = c2._id ? c2._id.toString() : null;
+
+    return id1 === id2;
   }
 
   onSubmit() {
