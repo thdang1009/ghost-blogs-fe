@@ -53,6 +53,12 @@
 					<h2 class="post-title">
 						<a [routerLink]="'/blogs/' + post.postReference">{{post.title}}</a>
 					</h2>
+					<div *ngIf="post.series" class="series-info post-series">
+						<i class="material-icons" aria-hidden="true">library_books</i>
+						<a [routerLink]="'/post-by-series'" [queryParams]="{ series: post.series.slug }" class="series-link">
+							Part of {{post.series.name}} series
+						</a>
+					</div>
 					<p>
 						{{post.description}}
 					</p>
@@ -81,12 +87,6 @@
 							</a>
 						</div>
 					</ng-container>
-					<div *ngIf="post.series" class="series-info">
-						<i class="material-icons" aria-hidden="true">library_books</i>
-						<a [routerLink]="'/post-by-series'" [queryParams]="{ series: post.series.slug }" class="series-link">
-							{{post.series.name}}
-						</a>
-					</div>
 				</div>
 			</article>
 		</div>
