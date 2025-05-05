@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SeriesService, PostService } from '@services/_index';
 import { Post, Series } from '@models/_index';
 import { Title, Meta } from '@angular/platform-browser';
 import { environment } from '@environments/environment';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-post-by-series',
@@ -16,24 +17,38 @@ export class PostBySeriesComponent implements OnInit {
   loading = true;
   error = '';
   currentPageUrl: string = '';
+  seriesSlug: string = '';
 
   constructor(
     private seriesService: SeriesService,
     private route: ActivatedRoute,
     private router: Router,
     private titleService: Title,
-    private meta: Meta
+    private meta: Meta,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) { }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const seriesSlug = params['series'];
-      if (!seriesSlug) {
-        this.router.navigate(['/home']);
+    // First check path parameter
+    this.route.paramMap.subscribe(params => {
+      const slug = params.get('slug');
+      if (slug) {
+        this.seriesSlug = slug;
+        this.loadSeries(slug);
         return;
       }
 
-      this.loadSeries(seriesSlug);
+      // If no path parameter, check query parameter (for backward compatibility)
+      this.route.queryParams.subscribe(queryParams => {
+        const seriesSlug = queryParams['series'];
+        if (seriesSlug) {
+          this.seriesSlug = seriesSlug;
+          // Redirect to the new URL format for better SEO and social sharing
+          this.router.navigate(['/post-by-series', seriesSlug], { replaceUrl: true });
+        } else {
+          this.router.navigate(['/home']);
+        }
+      });
     });
   }
 
@@ -44,8 +59,8 @@ export class PostBySeriesComponent implements OnInit {
         this.series = data.series;
         this.posts = data.posts;
 
-        // Set the current page URL first
-        this.currentPageUrl = `${environment.siteUrl}/post-by-series?series=${slug}`;
+        // Set the current page URL with the new format using path parameter
+        this.currentPageUrl = `${environment.siteUrl}/post-by-series/${slug}`;
 
         this.setupMetaTags();
         this.loading = false;
@@ -88,7 +103,10 @@ export class PostBySeriesComponent implements OnInit {
     this.meta.updateTag({ name: 'twitter:description', content: this.series.description || `Posts in the ${this.series.name} series` });
     this.meta.updateTag({ name: 'twitter:image', content: absoluteImageUrl });
 
-    console.log('Meta tags updated for series page:', this.currentPageUrl);
+    // Only log in browser environment
+    if (isPlatformBrowser(this.platformId)) {
+      console.log('Meta tags updated for series page:', this.currentPageUrl);
+    }
   }
 
   backToHome() {

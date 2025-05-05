@@ -55,7 +55,7 @@
 					</h2>
 					<div *ngIf="post.series" class="series-info post-series">
 						<i class="material-icons" aria-hidden="true">library_books</i>
-						<a [routerLink]="'/post-by-series'" [queryParams]="{ series: post.series.slug }" class="series-link">
+						<a [routerLink]="['/post-by-series', post.series.slug]" class="series-link">
 							Part of {{post.series.name}} series
 						</a>
 					</div>

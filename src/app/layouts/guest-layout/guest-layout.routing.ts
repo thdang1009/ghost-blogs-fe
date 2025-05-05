@@ -34,6 +34,11 @@ export const GuestLayoutRoutes: Routes = [
     component: PostBySeriesComponent
   },
   {
+    path: 'post-by-series/:slug',
+    title: 'Blog Series',
+    component: PostBySeriesComponent
+  },
+  {
     path: 'search',
     title: 'Search Results',
     component: SearchResultsComponent
