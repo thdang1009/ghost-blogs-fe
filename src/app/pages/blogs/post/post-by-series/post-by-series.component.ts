@@ -15,6 +15,7 @@ export class PostBySeriesComponent implements OnInit {
   series?: Series;
   loading = true;
   error = '';
+  currentPageUrl: string = '';
 
   constructor(
     private seriesService: SeriesService,
@@ -42,7 +43,11 @@ export class PostBySeriesComponent implements OnInit {
       data => {
         this.series = data.series;
         this.posts = data.posts;
-        this.setupMetaTags(slug);
+
+        // Set the current page URL first
+        this.currentPageUrl = `${environment.siteUrl}/post-by-series?series=${slug}`;
+
+        this.setupMetaTags();
         this.loading = false;
       },
       error => {
@@ -53,50 +58,37 @@ export class PostBySeriesComponent implements OnInit {
     );
   }
 
-  setupMetaTags(slug: string): void {
+  setupMetaTags(): void {
     if (!this.series) return;
-
-    // First, remove existing OG tags that might conflict
-    this.meta.removeTag("property='og:url'");
-    this.meta.removeTag("property='og:title'");
-    this.meta.removeTag("property='og:description'");
-    this.meta.removeTag("property='og:image'");
-    this.meta.removeTag("property='og:type'");
 
     // Set title and meta tags for SEO
     this.titleService.setTitle(`${this.series.name} - Blog Series`);
-
-    // Update meta tags
-    this.meta.updateTag({ name: 'description', content: this.series.description || `Posts in the ${this.series.name} series` });
 
     // Ensure image URL is absolute
     const imageUrl = this.series.imageUrl || '';
     const absoluteImageUrl = imageUrl.startsWith('http') ? imageUrl : `${environment.siteUrl}${imageUrl}`;
 
-    // Construct the absolute URL for the current page
-    const currentUrl = `${environment.siteUrl}/post-by-series?series=${slug}`;
+    // Update meta tags directly without removing them first
+    this.meta.updateTag({ name: 'description', content: this.series.description || `Posts in the ${this.series.name} series` });
 
-    // Update Open Graph tags - using both property and name for maximum compatibility
-    this.meta.addTag({ property: 'og:title', content: `${this.series.name} - Blog Series` });
-    this.meta.addTag({ property: 'og:description', content: this.series.description || `Posts in the ${this.series.name} series` });
-    this.meta.addTag({ property: 'og:url', content: currentUrl });
-    this.meta.addTag({ property: 'og:image', content: absoluteImageUrl });
-    this.meta.addTag({ property: 'og:image:width', content: '1200' });
-    this.meta.addTag({ property: 'og:image:height', content: '630' });
-    this.meta.addTag({ property: 'og:type', content: 'article' });
-    this.meta.addTag({ property: 'og:site_name', content: 'Ghost Site' });
+    // Set Open Graph tags
+    this.meta.updateTag({ property: 'og:title', content: `${this.series.name} - Blog Series` });
+    this.meta.updateTag({ property: 'og:description', content: this.series.description || `Posts in the ${this.series.name} series` });
+    this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+    this.meta.updateTag({ property: 'og:image', content: absoluteImageUrl });
+    this.meta.updateTag({ property: 'og:type', content: 'article' });
+    this.meta.updateTag({ property: 'og:site_name', content: 'Ghost Site' });
 
-    // Add Facebook-specific meta tags
-    this.meta.addTag({ property: 'fb:app_id', content: '598355823212592' });
+    // Set Facebook-specific meta tags
+    this.meta.updateTag({ property: 'fb:app_id', content: '598355823212592' });
 
-    // Update Twitter Card tags
-    this.meta.addTag({ name: 'twitter:card', content: 'summary_large_image' });
-    this.meta.addTag({ name: 'twitter:title', content: `${this.series.name} - Blog Series` });
-    this.meta.addTag({ name: 'twitter:description', content: this.series.description || `Posts in the ${this.series.name} series` });
-    this.meta.addTag({ name: 'twitter:image', content: absoluteImageUrl });
+    // Set Twitter Card tags
+    this.meta.updateTag({ name: 'twitter:card', content: 'summary_large_image' });
+    this.meta.updateTag({ name: 'twitter:title', content: `${this.series.name} - Blog Series` });
+    this.meta.updateTag({ name: 'twitter:description', content: this.series.description || `Posts in the ${this.series.name} series` });
+    this.meta.updateTag({ name: 'twitter:image', content: absoluteImageUrl });
 
-    // Log for debugging
-    console.log('Meta tags updated for series page:', currentUrl);
+    console.log('Meta tags updated for series page:', this.currentPageUrl);
   }
 
   backToHome() {
