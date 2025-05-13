@@ -54,7 +54,7 @@
 			appearance="fill"
 			name="type">
 			<mat-label>Type</mat-label>
-			<mat-select [(ngModel)]="itemSelected.type">
+			<mat-select [(ngModel)]="itemSelected.type" name="type">
 				<mat-option *ngFor="let item of listPostType; let i = index"
 					[value]="item">
 					{{item}}
@@ -80,6 +80,33 @@
 			<mat-hint>Selecting a series will add any missing tags from the series</mat-hint>
 		</mat-form-field>
 	</div>
+
+	<!-- Series Navigation Section -->
+  <!-- Previous Post Selector -->
+  <div class="col-md-4">
+    <mat-form-field class="example-full-width" appearance="fill">
+      <mat-label>Previous Post</mat-label>
+      <mat-select [(ngModel)]="itemSelected.previousPostId" [compareWith]="compareIdOnlyFunc" name="previousPostId">
+        <mat-option [value]="null">None</mat-option>
+        <mat-option *ngFor="let post of allSeriesPosts" [value]="post">
+          {{post.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Next Post Selector -->
+  <div class="col-md-4">
+    <mat-form-field class="example-full-width" appearance="fill">
+      <mat-label>Next Post</mat-label>
+      <mat-select [(ngModel)]="itemSelected.nextPostId" [compareWith]="compareIdOnlyFunc" name="nextPostId">
+        <mat-option [value]="null">None</mat-option>
+        <mat-option *ngFor="let post of allSeriesPosts" [value]="post">
+          {{post.title}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 
 	<!-- tag -->
 	<div class="col-md-4">

@@ -5,6 +5,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { Series } from '@models/series';
 import { handleError, ghostLog } from '@shared/common';
+import { Post } from '@models/post';
 
 const apiUrl = environment.apiUrl + '/v1/series';
 
@@ -75,6 +76,13 @@ export class SeriesService {
     return this.http.delete<any>(url).pipe(
       tap(_ => ghostLog(`deleted series id=${id}`)),
       catchError(handleError<any>('deleteSeries'))
+    );
+  }
+  getSeriesPosts(seriesId: string): Observable<Post[]> {
+    const url = `${apiUrl}/${seriesId}/posts`;
+    return this.http.get<Post[]>(url).pipe(
+      tap(_ => ghostLog(`fetched series posts id=${seriesId}`)),
+      catchError(handleError<Post[]>(`getSeriesPosts id=${seriesId}`))
     );
   }
 }

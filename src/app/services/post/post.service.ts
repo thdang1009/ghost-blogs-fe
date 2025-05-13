@@ -84,4 +84,16 @@ export class PostService {
       catchError(handleError<Post>('deletePost'))
     );
   }
+
+  // Get posts from a specific series for selection as previous/next posts
+  getSeriesPosts(seriesId: string, currentPostId?: number): Observable<Post[]> {
+    let url = `${apiUrl}/series-posts/${seriesId}`;
+    if (currentPostId) {
+      url += `?currentPostId=${currentPostId}`;
+    }
+    return this.http.get<Post[]>(url).pipe(
+      tap(_ => ghostLog(`fetched posts for series=${seriesId}`)),
+      catchError(handleError<Post[]>(`getSeriesPosts seriesId=${seriesId}`))
+    );
+  }
 }

@@ -3,6 +3,7 @@ import { Series } from "./series";
 
 
 export class Post {
+  _id?: string;
   category?: String[];
   id?: number;
   title?: String;
@@ -17,6 +18,8 @@ export class Post {
   isPinned?: Boolean;
   tags?: Tag[];
   series?: Series;
+  previousPostId?: Post;
+  nextPostId?: Post;
   order?: Number;
   createdAt?: Date;
   updatedAt?: Date;

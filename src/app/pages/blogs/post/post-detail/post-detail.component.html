@@ -55,6 +55,20 @@
         <markdown [data]="item.content"></markdown>
       </ng-container>
 
+      <!-- Series Navigation -->
+      <div *ngIf="ready && item.series" class="series-navigation">
+        <div class="series-navigation-links">
+          <a *ngIf="item.previousPostId" [routerLink]="'/blogs/' + item.previousPostId.postReference" class="series-nav-link previous-post">
+            <i class="material-icons" aria-hidden="true">arrow_back</i>
+            <span class="series-nav-title">Previous Episode: {{item.previousPostId.title}}</span>
+          </a>
+          <a *ngIf="item.nextPostId" [routerLink]="'/blogs/' + item.nextPostId.postReference" class="series-nav-link next-post">
+            <span class="series-nav-title">Next Episode: {{item.nextPostId.title}}</span>
+            <i class="material-icons" aria-hidden="true">arrow_forward</i>
+          </a>
+        </div>
+      </div>
+
       <!-- Facebook Social Plugins -->
       <ng-container *ngIf="ready">
         <div class="facebook-social-plugins">

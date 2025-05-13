@@ -40,6 +40,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
     POST_STATUS.PRIVATE
   ];
   allCategory: Category[] = [];
+  allSeriesPosts: Post[] = [];
   allTags: Tag[] = [];
   allSeries: Series[] = [];
   POST_STATUS = POST_STATUS;
@@ -60,6 +61,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
   @ViewChild('categoryInput') categoryInput!: ElementRef<HTMLInputElement>;
   // end autocomplete
 
+  compareIdOnlyFunc = (a: any, b: any) => {
+    return a._id === b._id;
+  }
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -81,6 +85,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
     this.getCategories();
     this.getTags();
     this.getSeries();
+    this.getSeriesPosts();
     this.fileService.getMyFile({
       type: 'Image'
     }).subscribe((res: any) => {
@@ -146,6 +151,14 @@ export class PostEditComponent implements OnInit, OnDestroy {
       });
   }
 
+  getSeriesPosts() {
+    if (this.itemSelected.series) {
+      this.seriesService.getSeriesPosts(this.itemSelected.series)
+        .subscribe(seriesPosts => {
+          this.allSeriesPosts = seriesPosts ? [...seriesPosts] : [];
+        });
+    }
+  }
   // When series changes, update the tags
   onSeriesChange(seriesId: string) {
     if (!seriesId) {
@@ -179,6 +192,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
       // Also update the itemSelected model so it will be sent to the server
       this.itemSelected.tags = [...this.tags];
+
+      // get all series posts
+      this.getSeriesPosts();
 
       // Notify the user about tags added
       if (tagsAdded > 0) {
@@ -355,12 +371,15 @@ export class PostEditComponent implements OnInit, OnDestroy {
           this.itemSelected.series = selectedSeries;
         }
       }
+
     }
 
     console.log('Data to be saved:', {
       tags: this.itemSelected.tags,
       categories: this.itemSelected.category,
-      series: this.itemSelected.series
+      series: this.itemSelected.series,
+      previousPostId: this.itemSelected.previousPostId,
+      nextPostId: this.itemSelected.nextPostId
     });
   }
 }
