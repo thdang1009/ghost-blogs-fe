@@ -13,7 +13,7 @@ import { SeriesAddComponent } from './series/series-add/series-add.component';
 
 const routes2: Routes = [
   { path: 'post-list', title: 'List Post', component: PostListComponent, canActivate: [LoginGuard] },
-  { path: 'blogs/:ref', title: 'Ghost\'s Post', component: PostDetailComponent, canActivate: [] },
+  { path: 'blogs/:ref', title: 'Ghost\'s Post', component: PostDetailComponent, canActivate: [], pathMatch: 'full', },
   { path: 'tag-list', title: 'List Tag', component: TagListComponent, canActivate: [AdminGuard] },
   { path: 'tag', title: 'Add/Update Tag', component: AddTagComponent, canActivate: [AdminGuard] },
   { path: 'category-list', title: 'List Category', component: CategoryListComponent, canActivate: [AdminGuard] },

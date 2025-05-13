@@ -44,6 +44,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2
   ) {
     addStructuredData(this.document);
+    this.router.routeReuseStrategy.shouldReuseRoute = function(){
+        return false;
+    }
   }
 
   private setCurrentPageUrl() {
@@ -71,6 +74,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('ref');
+
     this.postService.getPost(id as string).subscribe(post => {
       this.item = post;
       this.count = post.clapCount || 0;
@@ -237,5 +241,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   backToHome() {
     this.router.navigate(['home']);
+  }
+
+  goToPost(post: Post): void {
+    this.router.navigate(['/blogs', post.postReference]);
   }
 }
