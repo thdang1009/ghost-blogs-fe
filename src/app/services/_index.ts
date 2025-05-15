@@ -20,3 +20,5 @@ export * from './analytics/analytics.service';
 export * from './search/search.service';
 export * from './subscription/subscription.service';
 export * from './series/series.service';
+export * from './journal/journal.service';
+export * from './mood/mood.service';

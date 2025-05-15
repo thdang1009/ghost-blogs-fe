@@ -34,6 +34,7 @@ export const ROUTES: RouteInfo[] = [
       { path: 'tool/note', title: 'Note', icon: 'notes', class: '', permission: 'isMember' },
       { path: 'tool/guest-message', title: 'List Guest Message', icon: 'list', class: '', permission: 'isGrandAdmin' },
       { path: 'tool/coupon', title: 'Coupon Management', icon: 'card_giftcard', class: '', permission: 'isGrandAdmin' },
+      { path: 'tool/journal', title: 'Journal & Gratitude', icon: 'library_books', class: '', permission: 'isMember' },
       // { path: 'tool/run-js', title: 'Run JS', icon: 'code', class: '', permission: 'isGrandAdmin' }
     ]
   },
@@ -60,6 +61,7 @@ export const ROUTES: RouteInfo[] = [
     children: [
       { path: 'operation/todo-label-list', title: 'List TodoLabel', icon: 'list', class: '', permission: 'isAdmin' },
       { path: 'operation/coupon-settings', title: 'Coupon Settings', icon: 'settings', class: '', permission: 'isGrandAdmin' },
+      { path: 'operation/mood', title: 'Mood', icon: 'mood', class: '', permission: 'isMember' },
     ]
   },
   // {

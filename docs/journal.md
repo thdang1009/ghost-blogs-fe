@@ -15,15 +15,15 @@ Provide a daily journaling interface for users (admin role) to:
 
 ## 3. Route Structure
 
-- `GET /admin/tool/journal` – Main journal interface
-- `GET /admin/operation/attitude` – Mood type manager
+- `GET POST PUT /admin/tool/journal` – Main journal interface
+- `GET POST PUT /admin/operation/attitude` – Mood type manager
 
 ## 4. Features
 
 ### 4.1 Journal Interface (`/admin/tool/journal`)
 
 #### Layout
-- Date Picker with forward/backward navigation
+- Date Picker with forward/backward navigation like todo-today.component.html
 - Autofill current date on load
 - Search bar to jump to specific date
 
@@ -32,7 +32,7 @@ Provide a daily journaling interface for users (admin role) to:
 - Most used moods shown as quick icons
 - Option to "Add more" to expand full list
 - Moods pulled from system config (`/admin/operation/attitude`)
-- On change: triggers `auto-save + API PATCH`
+- On change: triggers `auto-save + API PUT`
 
 #### Mood Entry
 - For each journal entry, allow:
@@ -63,7 +63,7 @@ Provide a daily journaling interface for users (admin role) to:
 \`\`\`ts
 interface JournalEntry {
   id: string;
-  date: string; // e.g. "2025-05-13"
+  date: Date; // e.g. "2025-05-13"
   moodId: string; // reference to MoodType
   details: MoodItem[]; // 3 or more per day
   updatedAt: string;
@@ -96,7 +96,7 @@ interface MoodType {
 ### GET `/api/journal?date=YYYY-MM-DD`
 > Get journal entry for a specific date
 
-### PATCH `/api/journal/:id`
+### PUT `/api/journal/:id`
 > Update journal entry (called on blur/change)
 
 \`\`\`json
@@ -129,7 +129,7 @@ interface MoodType {
 ### `/admin/tool/journal`
 
 \`\`\`bash
-journal/
+tool/journal/
 ├── journal.component.ts         # Main container
 ├── journal-header.component.ts  # Date nav + search
 ├── mood-selector.component.ts   # Mood buttons + add-more
@@ -140,7 +140,7 @@ journal/
 ### `/admin/operation/attitude`
 
 \`\`\`bash
-mood-admin/
+operation/mood/
 ├── mood-list.component.ts       # Table of moods
 ├── mood-form.component.ts       # Add/Edit modal
 └── mood.service.ts              # API abstraction

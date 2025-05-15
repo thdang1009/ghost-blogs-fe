@@ -1,0 +1,104 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Mood Types Manager</h4>
+            <button (click)="openForm()"
+              class="btn btn-primary btn-round">
+              <i class="material-icons">add</i> New Mood
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="text-primary">
+                  <th>Icon</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Usage Count</th>
+                  <th>Actions</th>
+                </thead>
+                <tbody>
+                  <ng-container *ngIf="moods && moods.length; else noDataBlock">
+                    <tr *ngFor="let mood of moods">
+                      <td class="icon-column">{{mood.icon}}</td>
+                      <td>{{mood.name}}</td>
+                      <td>{{mood.description}}</td>
+                      <td>{{mood.usageCount || 0}}</td>
+                      <td class="actions">
+                        <button (click)="openForm(mood)"
+                          class="btn btn-sm btn-info">
+                          <i class="material-icons">edit</i>
+                        </button>
+                        <button (click)="deleteMood(mood)"
+                          class="btn btn-sm btn-danger">
+                          <i class="material-icons">delete</i>
+                        </button>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #noDataBlock>
+                    <tr>
+                      <td colspan="5" class="text-center">
+                        <div *ngIf="isLoading">Loading...</div>
+                        <div *ngIf="!isLoading">No mood types found</div>
+                      </td>
+                    </tr>
+                  </ng-template>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mood Form Modal -->
+    <div *ngIf="showForm" class="mood-form-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editMode ? 'Edit' : 'Add' }} Mood Type</h5>
+          <button (click)="closeForm()" class="close">
+            <span>&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label>Icon (Emoji or URL)</label>
+              <input [(ngModel)]="currentMood.icon"
+                name="icon"
+                class="form-control"
+                placeholder="😊">
+            </div>
+            <div class="form-group">
+              <label>Name*</label>
+              <input [(ngModel)]="currentMood.name"
+                name="name"
+                class="form-control"
+                placeholder="Happy"
+                required>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea [(ngModel)]="currentMood.description"
+                name="description"
+                class="form-control"
+                placeholder="Feeling joyful and content"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button (click)="closeForm()" class="btn btn-secondary">Cancel</button>
+          <button (click)="saveMood()"
+            [disabled]="isLoading || !currentMood.name"
+            class="btn btn-primary">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

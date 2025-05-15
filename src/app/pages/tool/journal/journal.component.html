@@ -1,0 +1,108 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Daily Journal & Gratitude</h4>
+          </div>
+          <form class="form-under-table-header row">
+            <div class="col-md-4 control-and-btn-container">
+              <button (click)="previousDay()" class="btn btn-move">
+                <span class="material-icons">arrow_back_ios</span>
+              </button>
+              <mat-form-field class="example-full-width" appearance="fill">
+                <mat-label>Date</mat-label>
+                <input [matDatepicker]="picker"
+                  [(ngModel)]="currentDate"
+                  (dateChange)="onDateChange($event)"
+                  matInput
+                  name="date">
+                <mat-datepicker-toggle [for]="picker" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <button (click)="nextDay()" class="btn btn-move">
+                <span class="material-icons">arrow_forward_ios</span>
+              </button>
+            </div>
+            <div class="col-md-4">
+              <mat-form-field class="example-full-width" appearance="fill">
+                <mat-label>Search Date</mat-label>
+                <input matInput [matDatepicker]="searchPicker"
+                  #searchDate
+                  (dateChange)="searchByDate(searchDate.value)">
+                <mat-datepicker-toggle [for]="searchPicker" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #searchPicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div class="col-md-4">
+              <button [disabled]="isLoading"
+                (click)="saveJournal()"
+                type="button"
+                class="btn btn-info pull-right btn-w100">
+                <em class="material-icons">save</em>
+                Save Journal
+              </button>
+            </div>
+          </form>
+          <div class="card-body">
+            <!-- Mood Selector -->
+            <div class="mood-selector">
+              <h5>Today's Mood</h5>
+              <div class="mood-icons">
+                <div *ngFor="let mood of topMoods"
+                  [class.selected]="journalEntry.moodId === mood.id"
+                  (click)="selectMood(mood)"
+                  class="mood-icon">
+                  <span>{{mood.icon}}</span>
+                  <small>{{mood.name}}</small>
+                </div>
+                <div (click)="toggleMoodSelection()" class="mood-icon more">
+                  <span class="material-icons">more_horiz</span>
+                  <small>More</small>
+                </div>
+              </div>
+
+              <!-- Expanded mood selection -->
+              <div *ngIf="showAllMoods" class="all-moods">
+                <div *ngFor="let mood of allMoods"
+                  [class.selected]="journalEntry.moodId === mood.id"
+                  (click)="selectMood(mood)"
+                  class="mood-item">
+                  <span>{{mood.icon}}</span>
+                  <span>{{mood.name}}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Journal Entries -->
+            <div class="journal-entries">
+              <h5>Journal Entries</h5>
+
+              <div *ngFor="let entry of journalEntry.details; let i = index" class="journal-entry">
+                <div class="entry-icon">
+                  <input [(ngModel)]="entry.icon"
+                    (change)="onIconChange(entry.icon || '', i)"
+                    placeholder="Icon/Emoji"
+                    class="icon-input">
+                </div>
+                <div class="entry-content">
+                  <textarea [(ngModel)]="entry.content"
+                    (blur)="onContentChange()"
+                    placeholder="What are you grateful for?"
+                    rows="2"
+                    class="content-input"></textarea>
+                </div>
+              </div>
+
+              <button (click)="addEntry()" class="btn btn-round btn-sm">
+                <span class="material-icons">add</span>
+                Add Entry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

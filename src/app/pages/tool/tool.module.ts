@@ -1,20 +1,17 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-
 import { ToolRoutingModule } from './tool-routing.module';
-import { NoteComponent } from './note/note.component';
-import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { SharedModule } from '@shared/shared-module.module';
-import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ReuseComponentModule } from '@reuse/reuse.module';
-
-import { HttpClientModule } from '@angular/common/http';
-// angular rich text editor
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AngularEditorModule } from '@kolkov/angular-editor';
+import { NoteComponent } from './note/note.component';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
 import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogComponent } from './coupon/coupon.component';
-// import { RunJsComponent } from './run-js/run-js.component';
-
+import { JournalComponent } from './journal/journal.component';
+import { TodoTodayComponent } from './todo-today/todo-today.component';
+import { HttpClientModule } from '@angular/common/http';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 @NgModule({
   declarations: [
     NoteComponent,
@@ -23,7 +20,7 @@ import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogCompo
     CouponComponent,
     CouponDetailDialogComponent,
     RedemptionInfoDialogComponent,
-    // RunJsComponent,
+    JournalComponent
   ],
   imports: [
     CommonModule,
@@ -33,7 +30,6 @@ import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogCompo
     HttpClientModule,
     AngularEditorModule,
     ReuseComponentModule,
-    // CodeEditorModule.forChild(),
   ],
   providers: [
     DatePipe,
