@@ -22,7 +22,7 @@ export class MoodService {
     );
   }
 
-  getMoodType(id: string): Observable<MoodType> {
+  getMoodType(id: number): Observable<MoodType> {
     const url = `${apiUrl}/${id}`;
     return this.http.get<MoodType>(url).pipe(
       tap(_ => ghostLog(`fetched mood type id=${id}`)),
@@ -37,7 +37,7 @@ export class MoodService {
     );
   }
 
-  updateMoodType(id: string, moodType: MoodType): Observable<any> {
+  updateMoodType(id: number, moodType: MoodType): Observable<any> {
     const url = `${apiUrl}/${id}`;
     return this.http.put(url, moodType).pipe(
       tap(_ => ghostLog(`updated mood type id=${id}`)),
@@ -45,7 +45,7 @@ export class MoodService {
     );
   }
 
-  deleteMoodType(id: string): Observable<MoodType> {
+  deleteMoodType(id: number): Observable<MoodType> {
     const url = `${apiUrl}/${id}`;
     return this.http.delete<MoodType>(url).pipe(
       tap(_ => ghostLog(`deleted mood type id=${id}`)),
@@ -53,7 +53,7 @@ export class MoodService {
     );
   }
 
-  incrementUsage(id: string): Observable<MoodType> {
+  incrementUsage(id: number): Observable<MoodType> {
     const url = `${apiUrl}/${id}/increment-usage`;
     return this.http.put<MoodType>(url, {}).pipe(
       tap(_ => ghostLog(`incremented usage for mood type id=${id}`)),

@@ -9,7 +9,7 @@ import { MoodListComponent } from './mood/mood-list.component';
 const routes: Routes = [
   { path: 'todo-label-list', title: `Todo Label`, component: TodoLabelListComponent, canActivate: [AdminGuard] },
   { path: 'coupon-settings', title: `Coupon Settings`, component: CouponSettingsComponent, canActivate: [GrandAdminGuard] },
-  { path: 'mood', title: `Mood Types`, component: MoodListComponent, canActivate: [AdminGuard] }
+  { path: 'attitude', title: `Mood Types`, component: MoodListComponent, canActivate: [AdminGuard] }
 ];
 
 @NgModule({

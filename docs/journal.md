@@ -64,7 +64,7 @@ Provide a daily journaling interface for users (admin role) to:
 interface JournalEntry {
   id: string;
   date: Date; // e.g. "2025-05-13"
-  moodId: string; // reference to MoodType
+  moodId: number; // reference to MoodType
   details: MoodItem[]; // 3 or more per day
   updatedAt: string;
 }
@@ -101,7 +101,7 @@ interface MoodType {
 
 \`\`\`json
 {
-  "moodId": "sad123",
+  "moodId": 1,
   "details": [
     { "icon": "😊", "content": "Had a good lunch with team" },
     { "icon": "🙏", "content": "Grateful for support from a friend" }

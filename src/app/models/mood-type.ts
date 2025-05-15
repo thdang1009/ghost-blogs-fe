@@ -1,5 +1,5 @@
 export class MoodType {
-  id?: string;
+  id?: number;
   name?: string;
   description?: string;
   icon?: string;

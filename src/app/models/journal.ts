@@ -4,7 +4,7 @@ export class Journal {
   id?: number;
   date?: Date;
   user?: number;
-  moodId?: string;
+  moodId?: number;
   details?: MoodItem[];
   updatedAt?: Date;
 }

@@ -26,22 +26,12 @@
               </button>
             </div>
             <div class="col-md-4">
-              <mat-form-field class="example-full-width" appearance="fill">
-                <mat-label>Search Date</mat-label>
-                <input matInput [matDatepicker]="searchPicker"
-                  #searchDate
-                  (dateChange)="searchByDate(searchDate.value)">
-                <mat-datepicker-toggle [for]="searchPicker" matSuffix></mat-datepicker-toggle>
-                <mat-datepicker #searchPicker></mat-datepicker>
-              </mat-form-field>
-            </div>
-            <div class="col-md-4">
               <button [disabled]="isLoading"
-                (click)="saveJournal()"
+                (click)="search()"
                 type="button"
                 class="btn btn-info pull-right btn-w100">
-                <em class="material-icons">save</em>
-                Save Journal
+                <em class="material-icons">search</em>
+                Search
               </button>
             </div>
           </form>
@@ -81,10 +71,23 @@
 
               <div *ngFor="let entry of journalEntry.details; let i = index" class="journal-entry">
                 <div class="entry-icon">
-                  <input [(ngModel)]="entry.icon"
-                    (change)="onIconChange(entry.icon || '', i)"
-                    placeholder="Icon/Emoji"
-                    class="icon-input">
+                  <div class="icon-selector-wrapper">
+                    <div class="icon-display" (click)="toggleIconSelector(i)">
+                      <span *ngIf="entry.icon && getMoodIconById(entry.icon)">
+                        {{getMoodIconById(entry.icon)}}
+                      </span>
+                      <span *ngIf="!entry.icon || !getMoodIconById(entry.icon)" class="icon-placeholder">
+                        <i class="material-icons">add</i>
+                      </span>
+                    </div>
+                    <div *ngIf="activeIconSelector === i" class="icon-dropdown">
+                      <div *ngFor="let mood of allMoods"
+                        class="icon-option"
+                        (click)="selectEntryIcon(mood.id, i)">
+                        <span>{{mood.icon}}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div class="entry-content">
                   <textarea [(ngModel)]="entry.content"

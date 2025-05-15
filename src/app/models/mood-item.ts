@@ -1,4 +1,4 @@
 export class MoodItem {
-  icon?: string;
+  icon?: number;
   content?: string;
 }

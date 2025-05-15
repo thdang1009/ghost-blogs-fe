@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Journal, MoodItem, MoodType } from '@models/_index';
 import { JournalService, MoodService } from '@services/_index';
@@ -17,6 +17,15 @@ export class JournalComponent implements OnInit, OnDestroy {
   currentDate = new Date();
   isLoading = false;
   hasUnsavedChanges = false;
+  activeIconSelector: number | null = null;
+  moodIconMap = new Map<number, string>();
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: any) {
+    if (!event.target.closest('.icon-selector-wrapper')) {
+      this.activeIconSelector = null;
+    }
+  }
 
   constructor(
     private journalService: JournalService,
@@ -25,8 +34,9 @@ export class JournalComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.loadMoods();
-    this.loadJournalForDate(this.currentDate);
+    this.loadMoods().then(() => {
+      this.loadJournalForDate(this.currentDate);
+    });
   }
 
   ngOnDestroy(): void {
@@ -37,22 +47,29 @@ export class JournalComponent implements OnInit, OnDestroy {
     }
   }
 
-  loadMoods(): void {
+  async loadMoods(): Promise<void> {
     this.isLoading = true;
-    this.moodService.getAllMoodTypes().subscribe(
-      (moods) => {
-        this.allMoods = moods;
-        // Take the top 5 most used moods for quick selection
-        this.topMoods = moods
-          .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
-          .slice(0, 5);
-        this.isLoading = false;
-      },
-      (error) => {
-        console.error('Error loading moods', error);
-        this.isLoading = false;
-      }
-    );
+    try {
+      const moods = await this.moodService.getAllMoodTypes().toPromise();
+      this.allMoods = moods || [];
+
+      // Create a map of mood.id to mood.icon for quick lookup
+      this.allMoods.forEach(mood => {
+        if (mood.id && mood.icon) {
+          this.moodIconMap.set(mood.id, mood.icon);
+        }
+      });
+
+      // Take the top 5 most used moods for quick selection
+      this.topMoods = [...this.allMoods]
+        .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
+        .slice(0, 5);
+      console.log('dangth topMoods', this.topMoods);
+      this.isLoading = false;
+    } catch (error) {
+      console.error('Error loading moods', error);
+      this.isLoading = false;
+    }
   }
 
   loadJournalForDate(date: Date): void {
@@ -60,24 +77,47 @@ export class JournalComponent implements OnInit, OnDestroy {
     const formattedDate = formatDate(date, 'yyyy-MM-dd', 'en-US');
     this.journalService.getJournalEntry(formattedDate).subscribe(
       (journal) => {
-        this.journalEntry = journal || { date, details: [] };
-        if (!this.journalEntry.details || this.journalEntry.details.length === 0) {
-          this.journalEntry.details = [
-            { icon: '', content: '' },
-            { icon: '', content: '' },
-            { icon: '', content: '' }
-          ];
+        if (journal && Object.keys(journal).length > 0) {
+          // Use the API response
+          this.journalEntry = journal;
+
+          // Ensure details array exists
+          if (!this.journalEntry.details || !Array.isArray(this.journalEntry.details)) {
+            this.journalEntry.details = [];
+          }
+          console.log('dangth journalEntry', this.journalEntry);
+
+          // Add default entries if less than 3
+          if (this.journalEntry.details.length < 3) {
+            const additionalEntries = 3 - this.journalEntry.details.length;
+            for (let i = 0; i < additionalEntries; i++) {
+              this.journalEntry.details.push({ icon: undefined, content: '' });
+            }
+          }
+        } else {
+          // Create a new journal entry if none exists
+          this.journalEntry = {
+            date,
+            details: [
+              { icon: undefined, content: '' },
+              { icon: undefined, content: '' },
+              { icon: undefined, content: '' }
+            ]
+          };
         }
         this.isLoading = false;
       },
       (error) => {
         console.error('Error loading journal', error);
         this.isLoading = false;
-        this.journalEntry = { date, details: [
-          { icon: '', content: '' },
-          { icon: '', content: '' },
-          { icon: '', content: '' }
-        ] };
+        this.journalEntry = {
+          date,
+          details: [
+            { icon: undefined, content: '' },
+            { icon: undefined, content: '' },
+            { icon: undefined, content: '' }
+          ]
+        };
       }
     );
   }
@@ -119,7 +159,7 @@ export class JournalComponent implements OnInit, OnDestroy {
   }
 
   addEntry(): void {
-    this.journalEntry.details?.push({ icon: '', content: '' });
+    this.journalEntry.details?.push({ icon: undefined, content: '' });
     this.hasUnsavedChanges = true;
   }
 
@@ -128,12 +168,21 @@ export class JournalComponent implements OnInit, OnDestroy {
     this.autoSave();
   }
 
-  onIconChange(icon: string, index: number): void {
-    if (this.journalEntry.details && this.journalEntry.details[index]) {
-      this.journalEntry.details[index].icon = icon;
+  toggleIconSelector(index: number): void {
+    this.activeIconSelector = this.activeIconSelector === index ? null : index;
+  }
+
+  selectEntryIcon(moodId: number | undefined, index: number): void {
+    if (this.journalEntry.details && this.journalEntry.details[index] && moodId) {
+      this.journalEntry.details[index].icon = moodId;
       this.hasUnsavedChanges = true;
+      this.activeIconSelector = null;
       this.autoSave();
     }
+  }
+
+  getMoodIconById(moodId: number): string {
+    return this.moodIconMap.get(moodId) || '';
   }
 
   private autoSaveTimeout: any;
@@ -182,9 +231,7 @@ export class JournalComponent implements OnInit, OnDestroy {
       );
     }
   }
-
-  searchByDate(searchDate: string): void {
-    this.currentDate = new Date(searchDate);
+  search(): void {
     this.loadJournalForDate(this.currentDate);
   }
 }
