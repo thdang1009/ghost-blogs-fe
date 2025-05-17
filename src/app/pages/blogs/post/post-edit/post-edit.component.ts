@@ -38,7 +38,6 @@ export class PostEditComponent implements OnInit, OnDestroy {
   elem: any;
   POST_TYPE = POST_TYPE;
   listPostType = [
-    // POST_TYPE.GHOST_EDITOR,
     POST_TYPE.MARKDOWN
   ];
   listPermisson = [
