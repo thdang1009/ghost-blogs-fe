@@ -2,7 +2,7 @@
 	<div class="container-fluid">
 		<div class="navbar-wrapper">
 			<a class="navbar-brand"
-				href="javascript:void(0)">
+				[routerLink]="['/dashboard']">
 				{{getTitle()}}
 			</a>
 		</div>
@@ -32,33 +32,25 @@
 				</div>
 			</form>
 			<ul class="navbar-nav">
-				<li class="nav-item dropdown">
+				<li class="nav-item" [matMenuTriggerFor]="accountMenu">
 					<a class="nav-link"
-						href="javascript:void(0)"
-						id="navbarDropdownMenuLink2"
-						data-toggle="dropdown"
-						aria-haspopup="true"
-						aria-expanded="false">
+						(click)="$event.preventDefault()">
 						<i class="material-icons">person</i>
 						<p>
 							<span class="d-lg-none d-md-block">Account</span>
 						</p>
 					</a>
-					<div class="dropdown-menu dropdown-menu-right"
-						aria-labelledby="navbarDropdownMenuLink2">
-						<a [routerLink]="['/logout']"
-							class="dropdown-item">
+					<mat-menu #accountMenu="matMenu" xPosition="before">
+						<a [routerLink]="['/logout']" mat-menu-item>
 							Logout
 						</a>
-						<a [routerLink]="['/admin/change-password']"
-							class="dropdown-item">
+						<a [routerLink]="['/admin/change-password']" mat-menu-item>
 							Change Password
 						</a>
-						<a [routerLink]="['/admin/my-account']"
-							class="dropdown-item">
+						<a [routerLink]="['/admin/my-account']" mat-menu-item>
 							My Account
 						</a>
-					</div>
+					</mat-menu>
 				</li>
 			</ul>
 		</div>

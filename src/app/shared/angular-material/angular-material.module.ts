@@ -13,6 +13,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 
 @NgModule({
   declarations: [],
@@ -33,6 +34,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatAutocompleteModule,
     MatCheckboxModule,
     MatIconModule,
+    MatMenuModule,
   ],
   exports: [
     // angular material
@@ -51,6 +53,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatAutocompleteModule,
     MatCheckboxModule,
     MatIconModule,
+    MatMenuModule,
   ],
   providers: [
     {

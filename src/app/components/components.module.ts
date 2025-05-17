@@ -24,7 +24,7 @@ import { SharedModule } from '@shared/shared-module.module';
     FormsModule,
     ReactiveFormsModule,
     DragDropModule,
-    SharedModule
+    SharedModule,
   ],
   declarations: [
     FooterComponent,

@@ -32,33 +32,25 @@
 			</span>
 		</form>
 		<ul class="nav navbar-nav nav-mobile-menu">
-			<li class="nav-item dropdown">
+			<li class="nav-item" [matMenuTriggerFor]="accountMenuMobile">
 				<a class="nav-link"
-					href="javascript:void(0)"
-					id="navbarDropdownMenuLink2"
-					data-toggle="dropdown"
-					aria-haspopup="true"
-					aria-expanded="false">
+					(click)="$event.preventDefault()">
 					<i class="material-icons">person</i>
 					<p>
 						<span class="d-lg-none d-md-block">Account</span>
 					</p>
 				</a>
-				<div class="dropdown-menu dropdown-menu-right"
-					aria-labelledby="navbarDropdownMenuLink2">
-					<a [routerLink]="['/logout']"
-						class="dropdown-item">
+				<mat-menu #accountMenuMobile="matMenu">
+					<a [routerLink]="['/logout']" mat-menu-item>
 						Logout
 					</a>
-					<a [routerLink]="['/admin/change-password']"
-						class="dropdown-item">
+					<a [routerLink]="['/admin/change-password']" mat-menu-item>
 						Change password
 					</a>
-					<a [routerLink]="['/admin/my-account']"
-						class="dropdown-item">
+					<a [routerLink]="['/admin/my-account']" mat-menu-item>
 						My Account
 					</a>
-				</div>
+				</mat-menu>
 			</li>
 		</ul>
 	</div>
@@ -75,28 +67,24 @@
 			</li>
 			<li *ngIf="menuItem.hasChild && menuItem.children.length"
 				routerLinkActive="active"
-				class="nav-item dropdown">
+				class="nav-item">
 				<a class="nav-link"
-					href="javascript:void(0)"
-					id="navbarDropdownMenuLink2"
-					data-toggle="dropdown"
-					aria-haspopup="true"
-					aria-expanded="false">
+					[matMenuTriggerFor]="childMenu"
+					(click)="$event.preventDefault()">
 					<i class="material-icons">{{menuItem.icon}}</i>
 					<p>
 						<span class="d-md-block">{{menuItem.title}}</span>
 					</p>
 				</a>
-				<div class="dropdown-menu dropdown-menu-right"
-					aria-labelledby="navbarDropdownMenuLink2">
+				<mat-menu #childMenu="matMenu">
 					<ng-container *ngFor="let child of menuItem.children">
 						<a [routerLink]="[child.path]"
-							class="dropdown-item">
+							mat-menu-item>
 							<i class="material-icons">{{child.icon}}</i>
 							{{child.title}}
 						</a>
 					</ng-container>
-				</div>
+				</mat-menu>
 			</li>
 		</ng-container>
 	</ul>
