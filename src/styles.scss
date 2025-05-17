@@ -12,6 +12,35 @@
   --series-text-color: #0056b3;
 }
 
+/* Material Menu overrides for mobile */
+.mat-menu-panel {
+  max-width: none !important;
+  min-width: 200px !important;
+}
+
+.account-menu, .mobile-menu, .child-menu {
+  min-width: 200px;
+}
+
+/* Fix for mobile menu overlay */
+.cdk-overlay-container {
+  z-index: 9999 !important;
+}
+
+/* Ensure menu items are visible on mobile */
+.mat-menu-item {
+  line-height: 36px !important;
+  height: auto !important;
+  min-height: 36px;
+  padding: 8px 16px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.mat-menu-item i {
+  margin-right: 8px;
+}
+
 a {
   color: var(--anchor-color);
 }
@@ -1031,4 +1060,10 @@ mat-tab-group {
 
 .post-series .series-link:hover {
   text-decoration: underline;
+}
+
+a {
+  &:hover {
+    cursor: pointer;
+  }
 }

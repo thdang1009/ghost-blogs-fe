@@ -32,15 +32,20 @@
 				</div>
 			</form>
 			<ul class="navbar-nav">
-				<li class="nav-item" [matMenuTriggerFor]="accountMenu">
+				<li class="nav-item">
 					<a class="nav-link"
-						(click)="$event.preventDefault()">
+						[matMenuTriggerFor]="accountMenu">
 						<i class="material-icons">person</i>
 						<p>
 							<span class="d-lg-none d-md-block">Account</span>
 						</p>
 					</a>
-					<mat-menu #accountMenu="matMenu" xPosition="before">
+					<mat-menu #accountMenu="matMenu" 
+						xPosition="before" 
+						yPosition="below" 
+						class="account-menu"
+						[overlapTrigger]="false"
+						[hasBackdrop]="true">
 						<a [routerLink]="['/logout']" mat-menu-item>
 							Logout
 						</a>

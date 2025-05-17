@@ -32,15 +32,19 @@
 			</span>
 		</form>
 		<ul class="nav navbar-nav nav-mobile-menu">
-			<li class="nav-item" [matMenuTriggerFor]="accountMenuMobile">
+			<li class="nav-item">
 				<a class="nav-link"
-					(click)="$event.preventDefault()">
+					[matMenuTriggerFor]="accountMenuMobile">
 					<i class="material-icons">person</i>
 					<p>
 						<span class="d-lg-none d-md-block">Account</span>
 					</p>
 				</a>
-				<mat-menu #accountMenuMobile="matMenu">
+				<mat-menu #accountMenuMobile="matMenu" 
+					yPosition="below"
+					[overlapTrigger]="false"
+					[hasBackdrop]="true"
+					class="mobile-menu">
 					<a [routerLink]="['/logout']" mat-menu-item>
 						Logout
 					</a>
@@ -69,14 +73,17 @@
 				routerLinkActive="active"
 				class="nav-item">
 				<a class="nav-link"
-					[matMenuTriggerFor]="childMenu"
-					(click)="$event.preventDefault()">
+					[matMenuTriggerFor]="childMenu">
 					<i class="material-icons">{{menuItem.icon}}</i>
 					<p>
 						<span class="d-md-block">{{menuItem.title}}</span>
 					</p>
 				</a>
-				<mat-menu #childMenu="matMenu">
+				<mat-menu #childMenu="matMenu"
+					yPosition="below"
+					[overlapTrigger]="false"
+					[hasBackdrop]="true"
+					class="child-menu">
 					<ng-container *ngFor="let child of menuItem.children">
 						<a [routerLink]="[child.path]"
 							mat-menu-item>
