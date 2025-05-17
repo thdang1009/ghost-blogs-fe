@@ -127,7 +127,7 @@
 						</div>
 						<post-edit *ngIf="itemSelected && itemSelected.id"
 							[itemSelected]="itemSelected"
-							(save)="saveItem({ item: itemSelected, isBack: true })">
+							(save)="saveItem($event)">
 						</post-edit>
 					</div>
 				</div>

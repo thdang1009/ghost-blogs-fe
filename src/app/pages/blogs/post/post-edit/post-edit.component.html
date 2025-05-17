@@ -69,7 +69,8 @@
 			appearance="fill">
 			<mat-label>Series</mat-label>
 			<mat-select [(ngModel)]="itemSelected.series"
-				name="series"
+				name="series" 
+				[compareWith]="compareBothIdAndObjectWithFunc"
 				(selectionChange)="onSeriesChange($event.value)">
 				<mat-option [value]="null">-- None --</mat-option>
 				<mat-option *ngFor="let series of allSeries"

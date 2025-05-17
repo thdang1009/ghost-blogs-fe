@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, inject, Inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, Inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { MyFile, Post, Series } from '@models/_index';
 import { EventEmitter } from '@angular/core';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
@@ -23,6 +23,12 @@ export interface PostSaveWrapper {
   styleUrls: ['../post-list/post-list.component.scss']
 })
 export class PostEditComponent implements OnInit, OnDestroy {
+
+  compareBothIdAndObjectWithFunc = (a: any, b: any) => {
+    const aId = a._id || a;
+    const bId = b._id || b;
+    return aId === bId;
+  }
 
   @Input() itemSelected = {} as any;
   @Output() save: EventEmitter<PostSaveWrapper> = new EventEmitter<PostSaveWrapper>();
