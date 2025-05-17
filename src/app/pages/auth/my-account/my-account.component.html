@@ -1,0 +1,61 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row" style="justify-content: center;">
+      <div class="col-lg-6 col-md-8 col-sm-12">
+        <div class="card">
+          <div class="card-header card-header-info">
+            <h4 class="card-title">My Account</h4>
+          </div>
+          <div class="card-body">
+            <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+              <div class="row">
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Username" formControlName="username" [disabled]="true">
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Email" formControlName="email" [disabled]="true">
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <input matInput placeholder="Full Name" formControlName="fullName" [disabled]="!isEditMode">
+                    <mat-error *ngIf="userForm.get('fullName')?.hasError('required') && userForm.get('fullName')?.touched">
+                      Full name is required
+                    </mat-error>
+                    <mat-error *ngIf="userForm.get('fullName')?.hasError('maxLength')">
+                      Max 50 characters
+                    </mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <textarea matInput placeholder="Bio" formControlName="bio" [disabled]="!isEditMode" rows="2"></textarea>
+                    <mat-hint align="end">{{userForm.get('bio')?.value?.length || 0}} / 200</mat-hint>
+                  </mat-form-field>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div *ngIf="errorMsg" class="alert alert-danger">{{errorMsg}}</div>
+                  <div *ngIf="successMsg" class="alert alert-success">{{successMsg}}</div>
+                </div>
+              </div>
+              <div class="row mt-3">
+                <div class="col-md-12 text-right">
+                  <button *ngIf="!isEditMode" type="button" class="btn btn-info" (click)="enableEdit()">Edit</button>
+                  <button *ngIf="isEditMode" type="submit" class="btn btn-success" [disabled]="userForm.invalid">Save</button>
+                  <button *ngIf="isEditMode" type="button" class="btn btn-secondary ml-2" (click)="cancelEdit()">Cancel</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

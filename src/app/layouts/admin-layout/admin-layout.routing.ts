@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 
 import { LoginGuard } from '@guards/login.guard';
 import { GrandAdminGuard } from '@guards/grand-admin.guard';
+import { ChangePasswordComponent } from '@pages/auth/change-password/change-password.component';
+import { MyAccountComponent } from '@pages/auth/my-account/my-account.component';
 export const AdminLayoutRoutes: Routes = [
   {
     path: 'dashboard',
@@ -9,7 +11,8 @@ export const AdminLayoutRoutes: Routes = [
     loadChildren: () => import('../../pages/dashboard/dashboard.module').then(m => m.DashboardModule),
     canActivate: [LoginGuard]
   },
-  // { path: 'change-password', title: 'Change password', component: ChangePasswordComponent, canActivate: [LoginGuard] },
+  { path: 'change-password', title: 'Change password', component: ChangePasswordComponent, canActivate: [LoginGuard] },
+  { path: 'my-account', title: 'My account', component: MyAccountComponent, canActivate: [LoginGuard] },
   {
     path: 'user',
     children: [{
