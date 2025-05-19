@@ -1,205 +1,463 @@
 <div class="main-content">
   <div class="container-fluid">
-    <!-- Pending Rewards List Section -->
+    <!-- Tab Navigation -->
     <div class="row">
       <div class="col-md-12">
-        <div class="card">
-          <div class="card-header card-header-info">
-            <h4 class="card-title hover-pointer" (click)="loadPendingRewards()">Pending Reward Requests</h4>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-primary">
-                  <tr>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th *ngIf="canManageCoupons">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let reward of pendingRewards">
-                    <td>{{ reward.description }}</td>
-                    <td>{{ reward.status }}</td>
-                    <td *ngIf="canManageCoupons" class="actions">
-                      <button mat-icon-button class="btn btn-primary btn-link btn-sm"
-                        *ngIf="editingRewardId !== reward._id" (click)="editReward(reward)">
-                        <i class="material-icons">edit</i>
-                      </button>
-                      <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward)">
-                        <i class="material-icons">delete</i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="pendingRewards.length === 0">
-                    <td colspan="100%" class="text-center">No pending reward requests</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <mat-tab-group (selectedTabChange)="onTabChange($event)" [selectedIndex]="this.isPartnerA ? 0 : 1">
+          <mat-tab label="Pé Huế">
+            <ng-template matTabContent>
+              <!-- Pé Huế Content -->
+              <div class="tab-content">
+                <!-- Pending Rewards List Section for Pé Huế -->
+                <div class="row mt-3">
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header card-header-info">
+                        <h4 class="card-title hover-pointer" (click)="loadPendingRewards()">Pending Reward Requests (Pé Huế)</h4>
+                      </div>
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th *ngIf="isPartnerA">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let reward of pendingRewardsA">
+                                <td>{{ reward.description }}</td>
+                                <td>{{ reward.status }}</td>
+                                <td *ngIf="isPartnerA" class="actions">
+                                  <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward, 'A')">
+                                    <i class="material-icons">delete</i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr *ngIf="pendingRewardsA.length === 0">
+                                <td colspan="100%" class="text-center">No pending reward requests for Pé Huế</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
 
-            <!-- Reward Edit Form -->
-            <div *ngIf="editingRewardId" class="mt-4">
-              <form [formGroup]="rewardForm" (ngSubmit)="saveReward()">
-                <div class="row">
-                  <div class="col-md-6">
-                    <mat-form-field class="full-width">
-                      <input matInput placeholder="Title" formControlName="title" required>
-                      <mat-error *ngIf="rewardForm.get('title')?.hasError('required')">
-                        Title is required
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-6">
-                    <mat-form-field class="full-width">
-                      <input matInput placeholder="Description" formControlName="description" required>
-                      <mat-error *ngIf="rewardForm.get('description')?.hasError('required')">
-                        Description is required
-                      </mat-error>
-                    </mat-form-field>
+                        <!-- Reward Edit Form for Pé Huế -->
+                        <div *ngIf="editingRewardId && currentActiveTab === 'A'" class="mt-4">
+                          <form [formGroup]="rewardForm" (ngSubmit)="saveReward('A')">
+                            <div class="row">
+                              <div class="col-md-12">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Description" formControlName="description" required>
+                                  <mat-error *ngIf="rewardForm.get('description')?.hasError('required')">
+                                    Description is required
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-12 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!rewardForm.valid">
+                                  Save Changes
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Coupons List Section for Pé Huế -->
                 <div class="row">
-                  <div class="col-md-12 text-right">
-                    <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
-                    <button type="submit" class="btn btn-info" [disabled]="!rewardForm.valid">
-                      Save Changes
-                    </button>
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header card-header-info">
+                        <h4 class="card-title hover-pointer" (click)="loadCoupons('A')">Coupon Management (Pé Huế)</h4>
+                        <p class="card-category">Manage "Phiếu Pé Ngoan" coupons for Pé Huế</p>
+                      </div>
+                      <div class="card-body">
+                        <!-- Create Coupon Button for Pé Huế -->
+                        <div class="mb-4 d-flex">
+                          <ng-container *ngIf="isPartnerB && !isEditing">
+                            <button class="btn btn-success" (click)="showCreateCouponForm('A')">
+                              <i class="material-icons">add</i> Add Coupon
+                            </button>
+                            <!-- <button class="btn btn-primary ml-2" (click)="showBulkAddForm('A')">
+                              <i class="material-icons">add_circle</i> Bulk Add
+                            </button> -->
+                          </ng-container>
+                          <button class="btn btn-info ml-2" (click)="showRedemptionInfo('A')">
+                            <i class="material-icons">info</i> Reward Details
+                          </button>
+                          <!-- Settings Button - Common for both partners -->
+                          <a routerLink="/admin/operation/coupon-settings" class="btn btn-warning ml-2">
+                            <i class="material-icons">settings</i> Settings
+                          </a>
+                          <!-- Redeem Button for Pé Huế -->
+                          <ng-container *ngIf="canRedeemAsPartnerA && selectedCouponsA.size > 0">
+                            <button class="btn btn-success ml-2" (click)="showRedemptionInfo('A', selectedCouponsA.size)">
+                              Redeem {{ selectedCouponsA.size }} coupons
+                            </button>
+                          </ng-container>
+                        </div>
+
+                        <!-- Bulk Add Form for Pé Huế -->
+                        <div *ngIf="showingBulkForm && currentActiveTab === 'A'" class="mb-4">
+                          <form [formGroup]="bulkForm" (ngSubmit)="bulkAddCoupons('A')">
+                            <div class="row">
+                              <div class="col-md-6">
+                                <mat-form-field class="full-width">
+                                  <input matInput type="number" placeholder="Number of coupons to add" formControlName="count" min="1" max="100">
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('required')">
+                                    Count is required
+                                  </mat-error>
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('min')">
+                                    Must add at least 1 coupon
+                                  </mat-error>
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('max')">
+                                    Cannot add more than 100 coupons at once
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-6 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelBulkAdd()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!bulkForm.valid">
+                                  Add Coupons
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+
+                        <!-- Coupon Edit Form for Pé Huế -->
+                        <div *ngIf="isEditing && currentActiveTab === 'A'" class="mb-4">
+                          <form [formGroup]="couponForm" (ngSubmit)="saveCouponForPartner('A')">
+                            <div class="row">
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Description (max 36 characters)" formControlName="description"
+                                    required maxlength="36">
+                                  <mat-hint align="end">{{couponForm.get('description')?.value?.length || 0}}/36</mat-hint>
+                                  <mat-error *ngIf="couponForm.get('description')?.hasError('required')">
+                                    Description is required
+                                  </mat-error>
+                                  <mat-error *ngIf="couponForm.get('description')?.hasError('maxlength')">
+                                    Description cannot exceed 36 characters
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <mat-select [compareWith]="compareWithFunc" formControlName="status">
+                                    <mat-option *ngFor="let status of statusOptions" [value]="status">
+                                      {{ status }}
+                                    </mat-option>
+                                  </mat-select>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Usage Purpose" formControlName="usagePurpose">
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-12 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!couponForm.valid">
+                                  {{ editingCouponId ? 'Update Coupon' : 'Add Coupon' }}
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+
+                        <!-- Coupons Table for Pé Huế -->
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th *ngIf="canRedeemAsPartnerA">Select</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Usage Purpose</th>
+                                <th>Details</th>
+                                <th *ngIf="isPartnerA">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let coupon of couponsA" [ngClass]="{'used-coupon': coupon.status === 'used'}">
+                                <td *ngIf="canRedeemAsPartnerA && coupon.status === 'unused'">
+                                  <mat-checkbox [checked]="isPartnerACouponSelected(coupon._id!)"
+                                    (change)="toggleCouponSelection(coupon._id!, 'A')" color="primary">
+                                  </mat-checkbox>
+                                </td>
+                                <td *ngIf="canRedeemAsPartnerA && coupon.status === 'used'">
+                                  <span class="text-muted">N/A</span>
+                                </td>
+                                <td>{{ coupon.description }}</td>
+                                <td>
+                                  <span [ngClass]="coupon.status === 'used' ? 'text-danger' : 'text-success'">
+                                    {{ coupon.status }}
+                                  </span>
+                                </td>
+                                <td>{{ coupon.usagePurpose || '-' }}</td>
+                                <td>
+                                  <button mat-icon-button (click)="showCouponDetails(coupon)" class="btn btn-info btn-link btn-sm">
+                                    <i class="material-icons">visibility</i>
+                                  </button>
+                                </td>
+                                <td *ngIf="isPartnerB" class="actions">
+                                  <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editCoupon(coupon, 'A')">
+                                    <i class="material-icons">edit</i>
+                                  </button>
+                                  <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteCoupon(coupon, 'A')">
+                                    <i class="material-icons">delete</i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr *ngIf="couponsA.length === 0">
+                                <td [attr.colspan]="isPartnerB ? 6 : 5" class="text-center">No coupons available for Pé Huế</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+              </div>
+            </ng-template>
+          </mat-tab>
 
-    <!-- Coupons List Section -->
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-header card-header-info">
-            <h4 class="card-title hover-pointer" (click)="loadCoupons()">Coupon Management</h4>
-            <p class=" card-category">Manage "Phiếu Pé Ngoan" coupons</p>
-          </div>
-          <div class="card-body">
-            <!-- Create Coupon Button -->
-            <div class="mb-4 d-flex">
-              <ng-container *ngIf="canManageCoupons && !isEditing">
-                <button class="btn btn-success" (click)="showCreateCouponForm()">
-                  <i class="material-icons">add</i>
-                </button>
-              </ng-container>
-              <button class="btn btn-info ml-2" (click)="showRedemptionInfo()">
-                <i class="material-icons">info</i> Chi tiết thưởng
-              </button>
-              <!-- Settings Button -->
-              <a routerLink="/admin/operation/coupon-settings" class="btn btn-warning ml-2">
-                <i class="material-icons">settings</i>
-              </a>
-              <!-- Redeem Button -->
-              <ng-container *ngIf="canRedeemCoupons && selectedCoupons.size > 0">
-                <button class="btn btn-success" (click)="showRedemptionInfo(selectedCoupons.size)">
-                  Đã chọn {{ selectedCoupons.size }} phiếu
-                </button>
-              </ng-container>
-            </div>
+          <mat-tab label="Anh Đăng">
+            <ng-template matTabContent>
+              <!-- Anh Đăng Content -->
+              <div class="tab-content">
+                <!-- Pending Rewards List Section for Anh Đăng -->
+                <div class="row mt-3">
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header card-header-info">
+                        <h4 class="card-title hover-pointer" (click)="loadPendingRewards()">Pending Reward Requests (Anh Đăng)</h4>
+                      </div>
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th *ngIf="isPartnerB">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let reward of pendingRewardsB">
+                                <td>{{ reward.description }}</td>
+                                <td>{{ reward.status }}</td>
+                                <td *ngIf="isPartnerB" class="actions">
+                                  <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward, 'B')">
+                                    <i class="material-icons">delete</i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr *ngIf="pendingRewardsB.length === 0">
+                                <td colspan="100%" class="text-center">No pending reward requests for Anh Đăng</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
 
-            <!-- Coupon Edit Form -->
-            <div *ngIf="isEditing && canManageCoupons" class="mb-4">
-              <form [formGroup]="couponForm" (ngSubmit)="saveCoupon()">
-                <div class="row">
-                  <div class="col-md-4">
-                    <mat-form-field class="full-width">
-                      <input matInput placeholder="Description (max 36 characters)" formControlName="description"
-                        required maxlength="36">
-                      <mat-hint align="end">{{couponForm.get('description')?.value?.length || 0}}/36</mat-hint>
-                      <mat-error *ngIf="couponForm.get('description')?.hasError('required')">
-                        Description is required
-                      </mat-error>
-                      <mat-error *ngIf="couponForm.get('description')?.hasError('maxlength')">
-                        Description cannot exceed 36 characters
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-4">
-                    <mat-form-field class="full-width">
-                      <mat-select [compareWith]="compareWithFunc" formControlName="status">
-                        <mat-option *ngFor="let status of statusOptions" [value]="status">
-                          {{ status }}
-                        </mat-option>
-                      </mat-select>
-                    </mat-form-field>
-                  </div>
-                  <div class="col-md-4">
-                    <mat-form-field class="full-width">
-                      <input matInput placeholder="Usage Purpose" formControlName="usagePurpose">
-                    </mat-form-field>
+                        <!-- Reward Edit Form for Anh Đăng -->
+                        <div *ngIf="editingRewardId && currentActiveTab === 'B'" class="mt-4">
+                          <form [formGroup]="rewardForm" (ngSubmit)="saveReward('B')">
+                            <div class="row">
+                              <div class="col-md-12">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Description" formControlName="description" required>
+                                  <mat-error *ngIf="rewardForm.get('description')?.hasError('required')">
+                                    Description is required
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-12 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!rewardForm.valid">
+                                  Save Changes
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Coupons List Section for Anh Đăng -->
                 <div class="row">
-                  <div class="col-md-12 text-right">
-                    <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
-                    <button type="submit" class="btn btn-info" [disabled]="!couponForm.valid">
-                      {{ editingCouponId ? 'Update Coupon' : 'Add Coupon' }}
-                    </button>
+                  <div class="col-md-12">
+                    <div class="card">
+                      <div class="card-header card-header-info">
+                        <h4 class="card-title hover-pointer" (click)="loadCoupons('B')">Coupon Management (Anh Đăng)</h4>
+                        <p class="card-category">Manage "Phiếu Pé Ngoan" coupons for Anh Đăng</p>
+                      </div>
+                      <div class="card-body">
+                        <!-- Create Coupon Button for Anh Đăng -->
+                        <div class="mb-4 d-flex">
+                          <ng-container *ngIf="isPartnerA && !isEditing">
+                            <button class="btn btn-success" (click)="showCreateCouponForm('B')">
+                              <i class="material-icons">add</i> Add Coupon
+                            </button>
+                            <!-- <button class="btn btn-primary ml-2" (click)="showBulkAddForm('B')">
+                              <i class="material-icons">add_circle</i> Bulk Add
+                            </button> -->
+                          </ng-container>
+                          <button class="btn btn-info ml-2" (click)="showRedemptionInfo('B')">
+                            <i class="material-icons">info</i> Reward Details
+                          </button>
+                          <!-- Redeem Button for Anh Đăng -->
+                          <ng-container *ngIf="canRedeemAsPartnerB && selectedCouponsB.size > 0">
+                            <button class="btn btn-success ml-2" (click)="showRedemptionInfo('B', selectedCouponsB.size)">
+                              Redeem {{ selectedCouponsB.size }} coupons
+                            </button>
+                          </ng-container>
+                        </div>
+
+                        <!-- Bulk Add Form for Anh Đăng -->
+                        <div *ngIf="showingBulkForm && currentActiveTab === 'B'" class="mb-4">
+                          <form [formGroup]="bulkForm" (ngSubmit)="bulkAddCoupons('B')">
+                            <div class="row">
+                              <div class="col-md-6">
+                                <mat-form-field class="full-width">
+                                  <input matInput type="number" placeholder="Number of coupons to add" formControlName="count" min="1" max="100">
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('required')">
+                                    Count is required
+                                  </mat-error>
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('min')">
+                                    Must add at least 1 coupon
+                                  </mat-error>
+                                  <mat-error *ngIf="bulkForm.get('count')?.hasError('max')">
+                                    Cannot add more than 100 coupons at once
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-6 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelBulkAdd()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!bulkForm.valid">
+                                  Add Coupons
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+
+                        <!-- Coupon Edit Form for Anh Đăng -->
+                        <div *ngIf="isEditing && currentActiveTab === 'B'" class="mb-4">
+                          <form [formGroup]="couponForm" (ngSubmit)="saveCouponForPartner('B')">
+                            <div class="row">
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Description (max 36 characters)" formControlName="description"
+                                    required maxlength="36">
+                                  <mat-hint align="end">{{couponForm.get('description')?.value?.length || 0}}/36</mat-hint>
+                                  <mat-error *ngIf="couponForm.get('description')?.hasError('required')">
+                                    Description is required
+                                  </mat-error>
+                                  <mat-error *ngIf="couponForm.get('description')?.hasError('maxlength')">
+                                    Description cannot exceed 36 characters
+                                  </mat-error>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <mat-select [compareWith]="compareWithFunc" formControlName="status">
+                                    <mat-option *ngFor="let status of statusOptions" [value]="status">
+                                      {{ status }}
+                                    </mat-option>
+                                  </mat-select>
+                                </mat-form-field>
+                              </div>
+                              <div class="col-md-4">
+                                <mat-form-field class="full-width">
+                                  <input matInput placeholder="Usage Purpose" formControlName="usagePurpose">
+                                </mat-form-field>
+                              </div>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-12 text-right">
+                                <button type="button" class="btn btn-default" (click)="cancelEdit()">Cancel</button>
+                                <button type="submit" class="btn btn-info" [disabled]="!couponForm.valid">
+                                  {{ editingCouponId ? 'Update Coupon' : 'Add Coupon' }}
+                                </button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+
+                        <!-- Coupons Table for Anh Đăng -->
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th *ngIf="canRedeemAsPartnerB">Select</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Usage Purpose</th>
+                                <th>Details</th>
+                                <th *ngIf="isPartnerA">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let coupon of couponsB" [ngClass]="{'used-coupon': coupon.status === 'used'}">
+                                <td *ngIf="canRedeemAsPartnerB && coupon.status === 'unused'">
+                                  <mat-checkbox [checked]="isPartnerBCouponSelected(coupon._id!)"
+                                    (change)="toggleCouponSelection(coupon._id!, 'B')" color="primary">
+                                  </mat-checkbox>
+                                </td>
+                                <td *ngIf="canRedeemAsPartnerB && coupon.status === 'used'">
+                                  <span class="text-muted">N/A</span>
+                                </td>
+                                <td>{{ coupon.description }}</td>
+                                <td>
+                                  <span [ngClass]="coupon.status === 'used' ? 'text-danger' : 'text-success'">
+                                    {{ coupon.status }}
+                                  </span>
+                                </td>
+                                <td>{{ coupon.usagePurpose || '-' }}</td>
+                                <td>
+                                  <button mat-icon-button (click)="showCouponDetails(coupon)" class="btn btn-info btn-link btn-sm">
+                                    <i class="material-icons">visibility</i>
+                                  </button>
+                                </td>
+                                <td *ngIf="isPartnerA" class="actions">
+                                  <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editCoupon(coupon, 'B')">
+                                    <i class="material-icons">edit</i>
+                                  </button>
+                                  <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteCoupon(coupon, 'B')">
+                                    <i class="material-icons">delete</i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr *ngIf="couponsB.length === 0">
+                                <td [attr.colspan]="isPartnerA ? 6 : 5" class="text-center">No coupons available for Anh Đăng</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </form>
-            </div>
-
-            <!-- Coupons Table -->
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-primary">
-                  <tr>
-                    <th *ngIf="canRedeemCoupons">Select</th>
-                    <th>Description</th>
-                    <th>Status</th>
-                    <th>Usage Purpose</th>
-                    <th>Details</th>
-                    <th *ngIf="canManageCoupons">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let coupon of coupons" [ngClass]="{'used-coupon': coupon.status === 'used'}">
-                    <td *ngIf="canRedeemCoupons && coupon.status === 'unused'">
-                      <mat-checkbox [checked]="isCouponSelected(coupon._id!)"
-                        (change)="toggleCouponSelection(coupon._id!)" color="primary">
-                      </mat-checkbox>
-                    </td>
-                    <td *ngIf="canRedeemCoupons && coupon.status === 'used'">
-                      <span class="text-muted">N/A</span>
-                    </td>
-                    <td>{{ coupon.description }}</td>
-                    <td>
-                      <span [ngClass]="coupon.status === 'used' ? 'text-danger' : 'text-success'">
-                        {{ coupon.status }}
-                      </span>
-                    </td>
-                    <td>{{ coupon.usagePurpose || '-' }}</td>
-                    <td>
-                      <button mat-icon-button (click)="showCouponDetails(coupon)" class="btn btn-info btn-link btn-sm">
-                        <i class="material-icons">visibility</i>
-                      </button>
-                    </td>
-                    <td *ngIf="canManageCoupons" class="actions">
-                      <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editCoupon(coupon)">
-                        <i class="material-icons">edit</i>
-                      </button>
-                      <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteCoupon(coupon)">
-                        <i class="material-icons">delete</i>
-                      </button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="coupons.length === 0">
-                    <td [attr.colspan]="canManageCoupons ? '8' : '7'" class="text-center">No coupons available</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+              </div>
+            </ng-template>
+          </mat-tab>
+        </mat-tab-group>
       </div>
     </div>
   </div>

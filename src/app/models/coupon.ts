@@ -3,6 +3,7 @@ export interface Coupon {
   description: string;
   status: 'unused' | 'used';
   usagePurpose?: string;
+  partner?: 'A' | 'B';
   createdAt?: Date;
   updatedAt?: Date;
 }

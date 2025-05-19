@@ -1,8 +1,9 @@
 import { Component, OnInit, Inject } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatTabChangeEvent } from '@angular/material/tabs';
 import { Coupon, Reward } from '@models/_index';
-import { AlertService, CouponService, RewardService, AuthService, ConfigService, FileService } from '@services/_index';
+import { AlertService, CouponService, RewardService, AuthService, ConfigService } from '@services/_index';
 import { compareWithFunc } from '@shared/common';
 
 @Component({
@@ -11,8 +12,17 @@ import { compareWithFunc } from '@shared/common';
   styleUrls: ['./coupon.component.scss']
 })
 export class CouponComponent implements OnInit {
+  // All coupons
   coupons: Coupon[] = [];
+  // Partner-specific coupons
+  couponsA: Coupon[] = [];
+  couponsB: Coupon[] = [];
+
+  // All pending rewards
   pendingRewards: Reward[] = [];
+  // Partner-specific pending rewards
+  pendingRewardsA: Reward[] = [];
+  pendingRewardsB: Reward[] = [];
 
   couponForm: UntypedFormGroup;
   rewardForm: UntypedFormGroup;
@@ -21,14 +31,24 @@ export class CouponComponent implements OnInit {
   compareWithFunc = compareWithFunc;
 
   isEditing = false;
+  showingBulkForm = false;
   editingCouponId: string | null = null;
   editingRewardId: string | null = null;
 
-  userEmail: string = '';
-  canManageCoupons = false;
-  canRedeemCoupons = false;
+  // Current active partner in the UI
+  currentActiveTab: 'A' | 'B' = 'A';
 
-  selectedCoupons: Set<string> = new Set();
+  userEmail: string = '';
+  // Partner-specific permissions
+  isPartnerA = false;
+  isPartnerB = false;
+  canRedeemAsPartnerA = true; // Pé Huế can redeem both A and B
+  canRedeemAsPartnerB = true; // Anh Đăng can redeem both A and B
+
+  // Partner-specific coupon selections
+  selectedCouponsA: Set<string> = new Set();
+  selectedCouponsB: Set<string> = new Set();
+
   selectedReward: string | null = null;
 
   // New properties for redemption info modal
@@ -44,8 +64,6 @@ export class CouponComponent implements OnInit {
     private authService: AuthService,
     private formBuilder: UntypedFormBuilder,
     private dialog: MatDialog,
-    private configService: ConfigService,
-    private fileService: FileService,
     private alertService: AlertService
   ) {
     this.couponForm = this.formBuilder.group({
@@ -55,7 +73,6 @@ export class CouponComponent implements OnInit {
     });
 
     this.rewardForm = this.formBuilder.group({
-      title: ['', Validators.required],
       description: ['', Validators.required]
     });
 
@@ -69,53 +86,98 @@ export class CouponComponent implements OnInit {
 
     const userInfo = this.authService.getUserInfo();
     if (userInfo && userInfo.username) {
-      console.log('dangth userInfo', userInfo);
+      console.log('userInfo', userInfo);
       this.userEmail = userInfo.username;
-      this.canManageCoupons = this.userEmail === 'mean.ghost.site@gmail.com';
-      this.canRedeemCoupons = ['honghue.hr@gmail.com', 'mean.ghost.site@gmail.com'].includes(this.userEmail);
+
+      // Set partner-specific permissions
+      this.isPartnerB = this.userEmail === 'mean.ghost.site@gmail.com';
+      this.isPartnerA = this.userEmail === 'honghue.hr@gmail.com';
+      console.log('this.isPartnerA', this.isPartnerA);
+      console.log('this.isPartnerB', this.isPartnerB);
+      // Set initial active tab based on user role
+      if (this.isPartnerB) {
+        this.currentActiveTab = 'B';
+      }
     }
   }
 
   ngOnInit(): void {
-    this.loadCoupons();
+    this.loadCoupons(this.currentActiveTab);
     this.loadPendingRewards();
   }
 
-  loadCoupons(): void {
-    this.couponService.getCoupons().subscribe(
+  onTabChange(event: MatTabChangeEvent): void {
+    // Tab index 0 = Pé Huế, Tab index 1 = Anh Đăng
+    this.currentActiveTab = event.index === 0 ? 'A' : 'B';
+    this.loadCoupons(this.currentActiveTab);
+    this.loadPendingRewards();
+    this.cancelEdit();
+    this.cancelBulkAdd();
+  }
+
+  loadCoupons(partner: 'A' | 'B'): void {
+    this.couponService.getPartnerCoupons(partner).subscribe(
       (coupons) => {
-        this.coupons = coupons;
+        if (partner === 'A') {
+          this.couponsA = coupons;
+        } else {
+          this.couponsB = coupons;
+        }
       },
       (error) => {
-        console.error('Error loading coupons', error);
-        this.alertService.showNoti('Failed to load coupons', 'danger');
+        console.error(`Error loading coupons for partner ${partner}`, error);
+        this.alertService.showNoti(`Failed to load coupons for partner ${partner}`, 'danger');
       }
     );
   }
 
   loadPendingRewards(): void {
-    this.rewardService.getPendingRewards().subscribe(
+    const partner = this.currentActiveTab;
+    this.rewardService.getPendingRewards(partner).subscribe(
       (rewards) => {
-        this.pendingRewards = rewards;
+        if (partner === 'A') {
+          this.pendingRewardsA = rewards;
+        } else {
+          this.pendingRewardsB = rewards;
+        }
       },
       (error) => {
-        console.error('Error loading pending rewards', error);
-        this.alertService.showNoti('Failed to load pending rewards', 'danger');
+        console.error(`Error loading pending rewards for partner ${partner}`, error);
+        this.alertService.showNoti(`Failed to load pending rewards for partner ${partner}`, 'danger');
       }
     );
   }
 
   // Method to show the create coupon form
-  showCreateCouponForm(): void {
+  showCreateCouponForm(partner: 'A' | 'B'): void {
+    this.currentActiveTab = partner;
     this.isEditing = true;
+    this.showingBulkForm = false;
     this.editingCouponId = null;
     this.couponForm.reset();
   }
 
-  editCoupon(coupon: Coupon): void {
-    if (!this.canManageCoupons) return;
+  showBulkAddForm(partner: 'A' | 'B'): void {
+    this.currentActiveTab = partner;
+    this.isEditing = false;
+    this.showingBulkForm = true;
+    this.editingCouponId = null;
+    this.bulkForm.patchValue({ count: 1 });
+  }
 
+  cancelBulkAdd(): void {
+    this.showingBulkForm = false;
+    this.bulkForm.reset();
+    this.bulkForm.patchValue({ count: 1 });
+  }
+
+  editCoupon(coupon: Coupon, partner: 'A' | 'B'): void {
+    const canEdit = (partner === 'A' && this.isPartnerB) || (partner === 'B' && this.isPartnerA);
+    if (!canEdit) return;
+
+    this.currentActiveTab = partner;
     this.isEditing = true;
+    this.showingBulkForm = false;
     this.editingCouponId = coupon._id || null;
     this.couponForm.patchValue({
       description: coupon.description,
@@ -132,20 +194,21 @@ export class CouponComponent implements OnInit {
     this.rewardForm.reset();
   }
 
-  saveCoupon(): void {
-    if (!this.canManageCoupons || !this.couponForm.valid) return;
-    console.log('dangth couponForm', this.couponForm.value);
+  saveCouponForPartner(partner: 'A' | 'B'): void {
+    if (!this.couponForm.valid) return;
+
     const couponData: Coupon = {
       description: this.couponForm.value.description,
       usagePurpose: this.couponForm.value.usagePurpose,
-      status: this.couponForm.value.status
+      status: this.couponForm.value.status,
+      partner: partner
     };
 
     if (this.isEditing && this.editingCouponId) {
       this.couponService.updateCoupon(this.editingCouponId, couponData).subscribe(
         (result) => {
           this.alertService.showNoti('Coupon updated successfully', 'success');
-          this.loadCoupons();
+          this.loadCoupons(partner);
           this.cancelEdit();
         },
         (error) => {
@@ -157,7 +220,7 @@ export class CouponComponent implements OnInit {
       this.couponService.addCoupon(couponData).subscribe(
         (result) => {
           this.alertService.showNoti('Coupon added successfully', 'success');
-          this.loadCoupons();
+          this.loadCoupons(partner);
           this.cancelEdit();
         },
         (error) => {
@@ -168,11 +231,33 @@ export class CouponComponent implements OnInit {
     }
   }
 
-  deleteCoupon(coupon: Coupon): void {
+  bulkAddCoupons(partner: 'A' | 'B'): void {
+    const canAdd = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    if (!canAdd || !this.bulkForm.valid) return;
+
+    const count = this.bulkForm.value.count;
+
+    this.couponService.bulkAddCoupons(count, partner).subscribe(
+      (result) => {
+        this.alertService.showNoti(`${count} coupons added successfully for partner ${partner}`, 'success');
+        this.loadCoupons(partner);
+        this.cancelBulkAdd();
+      },
+      (error) => {
+        console.error('Error adding coupons in bulk', error);
+        this.alertService.showNoti('Failed to add coupons', 'danger');
+      }
+    );
+  }
+
+  deleteCoupon(coupon: Coupon, partner: 'A' | 'B'): void {
+    const canDelete = (partner === 'A' && this.isPartnerB) || (partner === 'B' && this.isPartnerA);
+    if (!canDelete) return;
+
     this.couponService.deleteCoupon(coupon._id!).subscribe(
       () => {
         this.alertService.showNoti('Coupon deleted successfully', 'success');
-        this.loadCoupons();
+        this.loadCoupons(partner);
       },
       (error) => {
         console.error('Error deleting coupon', error);
@@ -190,13 +275,14 @@ export class CouponComponent implements OnInit {
   }
 
   // Methods for redemption info modal using MatDialog
-  showRedemptionInfo(couponCount?: number): void {
-    const isRedemptionMode = couponCount !== undefined;
+  showRedemptionInfo(partner?: 'A' | 'B', couponCount?: number): void {
+    const isRedemptionMode = couponCount !== undefined && partner !== undefined;
     const dialogRef = this.dialog.open(RedemptionInfoDialogComponent, {
       width: '800px',
       data: {
         isRedemptionMode,
-        availableCouponCount: couponCount || 0
+        availableCouponCount: couponCount || 0,
+        partner: partner
       }
     });
 
@@ -204,34 +290,42 @@ export class CouponComponent implements OnInit {
       if (result) {
         this.selectedRedemptionOption = result.option;
         this.selectedRedemptionCouponCount = result.requiredCoupons;
-        this.confirmRedemption();
+        this.confirmRedemption(partner!);
       }
     });
   }
 
-  confirmRedemption(): void {
-    if (!this.selectedRedemptionOption || !this.canRedeemCoupons || this.selectedCoupons.size === 0) {
+  confirmRedemption(partner: 'A' | 'B'): void {
+    const canRedeem = (partner === 'A' && this.canRedeemAsPartnerA) || (partner === 'B' && this.canRedeemAsPartnerB);
+    const selectedCoupons = partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
+
+    if (!this.selectedRedemptionOption || !canRedeem || selectedCoupons.size === 0) {
       this.alertService.showNoti('Please select a reward option', 'warning');
       return;
     }
 
-    const couponIds = Array.from(this.selectedCoupons).slice(0, this.selectedRedemptionCouponCount);
+    const couponIds = Array.from(selectedCoupons).slice(0, this.selectedRedemptionCouponCount);
 
     const rewardData: Reward = {
       description: this.selectedRedemptionOption,
       couponCost: this.selectedRedemptionCouponCount,
       status: 'Pending',
-      requestedBy: this.userEmail
+      requestedBy: this.userEmail,
+      partner: partner
     };
 
     this.rewardService.addReward(rewardData).subscribe(
       (createdReward: Reward) => {
-        this.couponService.redeemCoupons(couponIds, createdReward._id!, createdReward.description).subscribe(
+        this.couponService.redeemCoupons(couponIds, createdReward._id!, createdReward.description, partner).subscribe(
           () => {
             this.alertService.showNoti('Reward requested successfully', 'success');
-            this.loadCoupons();
+            this.loadCoupons(partner);
             this.loadPendingRewards();
-            this.selectedCoupons.clear();
+            if (partner === 'A') {
+              this.selectedCouponsA.clear();
+            } else {
+              this.selectedCouponsB.clear();
+            }
             this.selectedRedemptionOption = null;
           },
           (error: any) => {
@@ -247,21 +341,25 @@ export class CouponComponent implements OnInit {
     );
   }
 
-  editReward(reward: Reward): void {
-    if (!this.canManageCoupons) return;
+  editReward(reward: Reward, partner: 'A' | 'B'): void {
+    const canEdit = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    if (!canEdit) return;
 
+    this.currentActiveTab = partner;
     this.editingRewardId = reward._id || null;
     this.rewardForm.patchValue({
       description: reward.description
     });
   }
 
-  saveReward(): void {
-    if (!this.canManageCoupons || !this.rewardForm.valid) return;
+  saveReward(partner: 'A' | 'B'): void {
+    const canEdit = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    if (!canEdit || !this.rewardForm.valid) return;
 
     const rewardData: Reward = {
       description: this.rewardForm.value.description,
-      status: 'Pending' // Maintain the status
+      status: 'Pending', // Maintain the status
+      partner: partner
     };
 
     if (this.editingRewardId) {
@@ -280,8 +378,9 @@ export class CouponComponent implements OnInit {
     }
   }
 
-  deleteReward(reward: Reward): void {
-    if (!this.canManageCoupons || !reward._id) return;
+  deleteReward(reward: Reward, partner: 'A' | 'B'): void {
+    const canDelete = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    if (!canDelete || !reward._id) return;
 
     this.rewardService.deleteReward(reward._id!).subscribe(
       () => {
@@ -295,36 +394,25 @@ export class CouponComponent implements OnInit {
     );
   }
 
-  bulkAddCoupons(): void {
-    if (!this.canManageCoupons || !this.bulkForm.valid) return;
+  toggleCouponSelection(couponId: string, partner: 'A' | 'B'): void {
+    const canSelect = (partner === 'A' && this.canRedeemAsPartnerA) || (partner === 'B' && this.canRedeemAsPartnerB);
+    if (!canSelect) return;
 
-    const count = this.bulkForm.value.count;
+    const selectedCoupons = partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
 
-    this.couponService.bulkAddCoupons(count).subscribe(
-      (result) => {
-        this.alertService.showNoti(`${count} coupons added successfully`, 'success');
-        this.loadCoupons();
-        this.bulkForm.patchValue({ count: 1 });
-      },
-      (error) => {
-        console.error('Error adding coupons in bulk', error);
-        this.alertService.showNoti('Failed to add coupons', 'danger');
-      }
-    );
-  }
-
-  toggleCouponSelection(couponId: string): void {
-    if (!this.canRedeemCoupons) return;
-
-    if (this.selectedCoupons.has(couponId)) {
-      this.selectedCoupons.delete(couponId);
+    if (selectedCoupons.has(couponId)) {
+      selectedCoupons.delete(couponId);
     } else {
-      this.selectedCoupons.add(couponId);
+      selectedCoupons.add(couponId);
     }
   }
 
-  isCouponSelected(couponId: string): boolean {
-    return this.selectedCoupons.has(couponId);
+  isPartnerACouponSelected(couponId: string): boolean {
+    return this.selectedCouponsA.has(couponId);
+  }
+
+  isPartnerBCouponSelected(couponId: string): boolean {
+    return this.selectedCouponsB.has(couponId);
   }
 
   selectReward(rewardId: string): void {
@@ -353,6 +441,7 @@ export class CouponComponent implements OnInit {
               {{ data.status }}
             </span>
           </p>
+          <p><strong>Partner:</strong> {{ data.partner === 'A' ? 'Pé Huế' : 'Anh Đăng' }}</p>
           <p><strong>Usage Purpose:</strong> {{ data.usagePurpose || 'Not specified' }}</p>
           <p><strong>Created:</strong> {{ data.createdAt | date:'medium' }}</p>
         </div>
@@ -371,7 +460,6 @@ export class CouponDetailDialogComponent {
     public dialogRef: MatDialogRef<CouponDetailDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Coupon,
     private configService: ConfigService,
-    private fileService: FileService
   ) {
     this.loadDefaultImage();
   }
@@ -442,11 +530,11 @@ export class CouponDetailDialogComponent {
       </div>
     </div>
     <div mat-dialog-actions align="end">
-      <button mat-dialog-close>Đóng</button>
+      <button mat-dialog-close>Close</button>
       <button *ngIf="data.isRedemptionMode && selectedOption"
               color="primary"
-              (click)="dialogRef.close({option: selectedOption, requiredCoupons: selectedRequiredCoupons})">
-        Đổi
+              (click)="dialogRef.close({option: selectedOption, requiredCoupons: selectedRequiredCoupons, partner: data.partner})">
+        Redeem
       </button>
     </div>
   `,
@@ -455,7 +543,7 @@ export class RedemptionInfoDialogComponent {
   selectedOption: string | null = null;
   selectedRequiredCoupons: number = 0;
 
-  rewardOptions = [
+  rewardOptionsForPartnerA = [
     { name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', requiredCoupons: 2 },
     { name: 'Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc', requiredCoupons: 2 },
     { name: 'Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', requiredCoupons: 3 },
@@ -468,10 +556,30 @@ export class RedemptionInfoDialogComponent {
     { name: 'Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích', requiredCoupons: 1 }
   ];
 
+  rewardOptionsForPartnerB = [
+    { name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', requiredCoupons: 2 },
+    { name: 'Phiếu đổi một buổi tối được Pé Huế gội đầu và sấy tóc', requiredCoupons: 2 },
+    { name: 'Phiếu đổi một buổi sáng được Pé Huế chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', requiredCoupons: 3 },
+    { name: 'Phiếu đổi một lần Pé Huế dọn dẹp nhà cửa toàn bộ', requiredCoupons: 4 },
+    { name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt', requiredCoupons: 1 },
+    { name: 'Phiếu đổi một lần được Pé Huế tự tay làm một món đồ handmade nhỏ xinh tặng chồng', requiredCoupons: 4 },
+    { name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Pé Huế lên kế hoạch', requiredCoupons: 5 },
+    { name: 'Phiếu đổi một buổi tối được Pé Huế cùng Anh Đăng chơi một trò chơi yêu thích', requiredCoupons: 1 }
+  ];
+
+  rewardOptions: any[] = [];
+
   constructor(
     public dialogRef: MatDialogRef<RedemptionInfoDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {isRedemptionMode: boolean, availableCouponCount: number}
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: {
+      isRedemptionMode: boolean,
+      availableCouponCount: number,
+      partner?: 'A' | 'B'
+    }
+  ) {
+    console.log('data', data);
+    this.rewardOptions = data.partner === 'A' ? this.rewardOptionsForPartnerA : this.rewardOptionsForPartnerB;
+  }
 
   selectOption(option: string, requiredCoupons: number): void {
     this.selectedOption = option;

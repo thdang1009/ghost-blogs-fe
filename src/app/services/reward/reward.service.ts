@@ -22,8 +22,12 @@ export class RewardService {
       );
   }
 
-  getPendingRewards(): Observable<Reward[]> {
-    return this.http.get<Reward[]>(`${apiUrl}?status=pending`)
+  getPendingRewards(partner?: 'A' | 'B'): Observable<Reward[]> {
+    let url = `${apiUrl}?status=pending`;
+    if (partner) {
+      url += `&partner=${partner}`;
+    }
+    return this.http.get<Reward[]>(url)
       .pipe(
         catchError(handleError<Reward[]>('getPendingRewards', []))
       );

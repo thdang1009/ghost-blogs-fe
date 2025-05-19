@@ -22,6 +22,13 @@ export class CouponService {
       );
   }
 
+  getPartnerCoupons(partner: 'A' | 'B'): Observable<Coupon[]> {
+    return this.http.get<Coupon[]>(`${apiUrl}/partner/${partner}`)
+      .pipe(
+        catchError(handleError<Coupon[]>('getPartnerCoupons', []))
+      );
+  }
+
   getCoupon(id: string): Observable<Coupon> {
     return this.http.get<Coupon>(`${apiUrl}/${id}`)
       .pipe(
@@ -36,8 +43,8 @@ export class CouponService {
       );
   }
 
-  bulkAddCoupons(count: number): Observable<any> {
-    return this.http.post<any>(`${apiUrl}/bulk`, { count })
+  bulkAddCoupons(count: number, partner: 'A' | 'B' = 'A'): Observable<any> {
+    return this.http.post<any>(apiUrl, { quantity: count, partner })
       .pipe(
         catchError(handleError('bulkAddCoupons'))
       );
@@ -57,8 +64,8 @@ export class CouponService {
       );
   }
 
-  redeemCoupons(couponIds: string[], rewardId: string, rewardDescription: string): Observable<any> {
-    return this.http.patch<any>(`${apiUrl}`, { couponIds, rewardId, rewardDescription })
+  redeemCoupons(couponIds: string[], rewardId: string, rewardDescription: string, partner: 'A' | 'B'): Observable<any> {
+    return this.http.patch<any>(apiUrl, { couponIds, rewardId, rewardDescription, partner })
       .pipe(
         catchError(handleError('redeemCoupons'))
       );
