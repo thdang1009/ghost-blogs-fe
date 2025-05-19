@@ -86,14 +86,11 @@ export class CouponComponent implements OnInit {
 
     const userInfo = this.authService.getUserInfo();
     if (userInfo && userInfo.username) {
-      console.log('userInfo', userInfo);
       this.userEmail = userInfo.username;
 
       // Set partner-specific permissions
       this.isPartnerB = this.userEmail === 'mean.ghost.site@gmail.com';
       this.isPartnerA = this.userEmail === 'honghue.hr@gmail.com';
-      console.log('this.isPartnerA', this.isPartnerA);
-      console.log('this.isPartnerB', this.isPartnerB);
       // Set initial active tab based on user role
       if (this.isPartnerB) {
         this.currentActiveTab = 'B';
@@ -577,7 +574,6 @@ export class RedemptionInfoDialogComponent {
       partner?: 'A' | 'B'
     }
   ) {
-    console.log('data', data);
     this.rewardOptions = data.partner === 'A' ? this.rewardOptionsForPartnerA : this.rewardOptionsForPartnerB;
   }
 
