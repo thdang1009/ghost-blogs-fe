@@ -306,7 +306,7 @@ export class CouponComponent implements OnInit {
     const rewardData: Reward = {
       description: this.selectedRedemptionOption,
       couponCost: this.selectedRedemptionCouponCount,
-      status: 'Pending',
+      status: 'pending',
       requestedBy: this.userEmail,
       partner: partner
     };
@@ -355,7 +355,7 @@ export class CouponComponent implements OnInit {
 
     const rewardData: Reward = {
       description: this.rewardForm.value.description,
-      status: 'Pending', // Maintain the status
+      status: 'pending', // Maintain the status
       partner: partner
     };
 

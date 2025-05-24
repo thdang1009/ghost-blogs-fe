@@ -30,6 +30,9 @@
                                 <td>{{ reward.description }}</td>
                                 <td>{{ reward.status }}</td>
                                 <td *ngIf="isPartnerA" class="actions">
+                                  <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editReward(reward, 'A')">
+                                    <i class="material-icons">edit</i>
+                                  </button>
                                   <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward, 'A')">
                                     <i class="material-icons">delete</i>
                                   </button>
@@ -185,7 +188,7 @@
                                 <th>Status</th>
                                 <th>Usage Purpose</th>
                                 <th>Details</th>
-                                <th *ngIf="isPartnerA">Actions</th>
+                                <th *ngIf="isPartnerB">Actions</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -259,6 +262,9 @@
                                 <td>{{ reward.description }}</td>
                                 <td>{{ reward.status }}</td>
                                 <td *ngIf="isPartnerB" class="actions">
+                                  <button mat-icon-button class="btn btn-primary btn-link btn-sm" (click)="editReward(reward, 'B')">
+                                    <i class="material-icons">edit</i>
+                                  </button>
                                   <button mat-icon-button class="btn btn-danger btn-link btn-sm" (click)="deleteReward(reward, 'B')">
                                     <i class="material-icons">delete</i>
                                   </button>
