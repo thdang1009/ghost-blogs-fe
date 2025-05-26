@@ -16,13 +16,68 @@ export class PostService {
   constructor(private http: HttpClient) { }
 
   // lấy hết list post cho khách, nếu là admin thì thấy bài viết ẩn của bản thân
-  getPublicPosts(req?: any): Observable<Post[]> {
+  getPublicPosts(req?: any): Observable<any> {
     const hasKeys = !!Object.keys(req).length;
     const queryString = hasKeys && ('?' + buildQueryString(req)) || '';
     const url = `${apiUrl}/public${req && queryString || ''}`;
-    return this.http.get<Post[]>(url).pipe(
+    return this.http.get<any>(url).pipe(
       tap(_ => ghostLog(`fetched public post`)),
-      catchError(handleError<Post[]>(`getPublicPost`, []))
+      catchError(handleError<any>(`getPublicPost`, { posts: [], pagination: null }))
+    );
+  }
+
+  // Get most read posts
+  getMostReadPosts(limit: number = 5, includePrivate: boolean = false): Observable<{ posts: Post[] }> {
+    const params = new URLSearchParams();
+    params.set('limit', limit.toString());
+    if (includePrivate) {
+      params.set('private', 'true');
+    }
+    const url = `${apiUrl}/most-read?${params.toString()}`;
+    return this.http.get<{ posts: Post[] }>(url).pipe(
+      tap(_ => ghostLog(`fetched most read posts`)),
+      catchError(handleError<{ posts: Post[] }>(`getMostReadPosts`, { posts: [] }))
+    );
+  }
+
+  // Get recent posts with pagination
+  getRecentPosts(page: number = 1, limit: number = 10, includePrivate: boolean = false): Observable<any> {
+    const params = new URLSearchParams();
+    params.set('page', page.toString());
+    params.set('limit', limit.toString());
+    if (includePrivate) {
+      params.set('private', 'true');
+    }
+    const url = `${apiUrl}/recent?${params.toString()}`;
+    return this.http.get<any>(url).pipe(
+      tap(_ => ghostLog(`fetched recent posts`)),
+      catchError(handleError<any>(`getRecentPosts`, { posts: [], pagination: null }))
+    );
+  }
+
+  // Get tags summary with post counts
+  getTagsSummary(includePrivate: boolean = false): Observable<{ tags: any[] }> {
+    const params = new URLSearchParams();
+    if (includePrivate) {
+      params.set('private', 'true');
+    }
+    const url = `${apiUrl}/tags-summary?${params.toString()}`;
+    return this.http.get<{ tags: any[] }>(url).pipe(
+      tap(_ => ghostLog(`fetched tags summary`)),
+      catchError(handleError<{ tags: any[] }>(`getTagsSummary`, { tags: [] }))
+    );
+  }
+
+  // Get series summary with post counts
+  getSeriesSummary(includePrivate: boolean = false): Observable<{ series: any[] }> {
+    const params = new URLSearchParams();
+    if (includePrivate) {
+      params.set('private', 'true');
+    }
+    const url = `${apiUrl}/series-summary?${params.toString()}`;
+    return this.http.get<{ series: any[] }>(url).pipe(
+      tap(_ => ghostLog(`fetched series summary`)),
+      catchError(handleError<{ series: any[] }>(`getSeriesSummary`, { series: [] }))
     );
   }
 

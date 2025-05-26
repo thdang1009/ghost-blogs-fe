@@ -1,0 +1,198 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton-base {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-container {
+  width: 100%;
+}
+
+.skeleton-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+// Post Card Skeleton
+.skeleton-post-card {
+  @extend .skeleton-base;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+
+  .skeleton-image {
+    @extend .skeleton-base;
+    height: 200px;
+    width: 100%;
+  }
+
+  .skeleton-content {
+    padding: 1.5rem;
+
+    .skeleton-title {
+      @extend .skeleton-base;
+      height: 24px;
+      width: 80%;
+      margin-bottom: 0.75rem;
+    }
+
+    .skeleton-series {
+      @extend .skeleton-base;
+      height: 16px;
+      width: 60%;
+      margin-bottom: 0.75rem;
+    }
+
+    .skeleton-description {
+      @extend .skeleton-base;
+      height: 16px;
+      width: 100%;
+      margin-bottom: 0.5rem;
+
+      &.short {
+        width: 70%;
+      }
+    }
+
+    .skeleton-meta {
+      @extend .skeleton-base;
+      height: 14px;
+      width: 50%;
+      margin-bottom: 1rem;
+    }
+
+    .skeleton-tags {
+      display: flex;
+      gap: 0.5rem;
+
+      .skeleton-tag {
+        @extend .skeleton-base;
+        height: 20px;
+        width: 60px;
+        border-radius: 12px;
+      }
+    }
+  }
+}
+
+// Compact Card Skeleton
+.skeleton-compact-card {
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1rem;
+
+  .skeleton-image-small {
+    @extend .skeleton-base;
+    width: 120px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .skeleton-content-compact {
+    padding: 0.75rem;
+    flex: 1;
+
+    .skeleton-title-small {
+      @extend .skeleton-base;
+      height: 18px;
+      width: 90%;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-description-small {
+      @extend .skeleton-base;
+      height: 14px;
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+
+    .skeleton-meta-small {
+      @extend .skeleton-base;
+      height: 12px;
+      width: 60%;
+    }
+  }
+}
+
+// Tag Chip Skeleton
+.skeleton-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  .skeleton-tag-chip {
+    @extend .skeleton-base;
+    height: 28px;
+    width: 80px;
+    border-radius: 14px;
+  }
+}
+
+// Series Card Skeleton
+.skeleton-series-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  margin-bottom: 1rem;
+
+  .skeleton-series-image {
+    @extend .skeleton-base;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    margin-right: 1rem;
+  }
+
+  .skeleton-series-content {
+    flex: 1;
+
+    .skeleton-series-title {
+      @extend .skeleton-base;
+      height: 20px;
+      width: 70%;
+      margin-bottom: 0.5rem;
+    }
+
+    .skeleton-series-count {
+      @extend .skeleton-base;
+      height: 14px;
+      width: 40%;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .skeleton-compact-card {
+    flex-direction: column;
+
+    .skeleton-image-small {
+      width: 100%;
+      height: 150px;
+    }
+  }
+
+  .skeleton-content,
+  .skeleton-content-compact {
+    padding: 1rem;
+  }
+} 

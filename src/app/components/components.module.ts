@@ -14,6 +14,8 @@ import { GhostSiteBtnComponent } from './ghost-site-btn/ghost-site-btn.component
 import { ListBadgeComponent } from './list-badge/list-badge.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { TagSubscribeComponent, EmailDialogComponent } from './tag-subscribe/tag-subscribe.component';
+import { PostCardComponent } from './post-card/post-card.component';
+import { SkeletonLoaderComponent } from './skeleton-loader/skeleton-loader.component';
 import { SharedModule } from '@shared/shared-module.module';
 // third party
 
@@ -37,7 +39,9 @@ import { SharedModule } from '@shared/shared-module.module';
     GhostSiteBtnComponent,
     ListBadgeComponent,
     TagSubscribeComponent,
-    EmailDialogComponent
+    EmailDialogComponent,
+    PostCardComponent,
+    SkeletonLoaderComponent
   ],
   exports: [
     FooterComponent,
@@ -49,7 +53,9 @@ import { SharedModule } from '@shared/shared-module.module';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
-    TagSubscribeComponent
+    TagSubscribeComponent,
+    PostCardComponent,
+    SkeletonLoaderComponent
   ],
   providers: [
   ]

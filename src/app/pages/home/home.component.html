@@ -2,102 +2,202 @@
 	<div class="header-box">
 		<div class="ghost-box">
 			<div>
-				<a [routerLink]="['/']"
-					aria-current="page"
-					class>
-					<img loading="lazy"
-						width="100px"
-						height="100px"
-						class="top-avatar"
-						alt="ghost"
-						src="assets/img/ghost.png"
-						alt="Ghost">
+				<a [routerLink]="['/']">
+					<img loading="lazy" width="80" height="80" alt="Ghost Blog" src="assets/img/ghost.png">
 				</a>
 			</div>
-			<div>
-				<ng-container *ngIf="!isLogined">
-					<a [routerLink]="['/login']"
-						style="font-weight: bold;">
-						LOGIN
-					</a>
-				</ng-container>
-				<ng-container *ngIf="isLogined && hasBackofficePermission">
-					<a [routerLink]="['/admin/dashboard']"
-						style="font-weight: bold;"
-						class="bold">
-						Go To Admin Site
-					</a>
-				</ng-container>
+			<!-- Badge Section -->
+			<div class="badges-section">
+				<app-list-badge></app-list-badge>
 			</div>
-			<app-list-badge></app-list-badge>
-		</div>
-	</div>
-	<div class="content-box">
-		<div *ngIf="isFilteredByTag"
-			class="div__back-to-home">
-			<a (click)="backToHome()">
-				← Back to the Blog Home
-			</a>
-		</div>
-		<div *ngFor="let post of posts"
-			class="list-post">
-			<article [ngClass]="{'private-post': post.permission === 'PRIVATE'}"
-				class="post hover-moved">
-				<a [routerLink]="'/blogs/' + post.postReference"
-					[ngStyle]="{
-            'background-image': 'url(' + post.postBackgroundImg + ')'
-          }"
-					(click)="openPost(post)"
-					class="post-thumbnail"></a>
-				<div class="post-content">
-					<h2 class="post-title">
-						<a [routerLink]="'/blogs/' + post.postReference">{{post.title}}</a>
-					</h2>
-					<div *ngIf="post.series" class="series-info post-series">
-						<i class="material-icons" aria-hidden="true">library_books</i>
-						<a [routerLink]="['/post-by-series', post.series.slug]" class="series-link">
-							Part of {{post.series.name}} series
+
+			<!-- Enhanced Header Actions -->
+			<div class="header-actions">
+				<!-- Private Mode Toggle for Admins -->
+				<div *ngIf="showPrivateToggle()" class="private-mode-toggle">
+					<button (click)="togglePrivateMode()" [class.active]="currentPrivateMode()"
+						class="btn btn-white btn-round toggle-btn d-flex align-items-center">
+						<i class="material-icons">{{currentPrivateMode() ? 'visibility_off' : 'visibility'}}</i>
+						<span>{{currentPrivateMode() ? 'Hide Private' : 'Show Private'}}</span>
+					</button>
+				</div>
+
+				<!-- Auth Actions -->
+				<div class="auth-actions">
+					<ng-container *ngIf="isLogined()">
+						<a [routerLink]="['/admin/dashboard']" class="auth-btn admin-btn">
+							<i class="material-icons">dashboard</i>
+							Dashboard
 						</a>
-					</div>
-					<p>
-						{{post.description}}
-					</p>
-					<span class="post-date">
-						{{post.author}}
-            wrote
-						<!-- write a component here later -->
-						{{post.createdAt! | timeAgo }}
-            ({{post.createdAt! | date }})
-            with
-						{{+(post.viewCount ?? 0) | number:'1.0-0' }}
-						<i class="material-icons"
-							aria-hidden="true">
-							visibility
-						</i>
-						|
-							{{post.readTime || 5}} mins read
-					</span>
-					<ng-container *ngIf="post && post.tags && post.tags.length">
-						<div *ngFor="let tag of post.tags"
-							class="tagging">
-							<a [routerLink]="'/home'"
-								[queryParams]="{ tag: tag.name }"
-								class="tagging__item">
-								#{{tag.name}}
-							</a>
-						</div>
 					</ng-container>
 				</div>
-			</article>
+			</div>
 		</div>
-		<div class="show-more-post-container">
-			<button *ngIf="allPosts.length"
-				[disabled]="isRunning"
-				(click)="showMorePost()"
-				type="button"
-				class="btn btn-info pull-right btn-w100">
-				<a class="show-more-post">Show more post</a>
-			</button>
-		</div>
+
+	</div>
+
+	<!-- Enhanced Content Sections -->
+	<div class="content-box">
+
+		<!-- Most Read Posts Section -->
+		<section class="content-section most-read-section">
+			<div class="section-header">
+				<h2 class="section-title">
+					<i class="material-icons">{{sections()['mostRead'].icon}}</i>
+					{{sections()['mostRead'].title}}
+				</h2>
+				<button *ngIf="sections()['mostRead'].error" (click)="retrySection('mostRead')" class="retry-btn">
+					<i class="material-icons">refresh</i>
+					Retry
+				</button>
+			</div>
+
+			<div class="section-content">
+				<!-- Loading State -->
+				<ng-container *ngIf="sections()['mostRead'].loading">
+					<app-skeleton-loader type="compact-card" [count]="5"></app-skeleton-loader>
+				</ng-container>
+
+				<!-- Error State -->
+				<div *ngIf="sections()['mostRead'].error" class="error-state">
+					<i class="material-icons">error_outline</i>
+					<p>{{sections()['mostRead'].error}}</p>
+				</div>
+
+				<!-- Content -->
+				<div *ngIf="!sections()['mostRead'].loading && !sections()['mostRead'].error" class="most-read-grid">
+					<app-post-card *ngFor="let post of mostReadPosts(); trackBy: trackByPostId" [post]="post"
+						[compact]="true" [showTags]="false">
+					</app-post-card>
+				</div>
+			</div>
+		</section>
+
+		<!-- Series Explorer Section -->
+		<section class="content-section series-section">
+			<div class="section-header">
+				<h2 class="section-title">
+					<i class="material-icons">{{sections()['series'].icon}}</i>
+					{{sections()['series'].title}}
+				</h2>
+				<button *ngIf="sections()['series'].error" (click)="retrySection('series')" class="retry-btn">
+					<i class="material-icons">refresh</i>
+					Retry
+				</button>
+			</div>
+
+			<div class="section-content">
+				<!-- Loading State -->
+				<ng-container *ngIf="sections()['series'].loading">
+					<app-skeleton-loader type="series-card" [count]="4"></app-skeleton-loader>
+				</ng-container>
+
+				<!-- Error State -->
+				<div *ngIf="sections()['series'].error" class="error-state">
+					<i class="material-icons">error_outline</i>
+					<p>{{sections()['series'].error}}</p>
+				</div>
+
+				<!-- Content -->
+				<div *ngIf="!sections()['series'].loading && !sections()['series'].error" class="series-grid">
+					<div *ngFor="let series of seriesSummary(); trackBy: trackBySeriesId"
+						(click)="navigateToSeriesFilter(series.slug)" class="series-card">
+						<div class="series-image">
+							<img [src]="series.imageUrl || 'assets/img/default-series.jpg'" [alt]="series.name"
+								loading="lazy">
+						</div>
+						<div class="series-info">
+							<h3 class="series-name">{{series.name}}</h3>
+							<p class="series-count">{{series.count}} posts</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- Recent Posts Section -->
+		<section class="content-section recent-section">
+			<div class="section-header">
+				<h2 class="section-title">
+					<i class="material-icons">{{sections()['recent'].icon}}</i>
+					{{sections()['recent'].title}}
+				</h2>
+				<button *ngIf="sections()['recent'].error" (click)="retrySection('recent')" class="retry-btn">
+					<i class="material-icons">refresh</i>
+					Retry
+				</button>
+			</div>
+
+			<div class="section-content">
+				<!-- Loading State -->
+				<ng-container *ngIf="sections()['recent'].loading && recentPostsPage() === 1">
+					<app-skeleton-loader type="post-card" [count]="3"></app-skeleton-loader>
+				</ng-container>
+
+				<!-- Error State -->
+				<div *ngIf="sections()['recent'].error" class="error-state">
+					<i class="material-icons">error_outline</i>
+					<p>{{sections()['recent'].error}}</p>
+				</div>
+
+				<!-- Content -->
+				<div *ngIf="!sections()['recent'].loading && !sections()['recent'].error" class="recent-posts-grid">
+					<app-post-card *ngFor="let post of recentPosts(); trackBy: trackByPostId" [post]="post">
+					</app-post-card>
+				</div>
+
+				<!-- Load More Button -->
+				<div *ngIf="recentPostsPagination()?.hasNextPage" class="load-more-container">
+					<button (click)="loadMoreRecentPosts()" [disabled]="sections()['recent'].loading"
+						class="btn btn-info pull-right btn-w100">
+						<ng-container *ngIf="!sections()['recent'].loading">
+							<i class="material-icons">expand_more</i>
+							Load More Posts
+						</ng-container>
+						<ng-container *ngIf="sections()['recent'].loading">
+							<i class="material-icons spinning">refresh</i>
+							Loading...
+						</ng-container>
+					</button>
+				</div>
+			</div>
+		</section>
+
+
+		<!-- Tags Explorer Section -->
+		<section class="content-section tags-section">
+			<div class="section-header">
+				<h2 class="section-title">
+					<i class="material-icons">{{sections()['tags'].icon}}</i>
+					{{sections()['tags'].title}}
+				</h2>
+				<button *ngIf="sections()['tags'].error" (click)="retrySection('tags')" class="retry-btn">
+					<i class="material-icons">refresh</i>
+					Retry
+				</button>
+			</div>
+
+			<div class="section-content">
+				<!-- Loading State -->
+				<ng-container *ngIf="sections()['tags'].loading">
+					<app-skeleton-loader type="tag-chip" [count]="8"></app-skeleton-loader>
+				</ng-container>
+
+				<!-- Error State -->
+				<div *ngIf="sections()['tags'].error" class="error-state">
+					<i class="material-icons">error_outline</i>
+					<p>{{sections()['tags'].error}}</p>
+				</div>
+
+				<!-- Content -->
+				<div *ngIf="!sections()['tags'].loading && !sections()['tags'].error" class="tags-grid">
+					<button *ngFor="let tag of tagsSummary(); trackBy: trackByTagId"
+						(click)="navigateToTagFilter(tag.name)" class="tag-chip">
+						<span class="tag-name">#{{tag.name}}</span>
+						<span class="tag-count">{{tag.count}}</span>
+					</button>
+				</div>
+			</div>
+		</section>
 	</div>
 </div>

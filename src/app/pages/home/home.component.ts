@@ -1,10 +1,18 @@
-import { Component, HostListener, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { debounce } from '@shared/common';
-import { BookPermission } from '@shared/enum';
 import { AuthService, PostService } from '@services/_index';
 import { Post } from '@models/_index';
-import { isPlatformBrowser } from '@angular/common';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+
+interface Section {
+  id: string;
+  title: string;
+  icon: string;
+  loaded: boolean;
+  loading: boolean;
+  error: string | null;
+}
 
 @Component({
   selector: 'app-home',
@@ -12,75 +20,205 @@ import { isPlatformBrowser } from '@angular/common';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  
+  // Signals for reactive state management
+  isLogined = signal(false);
+  isAdmin = signal(false);
+  privateMode = signal(false);
+  
+  // Section data
+  mostReadPosts = signal<Post[]>([]);
+  recentPosts = signal<Post[]>([]);
+  tagsSummary = signal<any[]>([]);
+  seriesSummary = signal<any[]>([]);
+  
+  // Pagination for recent posts
+  recentPostsPage = signal(1);
+  recentPostsPagination = signal<any>(null);
+  
+  // Section states
+  sections = signal<Record<string, Section>>({
+    mostRead: { id: 'mostRead', title: '🔥 Most Read Posts', icon: 'trending_up', loaded: false, loading: false, error: null },
+    series: { id: 'series', title: '📚 Browse Series', icon: 'library_books', loaded: false, loading: false, error: null },
+    recent: { id: 'recent', title: '🆕 Recent Posts', icon: 'schedule', loaded: false, loading: false, error: null },
+    tags: { id: 'tags', title: '🏷️ Explore by Tags', icon: 'label', loaded: false, loading: false, error: null }
+  });
 
-  BookPermission = BookPermission;
-  isLogined = false;
-  hasBackofficePermission = false;
-  isLoadingResults = true;
-  thisYear = (new Date).getFullYear();
-  posts: Post[] = [];
-  allPosts: Post[] = [];
-  isFilteredByTag = false;
-  pageIndex = 1;
-  numberOfAllPost = 0;
-  isRunning = false;
-
-  @HostListener('window:scroll', ['$event'])
-  onScroll(event: Event) {
-    this.debouceFunc();
-  }
+  // Computed values
+  showPrivateToggle = computed(() => this.isAdmin());
+  currentPrivateMode = computed(() => this.privateMode());
 
   constructor(
     private authService: AuthService,
     private postService: PostService,
     private router: Router,
-    private activeRoute: ActivatedRoute,
-    @Inject(PLATFORM_ID) private platformId: Object
-  ) {
-  }
+    private activeRoute: ActivatedRoute
+  ) {}
 
   ngOnInit() {
-    this.init();
+    this.initializeAuth();
+    this.loadInitialSections();
+    this.handleRouteParams();
   }
 
-  async init() {
-    this.isLogined = this.authService.isLogin();
-    this.hasBackofficePermission = this.authService.isLogin();
-    this.activeRoute.queryParams
-      .subscribe(params => {
-        const currentPath = this.router.url;
-        if (currentPath && currentPath.includes('tag')) {
-          this.isFilteredByTag = true;
+  private initializeAuth() {
+    this.isLogined.set(this.authService.isLogin());
+    this.isAdmin.set(this.authService.isAdmin());
+  }
+
+  private handleRouteParams() {
+    this.activeRoute.queryParams.subscribe(params => {
+      if (params['tag']) {
+        this.navigateToTagFilter(params['tag']);
+      } else if (params['series']) {
+        this.navigateToSeriesFilter(params['series']);
+      }
+    });
+  }
+
+  private loadInitialSections() {
+    // Load most critical sections first
+    this.loadMostReadPosts();
+    this.loadTagsSummary();
+    
+    // Load other sections with slight delay for better perceived performance
+    setTimeout(() => {
+      this.loadSeriesSummary();
+      this.loadRecentPosts();
+    }, 100);
+  }
+
+  loadMostReadPosts() {
+    this.updateSectionState('mostRead', { loading: true, error: null });
+    
+    this.postService.getMostReadPosts(5, this.privateMode())
+      .pipe(
+        catchError(error => {
+          this.updateSectionState('mostRead', { loading: false, error: 'Failed to load most read posts' });
+          return of({ posts: [] });
+        }),
+        finalize(() => this.updateSectionState('mostRead', { loading: false, loaded: true }))
+      )
+      .subscribe(response => {
+        this.mostReadPosts.set(response.posts);
+      });
+  }
+
+  loadRecentPosts(page: number = 1) {
+    this.updateSectionState('recent', { loading: true, error: null });
+    
+    this.postService.getRecentPosts(page, 10, this.privateMode())
+      .pipe(
+        catchError(error => {
+          this.updateSectionState('recent', { loading: false, error: 'Failed to load recent posts' });
+          return of({ posts: [], pagination: null });
+        }),
+        finalize(() => this.updateSectionState('recent', { loading: false, loaded: true }))
+      )
+      .subscribe(response => {
+        if (page === 1) {
+          this.recentPosts.set(response.posts);
+        } else {
+          this.recentPosts.update(posts => [...posts, ...response.posts]);
         }
-        this.postService.getPublicPosts(params)
-          .subscribe(posts => {
-            this.allPosts = JSON.parse(JSON.stringify(posts));
-            this.numberOfAllPost = posts.length;
-            this.posts = this.getMorePosts().filter((post): post is Post => post !== undefined);
-          });
-      })
-
+        this.recentPostsPagination.set(response.pagination);
+        this.recentPostsPage.set(page);
+      });
   }
 
-  openPost(post: Post) {
-    // TODO document why this method 'openPost' is empty
+  loadTagsSummary() {
+    this.updateSectionState('tags', { loading: true, error: null });
+    
+    this.postService.getTagsSummary(this.privateMode())
+      .pipe(
+        catchError(error => {
+          this.updateSectionState('tags', { loading: false, error: 'Failed to load tags' });
+          return of({ tags: [] });
+        }),
+        finalize(() => this.updateSectionState('tags', { loading: false, loaded: true }))
+      )
+      .subscribe(response => {
+        this.tagsSummary.set(response.tags);
+      });
   }
 
-  backToHome() {
-    this.isFilteredByTag = false;
-    this.router.navigate(['home']);
+  loadSeriesSummary() {
+    this.updateSectionState('series', { loading: true, error: null });
+    
+    this.postService.getSeriesSummary(this.privateMode())
+      .pipe(
+        catchError(error => {
+          this.updateSectionState('series', { loading: false, error: 'Failed to load series' });
+          return of({ series: [] });
+        }),
+        finalize(() => this.updateSectionState('series', { loading: false, loaded: true }))
+      )
+      .subscribe(response => {
+        this.seriesSummary.set(response.series);
+      });
   }
 
-  getMorePosts(pageSize = 4) {
-    const tempArray: Post[] = this.allPosts.splice(0, pageSize);
-    return tempArray;
+  private updateSectionState(sectionId: string, updates: Partial<Section>) {
+    this.sections.update(sections => ({
+      ...sections,
+      [sectionId]: { ...sections[sectionId], ...updates }
+    }));
   }
 
-  showMorePost() {
-    if (this.posts?.length < this.numberOfAllPost) {
-      const newPosts = this.getMorePosts(5).filter((post): post is Post => post !== undefined);
-      this.posts = [...this.posts, ...newPosts];
+  togglePrivateMode() {
+    this.privateMode.update(mode => !mode);
+    this.refreshAllSections();
+  }
+
+  private refreshAllSections() {
+    this.loadMostReadPosts();
+    this.loadTagsSummary();
+    this.loadSeriesSummary();
+    this.loadRecentPosts(1);
+  }
+
+  loadMoreRecentPosts() {
+    const pagination = this.recentPostsPagination();
+    if (pagination && pagination.hasNextPage) {
+      this.loadRecentPosts(pagination.currentPage + 1);
     }
   }
-  debouceFunc = debounce(this.showMorePost.bind(this), 800);
+
+  navigateToTagFilter(tagName: string) {
+    this.router.navigate(['/home'], { queryParams: { tag: tagName } });
+  }
+
+  navigateToSeriesFilter(seriesSlug: string) {
+    this.router.navigate(['/post-by-series', seriesSlug]);
+  }
+
+  retrySection(sectionId: string) {
+    switch (sectionId) {
+      case 'mostRead':
+        this.loadMostReadPosts();
+        break;
+      case 'tags':
+        this.loadTagsSummary();
+        break;
+      case 'series':
+        this.loadSeriesSummary();
+        break;
+      case 'recent':
+        this.loadRecentPosts(1);
+        break;
+    }
+  }
+
+  // TrackBy functions for performance optimization
+  trackByPostId(index: number, post: Post): any {
+    return post.id || post.postReference;
+  }
+
+  trackByTagId(index: number, tag: any): any {
+    return tag._id || tag.name;
+  }
+
+  trackBySeriesId(index: number, series: any): any {
+    return series._id || series.slug;
+  }
 }

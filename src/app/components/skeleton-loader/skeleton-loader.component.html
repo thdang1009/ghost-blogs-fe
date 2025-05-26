@@ -1,0 +1,54 @@
+<div class="skeleton-container">
+  <ng-container [ngSwitch]="type">
+    
+    <!-- Post Card Skeleton -->
+    <div *ngSwitchCase="'post-card'" class="skeleton-wrapper">
+      <div *ngFor="let item of items" class="skeleton-post-card">
+        <div class="skeleton-image"></div>
+        <div class="skeleton-content">
+          <div class="skeleton-title"></div>
+          <div class="skeleton-series"></div>
+          <div class="skeleton-description"></div>
+          <div class="skeleton-description short"></div>
+          <div class="skeleton-meta"></div>
+          <div class="skeleton-tags">
+            <div class="skeleton-tag"></div>
+            <div class="skeleton-tag"></div>
+            <div class="skeleton-tag"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact Card Skeleton -->
+    <div *ngSwitchCase="'compact-card'" class="skeleton-wrapper">
+      <div *ngFor="let item of items" class="skeleton-compact-card">
+        <div class="skeleton-image-small"></div>
+        <div class="skeleton-content-compact">
+          <div class="skeleton-title-small"></div>
+          <div class="skeleton-description-small"></div>
+          <div class="skeleton-meta-small"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tag Chip Skeleton -->
+    <div *ngSwitchCase="'tag-chip'" class="skeleton-wrapper">
+      <div class="skeleton-tags-row">
+        <div *ngFor="let item of items" class="skeleton-tag-chip"></div>
+      </div>
+    </div>
+
+    <!-- Series Card Skeleton -->
+    <div *ngSwitchCase="'series-card'" class="skeleton-wrapper">
+      <div *ngFor="let item of items" class="skeleton-series-card">
+        <div class="skeleton-series-image"></div>
+        <div class="skeleton-series-content">
+          <div class="skeleton-series-title"></div>
+          <div class="skeleton-series-count"></div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div> 
