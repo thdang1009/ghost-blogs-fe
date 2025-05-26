@@ -19,7 +19,7 @@
 
     .post-thumbnail {
       width: 120px;
-      height: 80px;
+      // height: 80px;
       flex-shrink: 0;
     }
 
@@ -146,7 +146,7 @@
     display: inline-block;
     padding: 0.25rem 0.5rem;
     background: #ecf0f1;
-    color: #2c3e50;
+    color: #2c3e50 !important;
     text-decoration: none;
     border-radius: 12px;
     font-size: 0.75rem;

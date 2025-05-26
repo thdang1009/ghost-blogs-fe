@@ -39,99 +39,26 @@
 	<!-- Enhanced Content Sections -->
 	<div class="content-box">
 
-		<!-- Most Read Posts Section -->
-		<section class="content-section most-read-section">
+		<!-- Tag Filter Header (when filtering by tag) -->
+		<section *ngIf="isFilterMode()" class="content-section filter-header-section">
 			<div class="section-header">
 				<h2 class="section-title">
-					<i class="material-icons">{{sections()['mostRead'].icon}}</i>
-					{{sections()['mostRead'].title}}
+					<i class="material-icons">label</i>
+					Posts tagged with "{{currentTagFilter()}}"
 				</h2>
-				<button *ngIf="sections()['mostRead'].error" (click)="retrySection('mostRead')" class="retry-btn">
-					<i class="material-icons">refresh</i>
-					Retry
+				<button (click)="clearTagFilter()" class="btn btn-outline-secondary">
+					<i class="material-icons">clear</i>
+					Show All Posts
 				</button>
-			</div>
-
-			<div class="section-content">
-				<!-- Loading State -->
-				<ng-container *ngIf="sections()['mostRead'].loading">
-					<app-skeleton-loader type="compact-card" [count]="5"></app-skeleton-loader>
-				</ng-container>
-
-				<!-- Error State -->
-				<div *ngIf="sections()['mostRead'].error" class="error-state">
-					<i class="material-icons">error_outline</i>
-					<p>{{sections()['mostRead'].error}}</p>
-				</div>
-
-				<!-- Content -->
-				<div *ngIf="!sections()['mostRead'].loading && !sections()['mostRead'].error" class="most-read-grid">
-					<app-post-card *ngFor="let post of mostReadPosts(); trackBy: trackByPostId" [post]="post"
-						[compact]="true" [showTags]="false">
-					</app-post-card>
-				</div>
 			</div>
 		</section>
 
-		<!-- Series Explorer Section -->
-		<section class="content-section series-section">
-			<div class="section-header">
-				<h2 class="section-title">
-					<i class="material-icons">{{sections()['series'].icon}}</i>
-					{{sections()['series'].title}}
-				</h2>
-				<button *ngIf="sections()['series'].error" (click)="retrySection('series')" class="retry-btn">
-					<i class="material-icons">refresh</i>
-					Retry
-				</button>
-			</div>
-
+		<!-- Filtered Posts (when filtering by tag) -->
+		<section *ngIf="isFilterMode()" class="content-section filtered-posts-section">
 			<div class="section-content">
 				<!-- Loading State -->
-				<ng-container *ngIf="sections()['series'].loading">
-					<app-skeleton-loader type="series-card" [count]="4"></app-skeleton-loader>
-				</ng-container>
-
-				<!-- Error State -->
-				<div *ngIf="sections()['series'].error" class="error-state">
-					<i class="material-icons">error_outline</i>
-					<p>{{sections()['series'].error}}</p>
-				</div>
-
-				<!-- Content -->
-				<div *ngIf="!sections()['series'].loading && !sections()['series'].error" class="series-grid">
-					<div *ngFor="let series of seriesSummary(); trackBy: trackBySeriesId"
-						(click)="navigateToSeriesFilter(series.slug)" class="series-card">
-						<div class="series-image">
-							<img [src]="series.imageUrl || 'assets/img/default-series.jpg'" [alt]="series.name"
-								loading="lazy">
-						</div>
-						<div class="series-info">
-							<h3 class="series-name">{{series.name}}</h3>
-							<p class="series-count">{{series.count}} posts</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- Recent Posts Section -->
-		<section class="content-section recent-section">
-			<div class="section-header">
-				<h2 class="section-title">
-					<i class="material-icons">{{sections()['recent'].icon}}</i>
-					{{sections()['recent'].title}}
-				</h2>
-				<button *ngIf="sections()['recent'].error" (click)="retrySection('recent')" class="retry-btn">
-					<i class="material-icons">refresh</i>
-					Retry
-				</button>
-			</div>
-
-			<div class="section-content">
-				<!-- Loading State -->
-				<ng-container *ngIf="sections()['recent'].loading && recentPostsPage() === 1">
-					<app-skeleton-loader type="post-card" [count]="3"></app-skeleton-loader>
+				<ng-container *ngIf="sections()['recent'].loading">
+					<app-skeleton-loader type="post-card" [count]="6"></app-skeleton-loader>
 				</ng-container>
 
 				<!-- Error State -->
@@ -140,64 +67,186 @@
 					<p>{{sections()['recent'].error}}</p>
 				</div>
 
-				<!-- Content -->
-				<div *ngIf="!sections()['recent'].loading && !sections()['recent'].error" class="recent-posts-grid">
-					<app-post-card *ngFor="let post of recentPosts(); trackBy: trackByPostId" [post]="post">
+				<!-- Filtered Posts Content -->
+				<div *ngIf="!sections()['recent'].loading && !sections()['recent'].error" class="filtered-posts-grid">
+					<app-post-card *ngFor="let post of filteredPosts(); trackBy: trackByPostId" [post]="post">
 					</app-post-card>
 				</div>
 
-				<!-- Load More Button -->
-				<div *ngIf="recentPostsPagination()?.hasNextPage" class="load-more-container">
-					<button (click)="loadMoreRecentPosts()" [disabled]="sections()['recent'].loading"
-						class="btn btn-info pull-right btn-w100">
-						<ng-container *ngIf="!sections()['recent'].loading">
-							<i class="material-icons">expand_more</i>
-							Load More Posts
-						</ng-container>
-						<ng-container *ngIf="sections()['recent'].loading">
-							<i class="material-icons spinning">refresh</i>
-							Loading...
-						</ng-container>
-					</button>
+				<!-- No posts found -->
+				<div *ngIf="!sections()['recent'].loading && !sections()['recent'].error && filteredPosts().length === 0"
+					class="no-posts-found">
+					<i class="material-icons">search_off</i>
+					<p>No posts found for tag "{{currentTagFilter()}}"</p>
 				</div>
 			</div>
 		</section>
 
+		<!-- Normal Content Sections (when not filtering) -->
+		<div *ngIf="!isFilterMode()">
 
-		<!-- Tags Explorer Section -->
-		<section class="content-section tags-section">
-			<div class="section-header">
-				<h2 class="section-title">
-					<i class="material-icons">{{sections()['tags'].icon}}</i>
-					{{sections()['tags'].title}}
-				</h2>
-				<button *ngIf="sections()['tags'].error" (click)="retrySection('tags')" class="retry-btn">
-					<i class="material-icons">refresh</i>
-					Retry
-				</button>
-			</div>
-
-			<div class="section-content">
-				<!-- Loading State -->
-				<ng-container *ngIf="sections()['tags'].loading">
-					<app-skeleton-loader type="tag-chip" [count]="8"></app-skeleton-loader>
-				</ng-container>
-
-				<!-- Error State -->
-				<div *ngIf="sections()['tags'].error" class="error-state">
-					<i class="material-icons">error_outline</i>
-					<p>{{sections()['tags'].error}}</p>
-				</div>
-
-				<!-- Content -->
-				<div *ngIf="!sections()['tags'].loading && !sections()['tags'].error" class="tags-grid">
-					<button *ngFor="let tag of tagsSummary(); trackBy: trackByTagId"
-						(click)="navigateToTagFilter(tag.name)" class="tag-chip">
-						<span class="tag-name">#{{tag.name}}</span>
-						<span class="tag-count">{{tag.count}}</span>
+			<!-- Most Read Posts Section -->
+			<section class="content-section most-read-section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<i class="material-icons">{{sections()['mostRead'].icon}}</i>
+						{{sections()['mostRead'].title}}
+					</h2>
+					<button *ngIf="sections()['mostRead'].error" (click)="retrySection('mostRead')" class="retry-btn">
+						<i class="material-icons">refresh</i>
+						Retry
 					</button>
 				</div>
-			</div>
-		</section>
+
+				<div class="section-content">
+					<!-- Loading State -->
+					<ng-container *ngIf="sections()['mostRead'].loading">
+						<app-skeleton-loader type="compact-card" [count]="6"></app-skeleton-loader>
+					</ng-container>
+
+					<!-- Error State -->
+					<div *ngIf="sections()['mostRead'].error" class="error-state">
+						<i class="material-icons">error_outline</i>
+						<p>{{sections()['mostRead'].error}}</p>
+					</div>
+
+					<!-- Content -->
+					<div *ngIf="!sections()['mostRead'].loading && !sections()['mostRead'].error"
+						class="most-read-grid">
+						<app-post-card *ngFor="let post of mostReadPosts(); trackBy: trackByPostId" [post]="post"
+							[compact]="true" [showTags]="false">
+						</app-post-card>
+					</div>
+				</div>
+			</section>
+
+			<!-- Series Explorer Section -->
+			<section class="content-section series-section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<i class="material-icons">{{sections()['series'].icon}}</i>
+						{{sections()['series'].title}}
+					</h2>
+					<button *ngIf="sections()['series'].error" (click)="retrySection('series')" class="retry-btn">
+						<i class="material-icons">refresh</i>
+						Retry
+					</button>
+				</div>
+
+				<div class="section-content">
+					<!-- Loading State -->
+					<ng-container *ngIf="sections()['series'].loading">
+						<app-skeleton-loader type="series-card" [count]="6"></app-skeleton-loader>
+					</ng-container>
+
+					<!-- Error State -->
+					<div *ngIf="sections()['series'].error" class="error-state">
+						<i class="material-icons">error_outline</i>
+						<p>{{sections()['series'].error}}</p>
+					</div>
+
+					<!-- Content -->
+					<div *ngIf="!sections()['series'].loading && !sections()['series'].error" class="series-grid">
+						<div *ngFor="let series of seriesSummary(); trackBy: trackBySeriesId"
+							(click)="navigateToSeriesFilter(series.slug)" class="series-card">
+							<div class="series-image">
+								<img [src]="series.imageUrl || 'assets/img/default-series.jpg'" [alt]="series.name"
+									loading="lazy">
+							</div>
+							<div class="series-info">
+								<h3 class="series-name">{{series.name}}</h3>
+								<p class="series-count">{{series.count}} posts</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Recent Posts Section -->
+			<section class="content-section recent-section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<i class="material-icons">{{sections()['recent'].icon}}</i>
+						{{sections()['recent'].title}}
+					</h2>
+					<button *ngIf="sections()['recent'].error" (click)="retrySection('recent')" class="retry-btn">
+						<i class="material-icons">refresh</i>
+						Retry
+					</button>
+				</div>
+
+				<div class="section-content">
+					<!-- Loading State -->
+					<ng-container *ngIf="sections()['recent'].loading && recentPostsPage() === 1">
+						<app-skeleton-loader type="post-card" [count]="6"></app-skeleton-loader>
+					</ng-container>
+
+					<!-- Error State -->
+					<div *ngIf="sections()['recent'].error" class="error-state">
+						<i class="material-icons">error_outline</i>
+						<p>{{sections()['recent'].error}}</p>
+					</div>
+
+					<!-- Content -->
+					<div *ngIf="!sections()['recent'].loading && !sections()['recent'].error" class="recent-posts-grid">
+						<app-post-card *ngFor="let post of recentPosts(); trackBy: trackByPostId" [post]="post">
+						</app-post-card>
+					</div>
+
+					<!-- Load More Button -->
+					<div *ngIf="recentPostsPagination()?.hasNextPage" class="load-more-container">
+						<button (click)="loadMoreRecentPosts()" [disabled]="sections()['recent'].loading"
+							class="btn btn-info pull-right btn-w100">
+							<ng-container *ngIf="!sections()['recent'].loading">
+								<i class="material-icons">expand_more</i>
+								Load More Posts
+							</ng-container>
+							<ng-container *ngIf="sections()['recent'].loading">
+								<i class="material-icons spinning">refresh</i>
+								Loading...
+							</ng-container>
+						</button>
+					</div>
+				</div>
+			</section>
+
+
+			<!-- Tags Explorer Section -->
+			<section class="content-section tags-section">
+				<div class="section-header">
+					<h2 class="section-title">
+						<i class="material-icons">{{sections()['tags'].icon}}</i>
+						{{sections()['tags'].title}}
+					</h2>
+					<button *ngIf="sections()['tags'].error" (click)="retrySection('tags')" class="retry-btn">
+						<i class="material-icons">refresh</i>
+						Retry
+					</button>
+				</div>
+
+				<div class="section-content">
+					<!-- Loading State -->
+					<ng-container *ngIf="sections()['tags'].loading">
+						<app-skeleton-loader type="tag-chip" [count]="9"></app-skeleton-loader>
+					</ng-container>
+
+					<!-- Error State -->
+					<div *ngIf="sections()['tags'].error" class="error-state">
+						<i class="material-icons">error_outline</i>
+						<p>{{sections()['tags'].error}}</p>
+					</div>
+
+					<!-- Content -->
+					<div *ngIf="!sections()['tags'].loading && !sections()['tags'].error" class="tags-grid">
+						<button *ngFor="let tag of tagsSummary(); trackBy: trackByTagId"
+							(click)="navigateToTagFilter(tag.name)" class="tag-chip">
+							<span class="tag-name">#{{tag.name}}</span>
+							<span class="tag-count">{{tag.count}}</span>
+						</button>
+					</div>
+				</div>
+			</section>
+
+		</div> <!-- End normal content sections -->
 	</div>
 </div>

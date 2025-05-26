@@ -27,7 +27,7 @@ export class PostService {
   }
 
   // Get most read posts
-  getMostReadPosts(limit: number = 5, includePrivate: boolean = false): Observable<{ posts: Post[] }> {
+  getMostReadPosts(limit: number = 6, includePrivate: boolean = false): Observable<{ posts: Post[] }> {
     const params = new URLSearchParams();
     params.set('limit', limit.toString());
     if (includePrivate) {

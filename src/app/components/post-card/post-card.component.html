@@ -1,53 +1,43 @@
 <article [ngClass]="{'private-post': post.permission === 'PRIVATE', 'compact-card': compact}"
   class="post-card hover-moved">
-  <a [routerLink]="'/blogs/' + post.postReference"
-    [ngStyle]="{
+  <a [routerLink]="'/blogs/' + post.postReference" [ngStyle]="{
       'background-image': 'url(' + post.postBackgroundImg + ')'
-    }"
-    class="post-thumbnail">
-    <img [src]="post.postBackgroundImg" 
-         [alt]="post.title"
-         loading="lazy"
-         class="post-image">
+    }" class="post-thumbnail">
+    <img [src]="post.postBackgroundImg" [alt]="post.title" loading="lazy" class="post-image">
   </a>
-  
+
   <div class="post-content">
     <h2 class="post-title" [ngClass]="{'compact-title': compact}">
       <a [routerLink]="'/blogs/' + post.postReference">{{post.title}}</a>
     </h2>
-    
+
     <div *ngIf="showSeries && post.series" class="series-info post-series">
-      <i class="material-icons" aria-hidden="true">library_books</i>
       <a [routerLink]="['/post-by-series', post.series.slug]" class="series-link">
-        Part of {{post.series.name}} series
+        Series: {{post.series.name}}
       </a>
     </div>
-    
+
     <p class="post-description" [ngClass]="{'compact-description': compact}">
       {{post.description}}
     </p>
-    
+
     <div class="post-meta">
       <span class="post-date">
         {{post.author}} wrote
         {{post.createdAt! | timeAgo }}
         ({{post.createdAt! | date }})
-        with {{+(post.viewCount ?? 0) | number:'1.0-0' }}
-        <i class="material-icons" aria-hidden="true">visibility</i>
-        | {{post.readTime || 5}} mins read
+        with {{+(post.viewCount ?? 0)| number:'1.0-0' }} 👁️ | {{post.readTime || 5}} mins read
       </span>
     </div>
-    
+
     <ng-container *ngIf="showTags && post && post.tags && post.tags.length">
       <div class="tags-container">
         <div *ngFor="let tag of post.tags" class="tagging">
-          <a [routerLink]="'/home'"
-            [queryParams]="{ tag: tag.name }"
-            class="tagging__item">
+          <a [routerLink]="'/home'" [queryParams]="{ tag: tag.name }" class="tagging__item">
             #{{tag.name}}
           </a>
         </div>
       </div>
     </ng-container>
   </div>
-</article> 
+</article>

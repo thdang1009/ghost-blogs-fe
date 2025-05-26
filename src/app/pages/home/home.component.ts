@@ -25,12 +25,14 @@ export class HomeComponent implements OnInit {
   isLogined = signal(false);
   isAdmin = signal(false);
   privateMode = signal(false);
+  currentTagFilter = signal<string | null>(null);
   
   // Section data
   mostReadPosts = signal<Post[]>([]);
   recentPosts = signal<Post[]>([]);
   tagsSummary = signal<any[]>([]);
   seriesSummary = signal<any[]>([]);
+  filteredPosts = signal<Post[]>([]);
   
   // Pagination for recent posts
   recentPostsPage = signal(1);
@@ -47,6 +49,7 @@ export class HomeComponent implements OnInit {
   // Computed values
   showPrivateToggle = computed(() => this.isAdmin());
   currentPrivateMode = computed(() => this.privateMode());
+  isFilterMode = computed(() => this.currentTagFilter() !== null);
 
   constructor(
     private authService: AuthService,
@@ -57,7 +60,6 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.initializeAuth();
-    this.loadInitialSections();
     this.handleRouteParams();
   }
 
@@ -69,9 +71,13 @@ export class HomeComponent implements OnInit {
   private handleRouteParams() {
     this.activeRoute.queryParams.subscribe(params => {
       if (params['tag']) {
-        this.navigateToTagFilter(params['tag']);
+        // Filter content by tag instead of navigating
+        this.filterByTag(params['tag']);
       } else if (params['series']) {
         this.navigateToSeriesFilter(params['series']);
+      } else {
+        // No filters, load normal content
+        this.loadInitialSections();
       }
     });
   }
@@ -91,7 +97,7 @@ export class HomeComponent implements OnInit {
   loadMostReadPosts() {
     this.updateSectionState('mostRead', { loading: true, error: null });
     
-    this.postService.getMostReadPosts(5, this.privateMode())
+    this.postService.getMostReadPosts(6, this.privateMode())
       .pipe(
         catchError(error => {
           this.updateSectionState('mostRead', { loading: false, error: 'Failed to load most read posts' });
@@ -107,7 +113,7 @@ export class HomeComponent implements OnInit {
   loadRecentPosts(page: number = 1) {
     this.updateSectionState('recent', { loading: true, error: null });
     
-    this.postService.getRecentPosts(page, 10, this.privateMode())
+    this.postService.getRecentPosts(page, 9, this.privateMode())
       .pipe(
         catchError(error => {
           this.updateSectionState('recent', { loading: false, error: 'Failed to load recent posts' });
@@ -159,10 +165,12 @@ export class HomeComponent implements OnInit {
   }
 
   private updateSectionState(sectionId: string, updates: Partial<Section>) {
-    this.sections.update(sections => ({
-      ...sections,
-      [sectionId]: { ...sections[sectionId], ...updates }
-    }));
+    this.sections.update(sections => {
+      return {
+        ...sections,
+        [sectionId]: { ...sections[sectionId], ...updates }
+      };
+    });
   }
 
   togglePrivateMode() {
@@ -175,6 +183,29 @@ export class HomeComponent implements OnInit {
     this.loadTagsSummary();
     this.loadSeriesSummary();
     this.loadRecentPosts(1);
+  }
+
+  private filterByTag(tagName: string) {
+    this.currentTagFilter.set(tagName);
+    this.updateSectionState('recent', { loading: true, error: null });
+    
+    this.postService.getPublicPosts({ tag: tagName, limit: 20, page: 1 })
+      .pipe(
+        catchError(error => {
+          this.updateSectionState('recent', { loading: false, error: `Failed to load posts for tag: ${tagName}` });
+          return of([]);
+        }),
+        finalize(() => this.updateSectionState('recent', { loading: false, loaded: true }))
+      )
+      .subscribe(posts => {
+        this.filteredPosts.set(posts);
+      });
+  }
+
+  clearTagFilter() {
+    this.currentTagFilter.set(null);
+    this.filteredPosts.set([]);
+    this.router.navigate(['/home']);
   }
 
   loadMoreRecentPosts() {

@@ -26,12 +26,7 @@
           wrote
           {{item.createdAt | timeAgo }}
           ({{item.createdAt | date }})
-          with {{+(item.viewCount ?? 0)| number:'1.0-0' }}
-          <i class="material-icons" aria-hidden="true">
-            visibility
-          </i>
-          |
-          {{item.readTime || 5}} mins read
+          with {{+(item.viewCount ?? 0)| number:'1.0-0' }} 👁️ | {{item.readTime || 5}} mins read
         </div>
         <div style="margin-top: 1rem;">
           <div *ngFor="let tag of item.tags" class="tagging">

@@ -34,7 +34,8 @@ const routes: Routes = [
   imports: [
     RouterModule.forRoot(routes, {
       initialNavigation: 'enabledBlocking',
-      paramsInheritanceStrategy: 'always'
+      paramsInheritanceStrategy: 'always',
+      onSameUrlNavigation: 'reload'
     })
   ],
   exports: [
