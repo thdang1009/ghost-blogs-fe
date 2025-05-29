@@ -20,24 +20,24 @@ interface Section {
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  
+
   // Signals for reactive state management
   isLogined = signal(false);
   isAdmin = signal(false);
   privateMode = signal(false);
   currentTagFilter = signal<string | null>(null);
-  
+
   // Section data
   mostReadPosts = signal<Post[]>([]);
   recentPosts = signal<Post[]>([]);
   tagsSummary = signal<any[]>([]);
   seriesSummary = signal<any[]>([]);
   filteredPosts = signal<Post[]>([]);
-  
+
   // Pagination for recent posts
   recentPostsPage = signal(1);
   recentPostsPagination = signal<any>(null);
-  
+
   // Section states
   sections = signal<Record<string, Section>>({
     mostRead: { id: 'mostRead', title: '🔥 Most Read Posts', icon: 'trending_up', loaded: false, loading: false, error: null },
@@ -86,7 +86,7 @@ export class HomeComponent implements OnInit {
     // Load most critical sections first
     this.loadMostReadPosts();
     this.loadTagsSummary();
-    
+
     // Load other sections with slight delay for better perceived performance
     setTimeout(() => {
       this.loadSeriesSummary();
@@ -96,7 +96,7 @@ export class HomeComponent implements OnInit {
 
   loadMostReadPosts() {
     this.updateSectionState('mostRead', { loading: true, error: null });
-    
+
     this.postService.getMostReadPosts(6, this.privateMode())
       .pipe(
         catchError(error => {
@@ -112,7 +112,7 @@ export class HomeComponent implements OnInit {
 
   loadRecentPosts(page: number = 1) {
     this.updateSectionState('recent', { loading: true, error: null });
-    
+
     this.postService.getRecentPosts(page, 9, this.privateMode())
       .pipe(
         catchError(error => {
@@ -134,7 +134,7 @@ export class HomeComponent implements OnInit {
 
   loadTagsSummary() {
     this.updateSectionState('tags', { loading: true, error: null });
-    
+
     this.postService.getTagsSummary(this.privateMode())
       .pipe(
         catchError(error => {
@@ -150,7 +150,7 @@ export class HomeComponent implements OnInit {
 
   loadSeriesSummary() {
     this.updateSectionState('series', { loading: true, error: null });
-    
+
     this.postService.getSeriesSummary(this.privateMode())
       .pipe(
         catchError(error => {
@@ -188,16 +188,18 @@ export class HomeComponent implements OnInit {
   private filterByTag(tagName: string) {
     this.currentTagFilter.set(tagName);
     this.updateSectionState('recent', { loading: true, error: null });
-    
+
     this.postService.getPublicPosts({ tag: tagName, limit: 20, page: 1 })
       .pipe(
         catchError(error => {
           this.updateSectionState('recent', { loading: false, error: `Failed to load posts for tag: ${tagName}` });
-          return of([]);
+          return of({ posts: [] });
         }),
         finalize(() => this.updateSectionState('recent', { loading: false, loaded: true }))
       )
-      .subscribe(posts => {
+      .subscribe(response => {
+        // Extract posts array from response object
+        const posts = response.posts || response || [];
         this.filteredPosts.set(posts);
       });
   }
