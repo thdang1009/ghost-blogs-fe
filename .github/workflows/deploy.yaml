@@ -22,21 +22,12 @@ jobs:
         working-directory: ./
         run: |
           npm install
-          npm run build -- --configuration production --no-prerender --server-timeout=60000
+          npm run build
 
       - name: Package Application
         run: |
           mkdir -p ghost-blogs-fe
           cp -r ./dist/ghost-blogs-fe/* ghost-blogs-fe
-
-      - name: SSH and Remove Existing Files
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            rm -rf /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}/ghost-blogs-fe/*
 
       - name: SSH and Deploy to EC2
         uses: appleboy/scp-action@master
