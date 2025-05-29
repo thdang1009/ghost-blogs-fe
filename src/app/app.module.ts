@@ -42,7 +42,6 @@ import { AlertModule } from '@components/alert/alert.module';
     AppRoutingModule,
     CommonModule,
     // third party
-
     // CodeEditorModule.forRoot(),
     NgxGoogleAnalyticsModule.forRoot(environment.gaCode),
     MarkdownModule.forRoot({
