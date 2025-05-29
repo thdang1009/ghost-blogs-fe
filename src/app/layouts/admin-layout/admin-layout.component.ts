@@ -2,7 +2,6 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Location, PopStateEvent } from '@angular/common';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import PerfectScrollbar from 'perfect-scrollbar';
 
 @Component({
   selector: 'app-admin-layout',
@@ -19,11 +18,10 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     const isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
 
     if (isWindows && !document.getElementsByTagName('body')[0].classList.contains('sidebar-mini')) {
-      // if we are on windows OS we activate the perfectScrollbar function
-
-      document.getElementsByTagName('body')[0].classList.add('perfect-scrollbar-on');
+      // Use native scrolling instead of perfect-scrollbar
+      document.getElementsByTagName('body')[0].classList.add('native-scrollbar-on');
     } else {
-      document.getElementsByTagName('body')[0].classList.remove('perfect-scrollbar-off');
+      document.getElementsByTagName('body')[0].classList.remove('native-scrollbar-off');
     }
     const elemMainPanel = document.querySelector('.main-panel');
     const elemSidebar = document.querySelector('.sidebar .sidebar-wrapper');
@@ -146,8 +144,8 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
       const elemMainPanel = document.querySelector('.main-panel');
       if (elemMainPanel) {
-        const ps = new PerfectScrollbar(elemMainPanel);
-        ps.update();
+        // Use native scrolling instead of perfect-scrollbar
+        elemMainPanel.scrollTop = 0;
       }
     }
   }

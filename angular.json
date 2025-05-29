@@ -52,14 +52,9 @@
               "node_modules/prismjs/themes/prism-okaidia.css",
               "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
               "node_modules/@kolkov/angular-editor/themes/default.scss",
-              "node_modules/perfect-scrollbar/css/perfect-scrollbar.css",
               "node_modules/@angular/material/prebuilt-themes/indigo-pink.css"
             ],
             "scripts": [
-              "node_modules/jquery/dist/jquery.js",
-              "node_modules/popper.js/dist/umd/popper.js",
-              "node_modules/bootstrap-material-design/dist/js/bootstrap-material-design.min.js",
-              "node_modules/perfect-scrollbar/dist/perfect-scrollbar.min.js",
               "node_modules/marked/marked.min.js",
               "node_modules/prismjs/prism.js",
               "node_modules/prismjs/plugins/command-line/prism-command-line.js",
@@ -79,17 +74,10 @@
               "node_modules/prismjs/components/prism-markdown.min.js",
               "node_modules/prismjs/components/prism-powershell.min.js",
               "node_modules/prismjs/components/prism-python.min.js",
-              "node_modules/prismjs/components/prism-typescript.min.js",
-              "node_modules/emoji-toolkit/lib/js/joypixels.js",
-              "node_modules/katex/dist/katex.min.js",
-              "node_modules/katex/dist/contrib/auto-render.min.js",
-              "node_modules/mermaid/dist/mermaid.min.js",
-              "node_modules/clipboard/dist/clipboard.min.js"
+              "node_modules/prismjs/components/prism-typescript.min.js"
             ],
             "allowedCommonJsDependencies": [
-              "rxjs/add/operator/filter",
-              "jquery",
-              "chartist"
+              "rxjs/add/operator/filter"
             ],
             "server": "src/main.server.ts",
             "prerender": true,
@@ -100,11 +88,16 @@
           "configurations": {
             "production": {
               "optimization": {
+                "scripts": true,
                 "styles": {
                   "inlineCritical": true,
                   "minify": true
-                }
+                },
+                "fonts": true
               },
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractLicenses": true,
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -114,16 +107,15 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "10MB",
-                  "maximumError": "20MB"
+                  "maximumWarning": "2MB",
+                  "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "150kB",
-                  "maximumError": "200kB"
+                  "maximumWarning": "50kB",
+                  "maximumError": "100kB"
                 }
-              ],
-              "outputHashing": "all"
+              ]
             },
             "development": {
               "optimization": {

@@ -2,7 +2,6 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { Location, PopStateEvent } from '@angular/common';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import PerfectScrollbar from 'perfect-scrollbar';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
@@ -33,9 +32,9 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
     const body = this.document.getElementsByTagName('body')[0];
 
     if (isWindows && !body.classList.contains('sidebar-mini')) {
-      body.classList.add('perfect-scrollbar-on');
+      body.classList.add('native-scrollbar-on');
     } else {
-      body.classList.remove('perfect-scrollbar-off');
+      body.classList.remove('native-scrollbar-off');
     }
 
     const elemMainPanel = this.document.querySelector('.main-panel');
@@ -156,8 +155,7 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
     if (isPlatformBrowser(this.platformId) && window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
       const elemMainPanel = this.document.querySelector('.main-panel');
       if (elemMainPanel) {
-        const ps = new PerfectScrollbar(elemMainPanel as HTMLElement);
-        ps.update();
+        elemMainPanel.scrollTop = 0;
       }
     }
   }
