@@ -22,7 +22,7 @@ jobs:
         working-directory: ./
         run: |
           npm install
-          npm run build
+          npm run build -- --skip-prerender --ssr-timeout=60000
 
       - name: Package Application
         run: |
