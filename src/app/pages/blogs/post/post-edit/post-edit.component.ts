@@ -35,6 +35,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
   isLoadingResults = false;
   isSplitHorizontal = false;
+  isInitializing = true;
   elem: any;
   POST_TYPE = POST_TYPE;
   listPostType = [
@@ -102,6 +103,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
     this.oldObject = JSON.stringify(this.itemSelected);
     window.onbeforeunload = () => this.ngOnDestroy();
     this.unSave = true;
+    
+    // Set initialization flag to false after a brief delay to allow all data to load
+    setTimeout(() => {
+      this.isInitializing = false;
+    }, 1000);
   }
 
   ngOnDestroy(): void {
@@ -159,15 +165,34 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
   getSeriesPosts() {
     if (this.itemSelected.series) {
-      this.seriesService.getSeriesPosts(this.itemSelected.series)
-        .subscribe(seriesPosts => {
-          this.allSeriesPosts = seriesPosts ? [...seriesPosts] : [];
-        });
+      // Handle both object and string series types
+      const seriesId = typeof this.itemSelected.series === 'string' 
+        ? this.itemSelected.series 
+        : this.itemSelected.series._id;
+        
+      if (seriesId) {
+        this.seriesService.getSeriesPosts(seriesId)
+          .subscribe(seriesPosts => {
+            this.allSeriesPosts = seriesPosts ? [...seriesPosts] : [];
+          }, error => {
+            console.error('Error loading series posts:', error);
+            this.allSeriesPosts = [];
+          });
+      }
+    } else {
+      this.allSeriesPosts = [];
     }
   }
   // When series changes, update the tags
   onSeriesChange(seriesId: string) {
+    // Prevent API calls during initialization
+    if (this.isInitializing) {
+      return;
+    }
+    
     if (!seriesId) {
+      // Clear series posts if no series is selected
+      this.allSeriesPosts = [];
       return;
     }
 
@@ -199,14 +224,14 @@ export class PostEditComponent implements OnInit, OnDestroy {
       // Also update the itemSelected model so it will be sent to the server
       this.itemSelected.tags = [...this.tags];
 
-      // get all series posts
-      this.getSeriesPosts();
-
       // Notify the user about tags added
       if (tagsAdded > 0) {
         this.alertService.showNoti(`Added ${tagsAdded} tag(s) from the series "${selectedSeries.name}"`, 'success');
       }
     }
+    
+    // Only call getSeriesPosts if we're not initializing and series actually changed
+    this.getSeriesPosts();
   }
 
   saveOnly() {

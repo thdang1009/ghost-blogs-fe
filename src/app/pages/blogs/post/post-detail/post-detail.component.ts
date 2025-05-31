@@ -244,6 +244,23 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   goToPost(post: Post): void {
-    this.router.navigate(['/blogs', post.postReference]);
+    // Add defensive programming to handle incomplete post data
+    if (!post) {
+      console.error('Post object is null or undefined');
+      return;
+    }
+    
+    if (!post.postReference) {
+      console.error('Post reference is missing for post:', post);
+      return;
+    }
+    
+    try {
+      this.router.navigate(['/blogs', post.postReference]);
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback: navigate to home if navigation fails
+      this.router.navigate(['/home']);
+    }
   }
 }

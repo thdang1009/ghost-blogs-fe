@@ -71,10 +71,10 @@
 			<mat-select [(ngModel)]="itemSelected.series"
 				name="series" 
 				[compareWith]="compareBothIdAndObjectWithFunc"
-				(selectionChange)="onSeriesChange($event.value)">
+				(selectionChange)="onSeriesChange($event.value._id || $event.value)">
 				<mat-option [value]="null">-- None --</mat-option>
 				<mat-option *ngFor="let series of allSeries"
-					[value]="series._id">
+					[value]="series">
 					{{series.name}}
 				</mat-option>
 			</mat-select>
