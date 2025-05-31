@@ -90,6 +90,14 @@
           </div>
         </div>
       </ng-container>
+
+      <!-- Back to Homepage Button at bottom -->
+      <div *ngIf="ready" class="bottom-navigation">
+        <button class="back-to-home-btn" (click)="backToHome()" aria-label="Back to Homepage">
+          <i class="material-icons">home</i>
+          <span>Back to Homepage</span>
+        </button>
+      </div>
     </div>
   </article>
 </div>
