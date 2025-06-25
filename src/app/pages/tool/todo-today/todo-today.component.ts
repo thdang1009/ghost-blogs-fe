@@ -101,7 +101,8 @@ export class TodoTodayComponent implements OnInit {
 
   addToDoToDay() {
     const sample: TodoToday = {
-      content: ''
+      content: '',
+      date: this.searchDate.value || new Date()
     }
     this.isLoadingResults = true;
     this.todoTodayService.addTodoToday(sample)
@@ -335,7 +336,8 @@ export class TodoTodayComponent implements OnInit {
   addNewTodo(content: string) {
     const newTodo: TodoToday = {
       content: content,
-      status: TDTD_STATUS.NEW
+      status: TDTD_STATUS.NEW,
+      date: this.searchDate.value || new Date()
     };
 
     this.todoTodayService.addTodoToday(newTodo)
