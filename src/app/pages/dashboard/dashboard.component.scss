@@ -12,6 +12,20 @@
   border-radius: 4px;
   padding: 8px 12px;
 
+  form {
+    gap: 15px;
+  }
+
+  .date-controls {
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    padding-right: 15px;
+    margin-right: 15px;
+  }
+
+  .system-controls {
+    min-height: 36px;
+  }
+
   mat-form-field {
     width: 150px;
     margin-bottom: -20px; // Adjust for Material's default margin
@@ -36,6 +50,40 @@
 
   button {
     height: 36px;
+  }
+
+  .system-btn {
+    min-width: 160px;
+    
+    mat-icon {
+      margin-right: 6px;
+    }
+
+    .btn-text {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    &.mat-warn {
+      background-color: #ff5722;
+      border-color: #ff5722;
+      
+      &:hover {
+        background-color: #e64a19;
+        border-color: #e64a19;
+      }
+    }
+
+    &.mat-accent {
+      background-color: #607d8b;
+      border-color: #607d8b;
+      color: white;
+      
+      &:hover {
+        background-color: #546e7a;
+        border-color: #546e7a;
+      }
+    }
   }
 }
 
@@ -99,8 +147,33 @@
     width: 100%;
 
     form {
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 15px;
+      align-items: stretch;
+    }
+
+    .date-controls {
+      border-right: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0 0 15px 0;
+      margin: 0 0 15px 0;
+      
+      form {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    }
+
+    .system-controls {
+      flex-direction: column;
       gap: 10px;
+      align-items: stretch;
+
+      .system-btn {
+        width: 100%;
+        min-width: auto;
+      }
     }
 
     mat-form-field {
@@ -109,6 +182,23 @@
 
     button {
       margin-top: 8px;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .date-range-container {
+    .date-controls {
+      mat-form-field {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+    
+    .system-btn {
+      .btn-text {
+        font-size: 12px;
+      }
     }
   }
 }

@@ -12,37 +12,64 @@
 								</p>
 							</div>
 							<div class="date-range-container">
-								<form class="d-flex align-items-center">
-									<mat-form-field appearance="outline"
-										class="me-2">
-										<mat-label>Start Date</mat-label>
-										<input [matDatepicker]="startPicker"
-											[(ngModel)]="dateRange.startDate"
-											(dateChange)="onDateRangeChange()"
-											matInput
-											name="startDate">
-										<mat-datepicker-toggle [for]="startPicker"
-											matSuffix></mat-datepicker-toggle>
-										<mat-datepicker #startPicker></mat-datepicker>
-									</mat-form-field>
-									<mat-form-field appearance="outline">
-										<mat-label>End Date</mat-label>
-										<input [matDatepicker]="endPicker"
-											[(ngModel)]="dateRange.endDate"
-											(dateChange)="onDateRangeChange()"
-											matInput
-											name="endDate">
-										<mat-datepicker-toggle [for]="endPicker"
-											matSuffix></mat-datepicker-toggle>
-										<mat-datepicker #endPicker></mat-datepicker>
-									</mat-form-field>
-									<button (click)="loadDashboardData()"
-										mat-raised-button
-										color="primary"
-										class="ms-2"
-										type="button">
-										Apply
-									</button>
+								<form class="d-flex align-items-center flex-wrap">
+									<!-- Date Range Controls -->
+									<div class="date-controls d-flex align-items-center">
+										<mat-form-field appearance="outline"
+											class="me-2">
+											<mat-label>Start Date</mat-label>
+											<input [matDatepicker]="startPicker"
+												[(ngModel)]="dateRange.startDate"
+												(dateChange)="onDateRangeChange()"
+												matInput
+												name="startDate">
+											<mat-datepicker-toggle [for]="startPicker"
+												matSuffix></mat-datepicker-toggle>
+											<mat-datepicker #startPicker></mat-datepicker>
+										</mat-form-field>
+										<mat-form-field appearance="outline"
+											class="me-2">
+											<mat-label>End Date</mat-label>
+											<input [matDatepicker]="endPicker"
+												[(ngModel)]="dateRange.endDate"
+												(dateChange)="onDateRangeChange()"
+												matInput
+												name="endDate">
+											<mat-datepicker-toggle [for]="endPicker"
+												matSuffix></mat-datepicker-toggle>
+											<mat-datepicker #endPicker></mat-datepicker>
+										</mat-form-field>
+										<button (click)="loadDashboardData()"
+											mat-raised-button
+											color="primary"
+											class="me-3"
+											type="button">
+											Apply
+										</button>
+									</div>
+									
+									<!-- GRAND_ADMIN Only: System Management Buttons -->
+									<div *ngIf="isGrandAdmin()" class="system-controls d-flex align-items-center">
+										<button (click)="startProduction()"
+											mat-raised-button
+											color="warn"
+											class="me-2 system-btn"
+											type="button"
+											title="Start Production Environment">
+											<mat-icon>play_arrow</mat-icon>
+											<span class="btn-text">Start Production</span>
+										</button>
+										
+										<button (click)="restartBackend()"
+											mat-raised-button
+											color="accent"
+											class="system-btn"
+											type="button"
+											title="Restart Backend Application">
+											<mat-icon>refresh</mat-icon>
+											<span class="btn-text">Restart Backend</span>
+										</button>
+									</div>
 								</form>
 							</div>
 						</div>

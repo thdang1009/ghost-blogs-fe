@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AnalyticsService, DateRange, DashboardData } from '@services/analytics/analytics.service';
-import { AlertService } from '@services/_index';
+import { AlertService, AuthService, SystemService } from '@services/_index';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,7 +36,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     private analyticsService: AnalyticsService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private authService: AuthService,
+    private systemService: SystemService
   ) { }
 
   ngOnInit(): void {
@@ -119,6 +121,73 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // Helper method to calculate percentage for charts
   calculatePercentage(value: number, total: number): number {
     return total > 0 ? (value / total) * 100 : 0;
+  }
+
+  // System management methods
+  isGrandAdmin(): boolean {
+    return this.authService.isGrandAdmin();
+  }
+
+  startProduction(): void {
+    if (!this.isGrandAdmin()) {
+      this.alertService.showNoti('Unauthorized. Only GRAND_ADMIN can start production.', 'danger');
+      return;
+    }
+
+    if (confirm('Are you sure you want to start the production environment? This will execute the start-production.sh script.')) {
+      this.systemService.startProduction()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response && response.success) {
+              this.alertService.showNoti('Production start initiated successfully!', 'success');
+              console.log('Production start output:', response.output);
+              if (response.warnings) {
+                console.warn('Production start warnings:', response.warnings);
+                this.alertService.showNoti('Production started with warnings. Check console for details.', 'warning');
+              }
+            } else {
+              this.alertService.showNoti(response?.msg || 'Failed to start production', 'danger');
+            }
+          },
+          error: (error) => {
+            console.error('Error starting production:', error);
+            const errorMsg = error?.error?.msg || error?.message || 'Failed to start production';
+            this.alertService.showNoti(errorMsg, 'danger');
+          }
+        });
+    }
+  }
+
+  restartBackend(): void {
+    if (!this.isGrandAdmin()) {
+      this.alertService.showNoti('Unauthorized. Only GRAND_ADMIN can restart backend.', 'danger');
+      return;
+    }
+
+    if (confirm('Are you sure you want to restart the backend? This will stop and start the application using PM2.')) {
+      this.systemService.restartBackend()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response && response.success) {
+              this.alertService.showNoti('Backend restart completed successfully!', 'success');
+              console.log('Backend restart output:', response.output);
+              if (response.warnings) {
+                console.warn('Backend restart warnings:', response.warnings);
+                this.alertService.showNoti('Backend restarted with warnings. Check console for details.', 'warning');
+              }
+            } else {
+              this.alertService.showNoti(response?.msg || 'Failed to restart backend', 'danger');
+            }
+          },
+          error: (error) => {
+            console.error('Error restarting backend:', error);
+            const errorMsg = error?.error?.msg || error?.message || 'Failed to restart backend';
+            this.alertService.showNoti(errorMsg, 'danger');
+          }
+        });
+    }
   }
 
   // Date helpers
