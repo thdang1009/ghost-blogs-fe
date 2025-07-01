@@ -45,9 +45,8 @@ export class PostListComponent implements OnInit {
     this.activatedRoute.queryParams.subscribe(params => {
       const id = Number(params['id']);
       if (id) {
-        this.getPost(id, () => {
-          this.chooseThisItem(id);
-        });
+        this.getPost(id);
+        this.editMode = true;
       } else {
         this.searchPost(id);
         this.itemSelected = {};
