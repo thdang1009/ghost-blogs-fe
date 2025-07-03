@@ -26,6 +26,8 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   num = 0;
   count: Number = 0;
   currentPageUrl: string = '';
+  error = false;
+  loading = true;
 
   // @ViewChild('fbLike') fbLike!: ElementRef;
   @ViewChild('fbComments') fbComments!: ElementRef;
@@ -75,31 +77,24 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('ref');
 
-    this.postService.getPost(id as string).subscribe(post => {
-      this.item = post;
-      this.count = post.clapCount || 0;
-
-      // Set the current page URL for Facebook plugins
-      this.setCurrentPageUrl();
-
-      const subject = post.title as string;
-      const desc = post.description as string;
-      const creator = post.author as string;
-      const img = post.postBackgroundImg as string;
-      this.titleService.setTitle(post.title as string);
-      this.meta.updateTag({ itemprop: 'name', content: subject });
-      this.meta.updateTag({ itemprop: 'description', content: desc });
-      this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
-      this.meta.updateTag({ name: 'twitter:title', content: subject });
-      this.meta.updateTag({ name: 'twitter:description', content: desc });
-      this.meta.updateTag({ name: 'twitter:creator', content: creator });
-      this.meta.updateTag({ name: 'twitter:image', content: img });
-      this.meta.updateTag({ property: 'og:title', content: subject });
-      this.meta.updateTag({ property: 'og:description', content: desc });
-      this.meta.updateTag({ property: 'og:creator', content: creator });
-      this.meta.updateTag({ property: 'og:image', content: img });
-      this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
-      this.ready = true;
+    this.postService.getPost(id as string).subscribe({
+      next: (post) => {
+        // Check if post is valid before using it
+        if (!post || !post.id) {
+          this.router.navigate(['/home']);
+          return;
+        }
+        
+        this.item = post;
+        this.count = post.clapCount || 0;
+        this.setCurrentPageUrl();
+        this.titleService.setTitle(post.title as string);
+        this.ready = true;
+      },
+      error: () => {
+        // Simple redirect to home if post not found
+        this.router.navigate(['/home']);
+      }
     });
   }
 
@@ -107,7 +102,6 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     const intervalId = setInterval(() => {
       if (this.ready) {
         this.setCurrentPageUrlToFacebookPlugins();
-        // Reload Facebook plugins after the post is loaded
         this.reloadFacebookPlugins();
         clearInterval(intervalId);
       }
@@ -115,17 +109,14 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   setCurrentPageUrlToFacebookPlugins() {
-    const fbShareButton = this.fbShareButton.nativeElement;
-    if (fbShareButton) {
-      fbShareButton.setAttribute('data-href', this.currentPageUrl);
+    if (this.fbShareButton?.nativeElement) {
+      this.fbShareButton.nativeElement.setAttribute('data-href', this.currentPageUrl);
     }
-    const fbComments = this.fbComments.nativeElement;
-    if (fbComments) {
-      fbComments.setAttribute('data-href', this.currentPageUrl);
+    if (this.fbComments?.nativeElement) {
+      this.fbComments.nativeElement.setAttribute('data-href', this.currentPageUrl);
     }
-    const fbShareButtonLink = this.fbShareButtonLink.nativeElement;
-    if (fbShareButtonLink) {
-      fbShareButtonLink.setAttribute('href', 'https://www.facebook.com/sharer/sharer.php?u=' + this.currentPageUrl);
+    if (this.fbShareButtonLink?.nativeElement) {
+      this.fbShareButtonLink.nativeElement.setAttribute('href', 'https://www.facebook.com/sharer/sharer.php?u=' + this.currentPageUrl);
     }
   }
   /**
