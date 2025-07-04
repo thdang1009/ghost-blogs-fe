@@ -39,7 +39,7 @@ export function app(): express.Express {
       
       try {
         // Check if post exists before rendering
-        const backendUrl = 'http://localhost:3000';
+        const backendUrl = 'https://dangtrinh.site/api';
         const apiUrl = `${backendUrl}/v1/post/ref/${postRef}`;
         console.log(`Making API call to: ${apiUrl}`);
         
