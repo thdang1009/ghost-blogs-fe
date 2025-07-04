@@ -86,7 +86,7 @@ export class PostService {
     const url = `${apiUrl}/ref/${ref}`;
     return this.http.get<Post>(url).pipe(
       tap(_ => ghostLog(`fetched post by ref=${ref}`)),
-      catchError(handleError<Post>(`getPost ref=${ref}`, null as any))
+      catchError(handleError<Post>(`getPost ref=${ref}`))
     );
   }
 

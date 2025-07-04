@@ -31,56 +31,6 @@ export function app(): express.Express {
       return next();
     }
 
-    // Pre-check blog post routes to prevent SSR hanging
-    const blogPostMatch = req.path.match(/^\/blogs\/(.+)$/);
-    if (blogPostMatch) {
-      const postRef = blogPostMatch[1];
-      console.log(`Checking post reference: ${postRef}`);
-      
-      try {
-        // Check if post exists before rendering
-        const backendUrl = 'http://localhost:3000';
-        const apiUrl = `${backendUrl}/v1/post/ref/${postRef}`;
-        console.log(`Making API call to: ${apiUrl}`);
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        });
-        
-        console.log(`API response status: ${response.status}`);
-        
-        if (response.status === 404) {
-          // Post doesn't exist, redirect to home immediately
-          console.log(`Post ${postRef} not found, redirecting to home`);
-          return res.redirect('/home');
-        }
-        
-        // If response is not 200, also redirect
-        if (response.status !== 200) {
-          console.log(`Post ${postRef} returned status ${response.status}, redirecting to home`);
-          return res.redirect('/home');
-        }
-        
-        // Try to parse the response to make sure it's valid JSON
-        const postData = await response.json();
-        if (!postData || !postData._id) {
-          console.log(`Post ${postRef} has invalid data, redirecting to home`);
-          return res.redirect('/home');
-        }
-        
-        console.log(`Post ${postRef} found, proceeding with SSR`);
-        
-      } catch (apiError) {
-        console.error('API check failed for post:', postRef, apiError);
-        // If API check fails, redirect to home
-        return res.redirect('/home');
-      }
-    }
-
     try {
       const { protocol, originalUrl, baseUrl, headers } = req;
       const url = `${protocol}://${headers.host}${originalUrl}`;
@@ -89,8 +39,7 @@ export function app(): express.Express {
         res.setTimeout(30000);
       }
 
-      // Add timeout to prevent SSR hanging
-      const renderPromise = commonEngine.render({
+      const html = await commonEngine.render({
         bootstrap: AppServerModule,
         documentFilePath: indexHtml,
         url,
@@ -101,27 +50,9 @@ export function app(): express.Express {
         inlineCriticalCss: false
       });
 
-      // Set a 10-second timeout for SSR rendering
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('SSR timeout')), 10000);
-      });
-
-      const html = await Promise.race([renderPromise, timeoutPromise]);
       res.send(html);
     } catch (error) {
-      console.error('SSR Error:', error);
-      // Return a simple error page instead of hanging
-      res.status(500).send(`
-        <!DOCTYPE html>
-        <html>
-        <head><title>Error</title></head>
-        <body>
-          <h1>Something went wrong</h1>
-          <p>Please try again later.</p>
-          <script>window.location.href = '/home';</script>
-        </body>
-        </html>
-      `);
+      next(error);
     }
   });
 
