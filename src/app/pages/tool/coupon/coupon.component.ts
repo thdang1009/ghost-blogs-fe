@@ -288,17 +288,18 @@ export class CouponComponent implements OnInit {
       (partner === 'A' && this.isPartnerB) ||
       (partner === 'B' && this.isPartnerA);
     if (!canDelete) return;
-
-    this.couponService.deleteCoupon(coupon._id!).subscribe(
-      () => {
-        this.alertService.showNoti('Coupon deleted successfully', 'success');
-        this.loadCoupons(partner);
-      },
-      error => {
-        console.error('Error deleting coupon', error);
-        this.alertService.showNoti('Failed to delete coupon', 'danger');
-      }
-    );
+    if (confirm('Are you sure you want to delete this coupon?')) {
+      this.couponService.deleteCoupon(coupon._id!).subscribe(
+        () => {
+          this.alertService.showNoti('Coupon deleted successfully', 'success');
+          this.loadCoupons(partner);
+        },
+        error => {
+          console.error('Error deleting coupon', error);
+          this.alertService.showNoti('Failed to delete coupon', 'danger');
+        }
+      );
+    }
   }
 
   // Methods for coupon details using MatDialog
@@ -447,17 +448,18 @@ export class CouponComponent implements OnInit {
       (partner === 'A' && this.isPartnerA) ||
       (partner === 'B' && this.isPartnerB);
     if (!canDelete || !reward._id) return;
-
-    this.rewardService.deleteReward(reward._id!).subscribe(
-      () => {
-        this.alertService.showNoti('Reward deleted successfully', 'success');
-        this.loadPendingRewards();
-      },
-      error => {
-        console.error('Error deleting reward', error);
-        this.alertService.showNoti('Failed to delete reward', 'danger');
-      }
-    );
+    if (confirm('Are you sure you want to delete this reward?')) {
+      this.rewardService.deleteReward(reward._id!).subscribe(
+        () => {
+          this.alertService.showNoti('Reward deleted successfully', 'success');
+          this.loadPendingRewards();
+        },
+        error => {
+          console.error('Error deleting reward', error);
+          this.alertService.showNoti('Failed to delete reward', 'danger');
+        }
+      );
+    }
   }
 
   completeReward(reward: Reward, partner: 'A' | 'B'): void {
