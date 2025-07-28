@@ -13,7 +13,6 @@ import { ProgressWithLabelComponent } from './progress-with-label/progress-with-
 import { GhostSiteBtnComponent } from './ghost-site-btn/ghost-site-btn.component';
 import { ListBadgeComponent } from './list-badge/list-badge.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { TagSubscribeComponent, EmailDialogComponent } from './tag-subscribe/tag-subscribe.component';
 import { PostCardComponent } from './post-card/post-card.component';
 import { SkeletonLoaderComponent } from './skeleton-loader/skeleton-loader.component';
 import { SharedModule } from '@shared/shared-module.module';
@@ -38,8 +37,6 @@ import { SharedModule } from '@shared/shared-module.module';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
-    TagSubscribeComponent,
-    EmailDialogComponent,
     PostCardComponent,
     SkeletonLoaderComponent
   ],
@@ -53,7 +50,6 @@ import { SharedModule } from '@shared/shared-module.module';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
-    TagSubscribeComponent,
     PostCardComponent,
     SkeletonLoaderComponent
   ],

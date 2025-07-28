@@ -42,9 +42,6 @@
         {{item.description}}
       </p>
     </div>
-    <!-- <div *ngIf="ready && item.tags && item.tags.length > 0" class="tag-subscription-container">
-      <app-tag-subscribe [tags]="item.tags"></app-tag-subscribe>
-    </div> -->
     <div class="post-body">
       <ng-container *ngIf="ready">
         <markdown [data]="item.content"></markdown>
