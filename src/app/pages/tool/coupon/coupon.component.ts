@@ -1,15 +1,29 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
+import {
+  MatDialog,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { MatTabChangeEvent } from '@angular/material/tabs';
 import { Coupon, Reward } from '@models/_index';
-import { AlertService, CouponService, RewardService, AuthService, ConfigService } from '@services/_index';
+import {
+  AlertService,
+  CouponService,
+  RewardService,
+  AuthService,
+  ConfigService,
+} from '@services/_index';
 import { compareWithFunc } from '@shared/common';
 
 @Component({
   selector: 'app-coupon',
   templateUrl: './coupon.component.html',
-  styleUrls: ['./coupon.component.scss']
+  styleUrls: ['./coupon.component.scss'],
 })
 export class CouponComponent implements OnInit {
   // All coupons
@@ -69,19 +83,19 @@ export class CouponComponent implements OnInit {
     this.couponForm = this.formBuilder.group({
       description: ['', [Validators.required, Validators.maxLength(36)]],
       usagePurpose: [''],
-      status: [null]
+      status: [null],
     });
 
     this.rewardForm = this.formBuilder.group({
-      description: ['', Validators.required]
+      description: ['', Validators.required],
     });
 
     this.bulkForm = this.formBuilder.group({
-      count: [1, [Validators.required, Validators.min(1), Validators.max(100)]]
+      count: [1, [Validators.required, Validators.min(1), Validators.max(100)]],
     });
 
     this.redeemForm = this.formBuilder.group({
-      selectedRewardId: ['', Validators.required]
+      selectedRewardId: ['', Validators.required],
     });
 
     const userInfo = this.authService.getUserInfo();
@@ -114,33 +128,43 @@ export class CouponComponent implements OnInit {
 
   loadCoupons(partner: 'A' | 'B'): void {
     this.couponService.getPartnerCoupons(partner).subscribe(
-      (coupons) => {
+      coupons => {
         if (partner === 'A') {
           this.couponsA = coupons;
         } else {
           this.couponsB = coupons;
         }
       },
-      (error) => {
+      error => {
         console.error(`Error loading coupons for partner ${partner}`, error);
-        this.alertService.showNoti(`Failed to load coupons for partner ${partner}`, 'danger');
+        this.alertService.showNoti(
+          `Failed to load coupons for partner ${partner}`,
+          'danger'
+        );
       }
     );
   }
 
   loadPendingRewards(): void {
     const partner = this.currentActiveTab;
-    this.rewardService.getPendingRewards(partner).subscribe(
-      (rewards) => {
+    // Load all rewards (pending and completed) for the partner
+    this.rewardService.getRewards().subscribe(
+      allRewards => {
+        const partnerRewards = allRewards.filter(
+          reward => reward.partner === partner
+        );
         if (partner === 'A') {
-          this.pendingRewardsA = rewards;
+          this.pendingRewardsA = partnerRewards;
         } else {
-          this.pendingRewardsB = rewards;
+          this.pendingRewardsB = partnerRewards;
         }
       },
-      (error) => {
-        console.error(`Error loading pending rewards for partner ${partner}`, error);
-        this.alertService.showNoti(`Failed to load pending rewards for partner ${partner}`, 'danger');
+      error => {
+        console.error(`Error loading rewards for partner ${partner}`, error);
+        this.alertService.showNoti(
+          `Failed to load rewards for partner ${partner}`,
+          'danger'
+        );
       }
     );
   }
@@ -169,7 +193,9 @@ export class CouponComponent implements OnInit {
   }
 
   editCoupon(coupon: Coupon, partner: 'A' | 'B'): void {
-    const canEdit = (partner === 'A' && this.isPartnerB) || (partner === 'B' && this.isPartnerA);
+    const canEdit =
+      (partner === 'A' && this.isPartnerB) ||
+      (partner === 'B' && this.isPartnerA);
     if (!canEdit) return;
 
     this.currentActiveTab = partner;
@@ -179,7 +205,7 @@ export class CouponComponent implements OnInit {
     this.couponForm.patchValue({
       description: coupon.description,
       usagePurpose: coupon.usagePurpose || '',
-      status: coupon.status || 'unused'
+      status: coupon.status || 'unused',
     });
   }
 
@@ -198,29 +224,34 @@ export class CouponComponent implements OnInit {
       description: this.couponForm.value.description,
       usagePurpose: this.couponForm.value.usagePurpose,
       status: this.couponForm.value.status,
-      partner: partner
+      partner: partner,
     };
 
     if (this.isEditing && this.editingCouponId) {
-      this.couponService.updateCoupon(this.editingCouponId, couponData).subscribe(
-        (result) => {
-          this.alertService.showNoti('Coupon updated successfully', 'success');
-          this.loadCoupons(partner);
-          this.cancelEdit();
-        },
-        (error) => {
-          console.error('Error updating coupon', error);
-          this.alertService.showNoti('Failed to update coupon', 'danger');
-        }
-      );
+      this.couponService
+        .updateCoupon(this.editingCouponId, couponData)
+        .subscribe(
+          result => {
+            this.alertService.showNoti(
+              'Coupon updated successfully',
+              'success'
+            );
+            this.loadCoupons(partner);
+            this.cancelEdit();
+          },
+          error => {
+            console.error('Error updating coupon', error);
+            this.alertService.showNoti('Failed to update coupon', 'danger');
+          }
+        );
     } else {
       this.couponService.addCoupon(couponData).subscribe(
-        (result) => {
+        result => {
           this.alertService.showNoti('Coupon added successfully', 'success');
           this.loadCoupons(partner);
           this.cancelEdit();
         },
-        (error) => {
+        error => {
           console.error('Error adding coupon', error);
           this.alertService.showNoti('Failed to add coupon', 'danger');
         }
@@ -229,18 +260,23 @@ export class CouponComponent implements OnInit {
   }
 
   bulkAddCoupons(partner: 'A' | 'B'): void {
-    const canAdd = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    const canAdd =
+      (partner === 'A' && this.isPartnerA) ||
+      (partner === 'B' && this.isPartnerB);
     if (!canAdd || !this.bulkForm.valid) return;
 
     const count = this.bulkForm.value.count;
 
     this.couponService.bulkAddCoupons(count, partner).subscribe(
-      (result) => {
-        this.alertService.showNoti(`${count} coupons added successfully for partner ${partner}`, 'success');
+      result => {
+        this.alertService.showNoti(
+          `${count} coupons added successfully for partner ${partner}`,
+          'success'
+        );
         this.loadCoupons(partner);
         this.cancelBulkAdd();
       },
-      (error) => {
+      error => {
         console.error('Error adding coupons in bulk', error);
         this.alertService.showNoti('Failed to add coupons', 'danger');
       }
@@ -248,7 +284,9 @@ export class CouponComponent implements OnInit {
   }
 
   deleteCoupon(coupon: Coupon, partner: 'A' | 'B'): void {
-    const canDelete = (partner === 'A' && this.isPartnerB) || (partner === 'B' && this.isPartnerA);
+    const canDelete =
+      (partner === 'A' && this.isPartnerB) ||
+      (partner === 'B' && this.isPartnerA);
     if (!canDelete) return;
 
     this.couponService.deleteCoupon(coupon._id!).subscribe(
@@ -256,7 +294,7 @@ export class CouponComponent implements OnInit {
         this.alertService.showNoti('Coupon deleted successfully', 'success');
         this.loadCoupons(partner);
       },
-      (error) => {
+      error => {
         console.error('Error deleting coupon', error);
         this.alertService.showNoti('Failed to delete coupon', 'danger');
       }
@@ -267,7 +305,7 @@ export class CouponComponent implements OnInit {
   showCouponDetails(coupon: Coupon): void {
     this.dialog.open(CouponDetailDialogComponent, {
       width: '700px',
-      data: coupon
+      data: coupon,
     });
   }
 
@@ -279,8 +317,8 @@ export class CouponComponent implements OnInit {
       data: {
         isRedemptionMode,
         availableCouponCount: couponCount || 0,
-        partner: partner
-      }
+        partner: partner,
+      },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -293,43 +331,63 @@ export class CouponComponent implements OnInit {
   }
 
   confirmRedemption(partner: 'A' | 'B'): void {
-    const canRedeem = (partner === 'A' && this.canRedeemAsPartnerA) || (partner === 'B' && this.canRedeemAsPartnerB);
-    const selectedCoupons = partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
+    const canRedeem =
+      (partner === 'A' && this.canRedeemAsPartnerA) ||
+      (partner === 'B' && this.canRedeemAsPartnerB);
+    const selectedCoupons =
+      partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
 
-    if (!this.selectedRedemptionOption || !canRedeem || selectedCoupons.size === 0) {
+    if (
+      !this.selectedRedemptionOption ||
+      !canRedeem ||
+      selectedCoupons.size === 0
+    ) {
       this.alertService.showNoti('Please select a reward option', 'warning');
       return;
     }
 
-    const couponIds = Array.from(selectedCoupons).slice(0, this.selectedRedemptionCouponCount);
+    const couponIds = Array.from(selectedCoupons).slice(
+      0,
+      this.selectedRedemptionCouponCount
+    );
 
     const rewardData: Reward = {
       description: this.selectedRedemptionOption,
       couponCost: this.selectedRedemptionCouponCount,
       status: 'pending',
       requestedBy: this.userEmail,
-      partner: partner
+      partner: partner,
     };
 
     this.rewardService.addReward(rewardData).subscribe(
       (createdReward: Reward) => {
-        this.couponService.redeemCoupons(couponIds, createdReward._id!, createdReward.description, partner).subscribe(
-          () => {
-            this.alertService.showNoti('Reward requested successfully', 'success');
-            this.loadCoupons(partner);
-            this.loadPendingRewards();
-            if (partner === 'A') {
-              this.selectedCouponsA.clear();
-            } else {
-              this.selectedCouponsB.clear();
+        this.couponService
+          .redeemCoupons(
+            couponIds,
+            createdReward._id!,
+            createdReward.description,
+            partner
+          )
+          .subscribe(
+            () => {
+              this.alertService.showNoti(
+                'Reward requested successfully',
+                'success'
+              );
+              this.loadCoupons(partner);
+              this.loadPendingRewards();
+              if (partner === 'A') {
+                this.selectedCouponsA.clear();
+              } else {
+                this.selectedCouponsB.clear();
+              }
+              this.selectedRedemptionOption = null;
+            },
+            (error: any) => {
+              console.error('Error redeeming coupons', error);
+              this.alertService.showNoti('Failed to redeem coupons', 'danger');
             }
-            this.selectedRedemptionOption = null;
-          },
-          (error: any) => {
-            console.error('Error redeeming coupons', error);
-            this.alertService.showNoti('Failed to redeem coupons', 'danger');
-          }
-        );
+          );
       },
       (error: any) => {
         console.error('Error creating reward', error);
@@ -339,44 +397,55 @@ export class CouponComponent implements OnInit {
   }
 
   editReward(reward: Reward, partner: 'A' | 'B'): void {
-    const canEdit = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    const canEdit =
+      (partner === 'A' && this.isPartnerA) ||
+      (partner === 'B' && this.isPartnerB);
     if (!canEdit) return;
 
     this.currentActiveTab = partner;
     this.editingRewardId = reward._id || null;
     this.rewardForm.patchValue({
-      description: reward.description
+      description: reward.description,
     });
   }
 
   saveReward(partner: 'A' | 'B'): void {
-    const canEdit = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    const canEdit =
+      (partner === 'A' && this.isPartnerA) ||
+      (partner === 'B' && this.isPartnerB);
     if (!canEdit || !this.rewardForm.valid) return;
 
     const rewardData: Reward = {
       description: this.rewardForm.value.description,
       status: 'pending', // Maintain the status
-      partner: partner
+      partner: partner,
     };
 
     if (this.editingRewardId) {
-      this.rewardService.updateReward(this.editingRewardId, rewardData).subscribe(
-        (result) => {
-          this.alertService.showNoti('Reward updated successfully', 'success');
-          this.loadPendingRewards();
-          this.editingRewardId = null;
-          this.rewardForm.reset();
-        },
-        (error) => {
-          console.error('Error updating reward', error);
-          this.alertService.showNoti('Failed to update reward', 'danger');
-        }
-      );
+      this.rewardService
+        .updateReward(this.editingRewardId, rewardData)
+        .subscribe(
+          result => {
+            this.alertService.showNoti(
+              'Reward updated successfully',
+              'success'
+            );
+            this.loadPendingRewards();
+            this.editingRewardId = null;
+            this.rewardForm.reset();
+          },
+          error => {
+            console.error('Error updating reward', error);
+            this.alertService.showNoti('Failed to update reward', 'danger');
+          }
+        );
     }
   }
 
   deleteReward(reward: Reward, partner: 'A' | 'B'): void {
-    const canDelete = (partner === 'A' && this.isPartnerA) || (partner === 'B' && this.isPartnerB);
+    const canDelete =
+      (partner === 'A' && this.isPartnerA) ||
+      (partner === 'B' && this.isPartnerB);
     if (!canDelete || !reward._id) return;
 
     this.rewardService.deleteReward(reward._id!).subscribe(
@@ -384,18 +453,42 @@ export class CouponComponent implements OnInit {
         this.alertService.showNoti('Reward deleted successfully', 'success');
         this.loadPendingRewards();
       },
-      (error) => {
+      error => {
         console.error('Error deleting reward', error);
         this.alertService.showNoti('Failed to delete reward', 'danger');
       }
     );
   }
 
+  completeReward(reward: Reward, partner: 'A' | 'B'): void {
+    // Only the reward owner can mark it as completed
+    // If reward is for Partner A, only Partner A can complete it
+    // If reward is for Partner B, only Partner B can complete it
+    const canComplete =
+      (partner === 'A' && this.isPartnerA) ||
+      (partner === 'B' && this.isPartnerB);
+    if (!canComplete || !reward._id || reward.status === 'done') return;
+
+    this.rewardService.completeReward(reward._id!).subscribe(
+      () => {
+        this.alertService.showNoti('Reward marked as completed! 🎉', 'success');
+        this.loadPendingRewards();
+      },
+      error => {
+        console.error('Error completing reward', error);
+        this.alertService.showNoti('Failed to complete reward', 'danger');
+      }
+    );
+  }
+
   toggleCouponSelection(couponId: string, partner: 'A' | 'B'): void {
-    const canSelect = (partner === 'A' && this.canRedeemAsPartnerA) || (partner === 'B' && this.canRedeemAsPartnerB);
+    const canSelect =
+      (partner === 'A' && this.canRedeemAsPartnerA) ||
+      (partner === 'B' && this.canRedeemAsPartnerB);
     if (!canSelect) return;
 
-    const selectedCoupons = partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
+    const selectedCoupons =
+      partner === 'A' ? this.selectedCouponsA : this.selectedCouponsB;
 
     if (selectedCoupons.has(couponId)) {
       selectedCoupons.delete(couponId);
@@ -429,18 +522,31 @@ export class CouponComponent implements OnInit {
     <div mat-dialog-content>
       <div class="row">
         <div class="col-md-12 coupon-description-overlay">
-          <img [src]="couponImageUrl" alt="Coupon" class="img-fluid coupon-image">
-          <p>{{ data.description }}</p>
+          <img
+            [src]="couponImageUrl"
+            alt="Coupon"
+            class="img-fluid coupon-image"
+          />
+          <p [class]="textContrastClass">{{ data.description }}</p>
         </div>
         <div class="col-md-12">
-          <p><strong>Status:</strong>
-            <span [class]="data.status === 'used' ? 'text-danger' : 'text-success'">
+          <p>
+            <strong>Status:</strong>
+            <span
+              [class]="data.status === 'used' ? 'text-danger' : 'text-success'"
+            >
               {{ data.status }}
             </span>
           </p>
-          <p><strong>Partner:</strong> {{ data.partner === 'A' ? 'Pé Huế' : 'Anh Đăng' }}</p>
-          <p><strong>Usage Purpose:</strong> {{ data.usagePurpose || 'Not specified' }}</p>
-          <p><strong>Created:</strong> {{ data.createdAt | date:'medium' }}</p>
+          <p>
+            <strong>Partner:</strong>
+            {{ data.partner === 'A' ? 'Pé Huế' : 'Anh Đăng' }}
+          </p>
+          <p>
+            <strong>Usage Purpose:</strong>
+            {{ data.usagePurpose || 'Not specified' }}
+          </p>
+          <p><strong>Created:</strong> {{ data.createdAt | date: 'medium' }}</p>
         </div>
       </div>
     </div>
@@ -452,11 +558,12 @@ export class CouponComponent implements OnInit {
 export class CouponDetailDialogComponent {
   defaultImagePath = 'assets/img/coupon-blank.jpg';
   couponImageUrl: string = this.defaultImagePath;
+  textContrastClass: string = '';
 
   constructor(
     public dialogRef: MatDialogRef<CouponDetailDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: Coupon,
-    private configService: ConfigService,
+    private configService: ConfigService
   ) {
     this.loadDefaultImage();
   }
@@ -472,13 +579,39 @@ export class CouponDetailDialogComponent {
           // Fall back to the default image
           this.couponImageUrl = this.defaultImagePath;
         }
+        // Determine text contrast after image is loaded
+        setTimeout(() => this.determineTextContrast(), 100);
       },
       error => {
         console.error('Error loading default coupon image config:', error);
         // Fall back to the default image in case of error
         this.couponImageUrl = this.defaultImagePath;
+        setTimeout(() => this.determineTextContrast(), 100);
       }
     );
+  }
+
+  determineTextContrast(): void {
+    // For now, use a simple approach based on image URL or filename
+    // In a more advanced implementation, you could analyze the actual image
+    const imageUrl = this.couponImageUrl.toLowerCase();
+
+    if (
+      imageUrl.includes('dark') ||
+      imageUrl.includes('black') ||
+      imageUrl.includes('night')
+    ) {
+      this.textContrastClass = 'dark-background';
+    } else if (
+      imageUrl.includes('bright') ||
+      imageUrl.includes('light') ||
+      imageUrl.includes('white')
+    ) {
+      this.textContrastClass = 'high-contrast';
+    } else {
+      // Default high contrast for unknown images
+      this.textContrastClass = 'high-contrast';
+    }
   }
 }
 
@@ -488,7 +621,9 @@ export class CouponDetailDialogComponent {
   template: `
     <h2 mat-dialog-title>
       <span *ngIf="!data.isRedemptionMode">Coupon Redemption Guide</span>
-      <span *ngIf="data.isRedemptionMode">Redeem {{ data.availableCouponCount }} Coupon(s) for a Reward</span>
+      <span *ngIf="data.isRedemptionMode"
+        >Redeem {{ data.availableCouponCount }} Coupon(s) for a Reward</span
+      >
     </h2>
     <div mat-dialog-content class="mat-typography">
       <div class="row">
@@ -500,22 +635,43 @@ export class CouponDetailDialogComponent {
                 <tr>
                   <th>Reward</th>
                   <th class="text-center">Coupons Required</th>
-                  <th *ngIf="data.isRedemptionMode" class="text-center">Action</th>
+                  <th *ngIf="data.isRedemptionMode" class="text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let reward of rewardOptions"
-                  [class]="getRewardClass(reward)">
+                <tr
+                  *ngFor="let reward of rewardOptions"
+                  [class]="getRewardClass(reward)"
+                >
                   <td>{{ reward.name }}</td>
-                  <td class="text-center">{{ reward.requiredCoupons }} phiếu</td>
+                  <td class="text-center">
+                    {{ reward.requiredCoupons }} phiếu
+                  </td>
                   <td *ngIf="data.isRedemptionMode" class="text-center">
-                    <button *ngIf="reward.requiredCoupons <= data.availableCouponCount"
-                            class="btn btn-sm"
-                            [class]="selectedOption === reward.name ? 'btn-primary' : 'btn-outline-primary'"
-                            (click)="selectOption(reward.name, reward.requiredCoupons)">
-                      {{ selectedOption === reward.name ? 'Selected' : 'Select' }}
+                    <button
+                      *ngIf="
+                        reward.requiredCoupons <= data.availableCouponCount
+                      "
+                      class="btn btn-sm"
+                      [class]="
+                        selectedOption === reward.name
+                          ? 'btn-primary'
+                          : 'btn-outline-primary'
+                      "
+                      (click)="
+                        selectOption(reward.name, reward.requiredCoupons)
+                      "
+                    >
+                      {{
+                        selectedOption === reward.name ? 'Selected' : 'Select'
+                      }}
                     </button>
-                    <span *ngIf="reward.requiredCoupons > data.availableCouponCount" class="text-muted">
+                    <span
+                      *ngIf="reward.requiredCoupons > data.availableCouponCount"
+                      class="text-muted"
+                    >
                       Not enough coupons
                     </span>
                   </td>
@@ -528,9 +684,17 @@ export class CouponDetailDialogComponent {
     </div>
     <div mat-dialog-actions align="end">
       <button mat-dialog-close>Close</button>
-      <button *ngIf="data.isRedemptionMode && selectedOption"
-              color="primary"
-              (click)="dialogRef.close({option: selectedOption, requiredCoupons: selectedRequiredCoupons, partner: data.partner})">
+      <button
+        *ngIf="data.isRedemptionMode && selectedOption"
+        color="primary"
+        (click)="
+          dialogRef.close({
+            option: selectedOption,
+            requiredCoupons: selectedRequiredCoupons,
+            partner: data.partner,
+          })
+        "
+      >
         Redeem
       </button>
     </div>
@@ -541,40 +705,98 @@ export class RedemptionInfoDialogComponent {
   selectedRequiredCoupons: number = 0;
 
   rewardOptionsForPartnerA = [
-    { name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', requiredCoupons: 2 },
-    { name: 'Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc', requiredCoupons: 2 },
-    { name: 'Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', requiredCoupons: 3 },
-    { name: 'Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ', requiredCoupons: 4 },
-    { name: 'Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ', requiredCoupons: 1 },
-    { name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt', requiredCoupons: 1 },
-    { name: 'Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn', requiredCoupons: 3 },
-    { name: 'Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ', requiredCoupons: 4 },
-    { name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch', requiredCoupons: 5 },
-    { name: 'Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích', requiredCoupons: 1 }
+    {
+      name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài',
+      requiredCoupons: 2,
+    },
+    {
+      name: 'Phiếu đổi một buổi tối được Anh Đăng gội đầu và sấy tóc',
+      requiredCoupons: 2,
+    },
+    {
+      name: 'Phiếu đổi một buổi sáng được Anh Đăng chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)',
+      requiredCoupons: 3,
+    },
+    {
+      name: 'Phiếu đổi một lần Anh Đăng dọn dẹp nhà cửa toàn bộ',
+      requiredCoupons: 4,
+    },
+    {
+      name: 'Phiếu đổi một buổi tối được Anh Đăng đọc sách hoặc kể chuyện cho nghe trước khi ngủ',
+      requiredCoupons: 1,
+    },
+    {
+      name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt',
+      requiredCoupons: 1,
+    },
+    {
+      name: 'Phiếu đổi một buổi chiều được Anh Đăng chở đi mua sắm quần áo và tư vấn lựa chọn',
+      requiredCoupons: 3,
+    },
+    {
+      name: 'Phiếu đổi một lần được Anh Đăng tự tay làm một món đồ handmade nhỏ xinh tặng vợ',
+      requiredCoupons: 4,
+    },
+    {
+      name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Anh Đăng lên kế hoạch',
+      requiredCoupons: 5,
+    },
+    {
+      name: 'Phiếu đổi một buổi tối được Anh Đăng cùng Pé Huế chơi một trò chơi yêu thích',
+      requiredCoupons: 1,
+    },
   ];
 
   rewardOptionsForPartnerB = [
-    { name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài', requiredCoupons: 2 },
-    { name: 'Phiếu đổi một buổi tối được Pé Huế gội đầu và sấy tóc', requiredCoupons: 2 },
-    { name: 'Phiếu đổi một buổi sáng được Pé Huế chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)', requiredCoupons: 3 },
-    { name: 'Phiếu đổi một lần Pé Huế dọn dẹp nhà cửa toàn bộ', requiredCoupons: 4 },
-    { name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt', requiredCoupons: 1 },
-    { name: 'Phiếu đổi một lần được Pé Huế tự tay làm một món đồ handmade nhỏ xinh tặng chồng', requiredCoupons: 4 },
-    { name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Pé Huế lên kế hoạch', requiredCoupons: 5 },
-    { name: 'Phiếu đổi một buổi tối được Pé Huế cùng Anh Đăng chơi một trò chơi yêu thích', requiredCoupons: 1 }
+    {
+      name: 'Phiếu đổi một buổi massage mắt/chân thư giãn sau một ngày dài',
+      requiredCoupons: 2,
+    },
+    {
+      name: 'Phiếu đổi một buổi tối được Pé Huế gội đầu và sấy tóc',
+      requiredCoupons: 2,
+    },
+    {
+      name: 'Phiếu đổi một buổi sáng được Pé Huế chuẩn bị bữa ăn sáng tận giường (món ăn cầu kỳ hơn là chỉ chiên trứng và bánh mì)',
+      requiredCoupons: 3,
+    },
+    {
+      name: 'Phiếu đổi một lần Pé Huế dọn dẹp nhà cửa toàn bộ',
+      requiredCoupons: 4,
+    },
+    {
+      name: 'Phiếu đổi một lần được pha cho một ly nước ép hoặc sinh tố đặc biệt',
+      requiredCoupons: 1,
+    },
+    {
+      name: 'Phiếu đổi một lần được Pé Huế tự tay làm một món đồ handmade nhỏ xinh tặng chồng',
+      requiredCoupons: 4,
+    },
+    {
+      name: 'Phiếu đổi một buổi hẹn hò lãng mạn bất ngờ do Pé Huế lên kế hoạch',
+      requiredCoupons: 5,
+    },
+    {
+      name: 'Phiếu đổi một buổi tối được Pé Huế cùng Anh Đăng chơi một trò chơi yêu thích',
+      requiredCoupons: 1,
+    },
   ];
 
   rewardOptions: any[] = [];
 
   constructor(
     public dialogRef: MatDialogRef<RedemptionInfoDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: {
-      isRedemptionMode: boolean,
-      availableCouponCount: number,
-      partner?: 'A' | 'B'
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      isRedemptionMode: boolean;
+      availableCouponCount: number;
+      partner?: 'A' | 'B';
     }
   ) {
-    this.rewardOptions = data.partner === 'A' ? this.rewardOptionsForPartnerA : this.rewardOptionsForPartnerB;
+    this.rewardOptions =
+      data.partner === 'A'
+        ? this.rewardOptionsForPartnerA
+        : this.rewardOptionsForPartnerB;
   }
 
   selectOption(option: string, requiredCoupons: number): void {
@@ -584,9 +806,15 @@ export class RedemptionInfoDialogComponent {
 
   getRewardClass(reward: any): string {
     let classes = '';
-    if (this.data.isRedemptionMode && reward.requiredCoupons > this.data.availableCouponCount) {
+    if (
+      this.data.isRedemptionMode &&
+      reward.requiredCoupons > this.data.availableCouponCount
+    ) {
       classes += 'disabled-reward';
-    } else if (this.data.isRedemptionMode && reward.requiredCoupons <= this.data.availableCouponCount) {
+    } else if (
+      this.data.isRedemptionMode &&
+      reward.requiredCoupons <= this.data.availableCouponCount
+    ) {
       classes += 'selectable-reward';
     }
 
