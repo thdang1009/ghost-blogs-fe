@@ -1,0 +1,43 @@
+echo "🔍 Running pre-commit checks..."
+
+# Get list of staged TypeScript/JavaScript/HTML files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js|html|scss|css)$')
+
+if [ -n "$STAGED_FILES" ]; then
+  echo "📝 Formatting staged files..."
+  echo "$STAGED_FILES" | xargs npx prettier --write
+  
+  # Get TypeScript/JavaScript files for linting
+  STAGED_TS_FILES=$(echo "$STAGED_FILES" | grep -E '\.(ts|js)$')
+  
+  if [ -n "$STAGED_TS_FILES" ]; then
+    echo "🔍 Linting staged TypeScript/JavaScript files..."
+    # Run eslint and fail on errors, allow warnings
+    if ! echo "$STAGED_TS_FILES" | xargs npx eslint --fix; then
+      echo "❌ ESLint found errors that must be fixed before committing!"
+      exit 1
+    fi
+  fi
+  
+  # Add formatted/fixed files back to staging
+  echo "$STAGED_FILES" | xargs git add
+  
+  # Check for heavy imports in staged files
+  echo "🚨 Checking for heavy imports..."
+  if echo "$STAGED_TS_FILES" | xargs -r grep -l "lodash\|moment\|jquery" 2>/dev/null; then
+    echo "⚠️  Warning: Heavy imports detected! Consider using lightweight alternatives:"
+    echo "   - lodash: Use native ES6 methods or lodash-es"
+    echo "   - moment: Use date-fns (already in package.json) or Angular DatePipe"
+    echo "   - jquery: Use Angular's built-in DOM manipulation"
+  fi
+else
+  echo "📝 No relevant files staged for commit"
+fi
+
+# Check for unused dependencies
+echo "🧹 Checking for potentially unused dependencies..."
+if command -v npx &> /dev/null; then
+  echo "💡 Consider running 'npm ls' to check for unused packages"
+fi
+
+echo "✅ Pre-commit checks completed!"

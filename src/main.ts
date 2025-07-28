@@ -9,7 +9,9 @@ if (environment.production) {
   console.log = () => {};
 }
 
-platformBrowserDynamic().bootstrapModule(AppModule, {
-  ngZoneEventCoalescing: true
-})
+platformBrowserDynamic()
+  .bootstrapModule(AppModule, {
+    ngZoneEventCoalescing: true,
+  })
   .catch(err => console.error(err));
+// Test change
