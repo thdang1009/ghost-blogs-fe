@@ -558,8 +558,7 @@ export class CouponComponent implements OnInit {
   `,
 })
 export class CouponDetailDialogComponent {
-  defaultImagePath = 'assets/img/coupon-blank.jpg';
-  couponImageUrl: string = this.defaultImagePath;
+  couponImageUrl: string = this.getFromLocalStorage();
   textContrastClass: string = '';
 
   constructor(
@@ -574,20 +573,20 @@ export class CouponDetailDialogComponent {
     this.configService.getConfig(['defaultCouponImage']).subscribe(
       configs => {
         const config = configs[0];
-        if (config && config.defaultCouponImage) {
+        const valueInStorage = this.getFromLocalStorage();
+        if (valueInStorage === config.defaultCouponImage) {
+          this.determineTextContrast();
+        } else if (config && config.defaultCouponImage) {
           // Use the configured default image
           this.couponImageUrl = config.defaultCouponImage;
-        } else {
-          // Fall back to the default image
-          this.couponImageUrl = this.defaultImagePath;
+          this.saveToLocalStorage(config.defaultCouponImage);
+          // Determine text contrast after image is loaded
+          setTimeout(() => this.determineTextContrast(), 100);
         }
-        // Determine text contrast after image is loaded
-        setTimeout(() => this.determineTextContrast(), 100);
       },
       error => {
         console.error('Error loading default coupon image config:', error);
         // Fall back to the default image in case of error
-        this.couponImageUrl = this.defaultImagePath;
         setTimeout(() => this.determineTextContrast(), 100);
       }
     );
@@ -614,6 +613,16 @@ export class CouponDetailDialogComponent {
       // Default high contrast for unknown images
       this.textContrastClass = 'high-contrast';
     }
+  }
+
+  saveToLocalStorage(value: string) {
+    localStorage.setItem('CONFIG_defaultCouponImage', value);
+  }
+  getFromLocalStorage(): string {
+    return (
+      localStorage.getItem('CONFIG_defaultCouponImage') ||
+      'assets/img/coupon-blank.jpg'
+    );
   }
 }
 
