@@ -13,10 +13,9 @@ import { StorageService } from '@services/storage/storage.service';
 const apiUrl = environment.apiUrl + '/v1/auth';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-
   @Output() isLoggedIn: EventEmitter<any> = new EventEmitter();
   @Output() isAdminE: EventEmitter<any> = new EventEmitter();
   userInfo: any = {};
@@ -32,22 +31,24 @@ export class AuthService {
   ) {
     this.loggedInStatus = this.isLogin();
     if (this.loggedInStatus && isPlatformBrowser(this.platformId)) {
-      this.userInfo = JSON.parse(localStorage.getItem(CONSTANT.USER_INFO) || '{}');
+      this.userInfo = JSON.parse(
+        localStorage.getItem(CONSTANT.USER_INFO) || '{}'
+      );
     }
   }
 
   isLogin() {
+    // Check if user info exists in storage (cookies handle authentication)
     return !!this.storageService.getItem(CONSTANT.USER_INFO);
   }
 
   login(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/login', data)
-      .pipe(
-        tap((resp: LoginResponse) => {
-          this.handleLoginResponse(resp);
-        }),
-        catchError(handleError('login', []))
-      );
+    return this.http.post<any>(apiUrl + '/login', data).pipe(
+      tap((resp: LoginResponse) => {
+        this.handleLoginResponse(resp);
+      }),
+      catchError(handleError('login', []))
+    );
   }
 
   handleLoginResponse(resp: LoginResponse) {
@@ -58,69 +59,75 @@ export class AuthService {
     this.isAdminE.emit(this.isAdmin());
 
     // Use the stored redirect URL if available, otherwise use the returnUrl from query params
-    const returnUrl = this.redirectUrl || this.route.snapshot.queryParams['returnUrl'] || '/admin/dashboard';
+    const returnUrl =
+      this.redirectUrl ||
+      this.route.snapshot.queryParams['returnUrl'] ||
+      '/admin/dashboard';
     this.redirectUrl = null; // Clear the stored URL
     this.router.navigateByUrl(returnUrl);
   }
 
   logout(): Observable<any> {
-    return this.http.post<any>(apiUrl + '/logout', {})
-      .pipe(
-        tap(_ => {
-          this.isLoggedIn.emit(false);
-          this.loggedInStatus = false;
-          this.clearUserInfo(); // <- before check isAdminE
-          this.isAdminE.emit(this.isAdmin());
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 1000);
-        }),
-        catchError(handleError('logout', []))
-      );
+    return this.http.post<any>(apiUrl + '/logout', {}).pipe(
+      tap(_ => {
+        // Clear local user state regardless of backend response
+        this.performLogoutCleanup();
+      }),
+      catchError(err => {
+        // Even if backend logout fails (e.g., expired cookies), clear local state
+        console.warn('Backend logout failed, but clearing local state:', err);
+        this.performLogoutCleanup();
+        // Return success to prevent error handling in components
+        return [{ success: true, msg: 'Logged out locally' }];
+      })
+    );
+  }
+
+  private performLogoutCleanup() {
+    this.isLoggedIn.emit(false);
+    this.loggedInStatus = false;
+    this.clearUserInfo();
+    this.isAdminE.emit(this.isAdmin());
+    this.userInfo = {};
   }
 
   changePassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/change-password', data)
-      .pipe(
-        tap(_ => ghostLog('change password')),
-        catchError(handleError('change password', []))
-      );
+    return this.http.post<any>(apiUrl + '/change-password', data).pipe(
+      tap(_ => ghostLog('change password')),
+      catchError(handleError('change password', []))
+    );
   }
 
   register(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/register', data)
-      .pipe(
-        tap(_ => ghostLog('login')),
-        catchError(handleError('login', []))
-      );
+    return this.http.post<any>(apiUrl + '/register', data).pipe(
+      tap(_ => ghostLog('login')),
+      catchError(handleError('login', []))
+    );
   }
 
   confirmEmail(code: string) {
-    return this.http.get<any>(apiUrl + `/confirm/${code}`)
-      .pipe(
-        tap(_ => ghostLog('confirm email')),
-        catchError(handleError('confirm email', []))
-      );
+    return this.http.get<any>(apiUrl + `/confirm/${code}`).pipe(
+      tap(_ => ghostLog('confirm email')),
+      catchError(handleError('confirm email', []))
+    );
   }
 
   // call reset
   resetPassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/reset-password', data)
-      .pipe(
-        tap(_ => ghostLog('reset password')),
-        catchError(handleError('reset password', []))
-      );
+    return this.http.post<any>(apiUrl + '/reset-password', data).pipe(
+      tap(_ => ghostLog('reset password')),
+      catchError(handleError('reset password', []))
+    );
   }
 
   // after receive redirect from email, call this to set new password
   setNewPassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/set-new-password', data)
-      .pipe(
-        tap(_ => {
-          tap(_ => ghostLog('set new password'))
-        }),
-        catchError(handleError('set new password', []))
-      );
+    return this.http.post<any>(apiUrl + '/set-new-password', data).pipe(
+      tap(_ => {
+        tap(_ => ghostLog('set new password'));
+      }),
+      catchError(handleError('set new password', []))
+    );
   }
 
   getUserInfo() {
@@ -138,7 +145,11 @@ export class AuthService {
   }
 
   isMember() {
-    const arr = [CONSTANT.PERMISSION.GRAND_ADMIN, CONSTANT.PERMISSION.ADMIN, CONSTANT.PERMISSION.MEMBER];
+    const arr = [
+      CONSTANT.PERMISSION.GRAND_ADMIN,
+      CONSTANT.PERMISSION.ADMIN,
+      CONSTANT.PERMISSION.MEMBER,
+    ];
     return this.userInfo && arr.includes(this.userInfo.permission);
   }
 
@@ -152,6 +163,6 @@ export class AuthService {
 
   private clearUserInfo() {
     this.storageService.removeItem(CONSTANT.USER_INFO);
-    this.storageService.removeItem(CONSTANT.TOKEN);
+    // No need to remove tokens as they're handled by HTTP-only cookies
   }
 }

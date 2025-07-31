@@ -5,34 +5,29 @@ import {
   HttpEvent,
   HttpInterceptor,
   HttpResponse,
-  HttpErrorResponse
+  HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { CONSTANT } from '@shared/constant';
 import { StorageService } from '../services/storage/storage.service';
-import { AlertService } from '@services/_index';
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
-
   constructor(
     private router: Router,
-    private storageService: StorageService,
-  ) { }
+    private storageService: StorageService
+  ) {}
 
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-
-    const token = this.storageService.getItem(CONSTANT.TOKEN);
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: token
-        }
-      });
-    }
+  intercept(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+    // Configure request to include cookies for authentication
     request = request.clone({
-      headers: request.headers.set('Accept', 'application/json')
+      setHeaders: {
+        Accept: 'application/json',
+      },
+      withCredentials: true, // This ensures cookies are sent with requests
     });
     return next.handle(request).pipe(
       map((event: HttpEvent<any>) => {
@@ -50,7 +45,7 @@ export class TokenInterceptor implements HttpInterceptor {
           // TODO document why this block is empty
         }
         return throwError(error);
-      }));
+      })
+    );
   }
-
 }
