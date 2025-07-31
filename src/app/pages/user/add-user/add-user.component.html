@@ -1,154 +1,100 @@
 <div class="main-content">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">
-              {{ isEditMode ? 'Edit User' : 'Add New User' }}
-            </h4>
-          </div>
-          <div class="card-body">
-            <form
-              [formGroup]="registerForm"
-              autocomplete="off"
-              (ngSubmit)="onFormSubmit(registerForm.value)"
-            >
-              <div class="row">
-                <div class="col-md-12">
-                  <mat-form-field class="example-full-width">
-                    <input
-                      [errorStateMatcher]="matcher"
-                      matInput
-                      type="fullName"
-                      placeholder="Full Name"
-                      formControlName="fullName"
-                    />
-                    <mat-error>
-                      <span
-                        *ngIf="
-                          registerForm.get('fullName')?.invalid &&
-                          registerForm.get('fullName')?.touched
-                        "
-                      >
-                        Please enter your Full Name.
-                      </span>
-                    </mat-error>
-                  </mat-form-field>
-                </div>
-                <div class="col-md-12">
-                  <mat-form-field class="example-full-width">
-                    <input
-                      [errorStateMatcher]="matcher"
-                      matInput
-                      type="email"
-                      placeholder="Email"
-                      formControlName="username"
-                      autocomplete="off"
-                    />
-                    <mat-error>
-                      <span
-                        *ngIf="
-                          registerForm.get('username')?.invalid &&
-                          registerForm.get('username')?.touched
-                        "
-                      >
-                        Please enter your username.
-                      </span>
-                    </mat-error>
-                  </mat-form-field>
-                </div>
-                <div class="col-md-12">
-                  <mat-form-field class="example-full-width">
-                    <input
-                      [errorStateMatcher]="matcher"
-                      matInput
-                      type="password"
-                      [placeholder]="
-                        isEditMode
-                          ? 'Password (leave blank to keep current)'
-                          : 'Password'
-                      "
-                      formControlName="password"
-                      autocomplete="off"
-                    />
-                    <mat-error>
-                      <span
-                        *ngIf="
-                          registerForm.get('password')?.invalid &&
-                          registerForm.get('password')?.touched
-                        "
-                      >
-                        Please enter your password.
-                      </span>
-                    </mat-error>
-                  </mat-form-field>
-                </div>
-                <div
-                  class="col-md-12"
-                  *ngIf="
-                    !isEditMode ||
-                    (isEditMode && registerForm.get('password')?.value)
-                  "
-                >
-                  <mat-form-field class="example-full-width">
-                    <input
-                      [errorStateMatcher]="matcherRepassword"
-                      matInput
-                      type="password"
-                      placeholder="Confirm Password"
-                      formControlName="repassword"
-                    />
-                    <mat-error>
-                      <span
-                        *ngIf="
-                          registerForm.get('repassword')?.invalid &&
-                          registerForm.get('repassword')?.touched
-                        "
-                      >
-                        Please enter your password again.
-                      </span>
-                      <span
-                        *ngIf="
-                          registerForm.hasError('notSame') &&
-                          registerForm.get('repassword')?.touched
-                        "
-                      >
-                        Password does not match.
-                      </span>
-                    </mat-error>
-                  </mat-form-field>
-                </div>
-                <div class="col-md-12">
-                  <mat-form-field class="example-full-width" appearance="fill">
-                    <mat-label>Permission</mat-label>
-                    <mat-select
-                      [(ngModel)]="permission"
-                      [ngModelOptions]="{ standalone: true }"
-                    >
-                      <mat-option
-                        *ngFor="let item of permissions; let i = index"
-                        [value]="item"
-                      >
-                        {{ item }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-              <div class="button-row">
-                <button
-                  [disabled]="!registerForm.valid"
-                  type="submit"
-                  class="btn btn-info pull-right btn-w100"
-                >
-                  {{ isEditMode ? 'Edit' : 'Add' }}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="card">
+					<div class="card-body">
+						<form [formGroup]="registerForm"
+							(ngSubmit)="onFormSubmit(registerForm.value)">
+							<div class="row">
+								<div class="col-md-12">
+
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="fullName"
+											placeholder="Full Name"
+											formControlName="fullName">
+										<mat-error>
+											<span *ngIf="registerForm.get('fullName')?.invalid && registerForm.get('fullName')?.touched">
+												Please enter your Full Name.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="email"
+											placeholder="Email"
+											formControlName="username">
+										<mat-error>
+											<span *ngIf="registerForm.get('username')?.invalid && registerForm.get('username')?.touched">
+												Please enter your username.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcher"
+											matInput
+											type="password"
+											placeholder="Password"
+											formControlName="password">
+										<mat-error>
+											<span *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+												Please enter your password.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+
+									<mat-form-field class="example-full-width">
+										<input [errorStateMatcher]="matcherRepassword"
+											matInput
+											type="password"
+											placeholder="Repassword"
+											formControlName="repassword">
+										<mat-error>
+											<span *ngIf="registerForm.get('repassword')?.invalid && registerForm.get('repassword')?.touched">
+												Please enter your password again.
+											</span>
+											<span *ngIf="registerForm.hasError('notSame') && registerForm.get('repassword')?.touched">
+												Password does not match.
+											</span>
+										</mat-error>
+									</mat-form-field>
+								</div>
+								<div class="col-md-12">
+									<mat-form-field class="example-full-width"
+										appearance="fill">
+										<mat-label>Permission</mat-label>
+										<mat-select [(ngModel)]="permission"
+											[ngModelOptions]="{standalone: true}">
+											<mat-option *ngFor="let item of permissions; let i = index"
+												[value]="item">
+												{{item}}
+											</mat-option>
+										</mat-select>
+									</mat-form-field>
+								</div>
+							</div>
+							<div class="button-row">
+								<button [disabled]="!registerForm.valid"
+									type="submit"
+									class="btn btn-info pull-right btn-w100">
+									Create
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
