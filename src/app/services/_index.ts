@@ -22,3 +22,4 @@ export * from './series/series.service';
 export * from './journal/journal.service';
 export * from './mood/mood.service';
 export * from './system/system.service';
+export * from './aws/aws.service'

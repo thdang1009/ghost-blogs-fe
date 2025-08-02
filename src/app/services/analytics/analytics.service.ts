@@ -84,6 +84,7 @@ export interface DashboardData {
     sessions: number;
     users: number;
   }[];
+  awsEC2Usage: string;
 }
 
 @Injectable({

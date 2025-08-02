@@ -2,7 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AnalyticsService, DateRange, DashboardData } from '@services/analytics/analytics.service';
-import { AlertService, AuthService, SystemService } from '@services/_index';
+import { AlertService, AuthService, AWSService, SystemService } from '@services/_index';
+import { regexPercentage } from '@shared/constant';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,7 +22,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     trafficSources: { labels: [], datasets: [] },
     deviceBreakdown: { labels: [], datasets: [] },
     topPages: [],
-    geoDistribution: []
+    geoDistribution: [],
+    awsEC2Usage: ''
   };
 
   loading = true;
@@ -38,16 +40,30 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private analyticsService: AnalyticsService,
     private alertService: AlertService,
     private authService: AuthService,
-    private systemService: SystemService
+    private systemService: SystemService,
+    private awsService: AWSService
   ) { }
 
   ngOnInit(): void {
     this.loadDashboardData();
+    this.getAWSStoragedSpace();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  getAWSStoragedSpace() {
+    this.awsService.getAWSStoragedSpace()
+      .subscribe(res => {
+
+        const regex = regexPercentage;
+        this.dashboardData.awsEC2Usage = (res?.message?.match(regex) || [])[0] || '';
+      }, (err) => {
+        console.log(err);
+        this.alertService.showNoti(`getAWSStoragedSpace fail!`, 'danger');
+      });;
   }
 
   loadDashboardData(): void {
