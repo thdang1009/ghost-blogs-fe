@@ -16,33 +16,61 @@
 							</div>
 						</div>
 
-						<table class="table table-striped" *ngIf="!loading && todoLabels && todoLabels.length > 0">
-							<thead class="text-primary">
-								<tr>
-									<th>Icon</th>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Auto Detect Keywords</th>
-									<th>Actions</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr *ngFor="let todoLabel of todoLabels" class="hover-pointer-td">
-									<td (click)="edit(todoLabel)">
-										<span class="item-thumb">{{ todoLabel.imgAlternative }}</span>
-									</td>
-									<td (click)="edit(todoLabel)">{{ todoLabel.name }}</td>
-									<td (click)="edit(todoLabel)">{{ todoLabel.description }}</td>
-									<td (click)="edit(todoLabel)">{{ todoLabel.autoDetectKeywords }}</td>
-									<td>
-										<button (click)="delete(todoLabel)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-											<div class="mdc-icon-button__ripple"></div>
-											delete
-										</button>
-									</td>
-								</tr>
-							</tbody>
-						</table>
+						<!-- Desktop Table View -->
+						<div class="d-none d-md-block" *ngIf="!loading && todoLabels && todoLabels.length > 0">
+							<table class="table table-striped">
+								<thead class="text-primary">
+									<tr>
+										<th>Icon</th>
+										<th>Name</th>
+										<th>Description</th>
+										<th>Auto Detect Keywords</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr *ngFor="let todoLabel of todoLabels" class="hover-pointer-td">
+										<td (click)="edit(todoLabel)">
+											<span class="item-thumb">{{ todoLabel.imgAlternative }}</span>
+										</td>
+										<td (click)="edit(todoLabel)">{{ todoLabel.name }}</td>
+										<td (click)="edit(todoLabel)">{{ todoLabel.description }}</td>
+										<td (click)="edit(todoLabel)">{{ todoLabel.autoDetectKeywords }}</td>
+										<td>
+											<button (click)="delete(todoLabel)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+												<div class="mdc-icon-button__ripple"></div>
+												delete
+											</button>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<!-- Mobile Card View -->
+						<div class="d-block d-md-none" *ngIf="!loading && todoLabels && todoLabels.length > 0">
+							<div class="mobile-card-item" *ngFor="let todoLabel of todoLabels">
+								<div class="mobile-card-content" (click)="edit(todoLabel)">
+									<div class="mobile-card-header">
+										<div class="label-with-icon">
+											<span class="item-thumb-mobile">{{ todoLabel.imgAlternative }}</span>
+											<h6 class="mobile-card-title">{{ todoLabel.name }}</h6>
+										</div>
+									</div>
+									<div class="mobile-card-body">
+										<div class="mobile-card-info">
+											<p class="mobile-card-description" *ngIf="todoLabel.description">{{ todoLabel.description }}</p>
+											<p class="mobile-card-keywords" *ngIf="todoLabel.autoDetectKeywords">Keywords: {{ todoLabel.autoDetectKeywords }}</p>
+										</div>
+									</div>
+								</div>
+								<div class="mobile-card-actions">
+									<button (click)="delete(todoLabel)" type="button" class="btn btn-sm btn-outline-danger">
+										<i class="material-icons">delete</i>
+									</button>
+								</div>
+							</div>
+						</div>
 
 						<div *ngIf="!loading && (!todoLabels || todoLabels.length === 0)" class="alert alert-info">
 							No labels found. Create your first label by clicking the "New Label" button.

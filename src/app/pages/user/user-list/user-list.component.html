@@ -20,30 +20,59 @@
               </div>
             </div>
 
-            <table
-              class="table table-striped"
-              *ngIf="!loading && users && users.length > 0"
-            >
-              <thead class="text-primary">
-                <tr>
-                  <th>#</th>
-                  <th>Full Name</th>
-                  <th>Username</th>
-                  <th>Status</th>
-                  <th>Permission</th>
-                  <th>Last Updated By</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="let user of users; let index = index"
-                  class="hover-pointer-td"
-                  (click)="editUser(user)"
-                >
-                  <td>{{ index + 1 }}</td>
-                  <td>{{ user.fullName }}</td>
-                  <td>{{ user.username }}</td>
-                  <td>
+            <!-- Desktop Table View -->
+            <div class="d-none d-md-block" *ngIf="!loading && users && users.length > 0">
+              <table class="table table-striped">
+                <thead class="text-primary">
+                  <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Status</th>
+                    <th>Permission</th>
+                    <th>Last Updated By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    *ngFor="let user of users; let index = index"
+                    class="hover-pointer-td"
+                    (click)="editUser(user)"
+                  >
+                    <td>{{ index + 1 }}</td>
+                    <td>{{ user.fullName }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>
+                      <span
+                        [ngClass]="{
+                          'user-status-active': user.status === 'active',
+                          'user-status-inactive': user.status === 'inactive',
+                          'user-status-pending': user.status === 'pending',
+                        }"
+                      >
+                        {{ user.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <span
+                        class="user-permission"
+                        [ngClass]="user.permission.toLowerCase()"
+                      >
+                        {{ user.permission }}
+                      </span>
+                    </td>
+                    <td>{{ user.updateBy }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="d-block d-md-none" *ngIf="!loading && users && users.length > 0">
+              <div class="mobile-card-item" *ngFor="let user of users; let index = index">
+                <div class="mobile-card-content" (click)="editUser(user)">
+                  <div class="mobile-card-header">
+                    <h6 class="mobile-card-title">{{ user.fullName }}</h6>
                     <span
                       [ngClass]="{
                         'user-status-active': user.status === 'active',
@@ -53,19 +82,24 @@
                     >
                       {{ user.status }}
                     </span>
-                  </td>
-                  <td>
-                    <span
-                      class="user-permission"
-                      [ngClass]="user.permission.toLowerCase()"
-                    >
-                      {{ user.permission }}
-                    </span>
-                  </td>
-                  <td>{{ user.updateBy }}</td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                  <div class="mobile-card-body">
+                    <div class="mobile-card-info">
+                      <p class="mobile-card-username">{{ user?.username }}</p>
+                      <div class="mobile-card-meta">
+                        <span
+                          class="user-permission"
+                          [ngClass]="user?.permission?.toLowerCase()"
+                        >
+                          {{ user?.permission }}
+                        </span>
+                        <span class="mobile-card-updated" *ngIf="user.updateBy">Updated by: {{ user.updateBy }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div
               *ngIf="!loading && (!users || users.length === 0)"

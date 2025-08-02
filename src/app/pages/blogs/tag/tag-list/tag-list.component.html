@@ -16,34 +16,63 @@
 							</div>
 						</div>
 
-						<table class="table table-striped" *ngIf="!loading && tags && tags.length > 0">
-							<thead class="text-primary">
-								<tr>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Content</th>
-									<th>Image URL</th>
-									<th>Actions</th>
-								</tr>
+						<!-- Desktop Table View -->
+						<div class="d-none d-md-block" *ngIf="!loading && tags && tags.length > 0">
+							<table class="table table-striped">
+								<thead class="text-primary">
+									<tr>
+										<th>Name</th>
+										<th>Description</th>
+										<th>Content</th>
+										<th>Image URL</th>
+										<th>Actions</th>
+									</tr>
 								</thead>
 								<tbody>
-								<tr *ngFor="let tag of tags" class="hover-pointer-td">
-											<td (click)="edit(tag)">{{ tag.name }}</td>
-									<td (click)="edit(tag)">{{ tag.description }}</td>
-									<td (click)="edit(tag)">{{ tag.content }}</td>
-											<td (click)="edit(tag)">
-										<img [src]="tag.imgUrl" alt="Tag image" class="tag-thumb" *ngIf="tag.imgUrl" style="max-width: 60px;">
-										<span *ngIf="!tag.imgUrl">No image</span>
-											</td>
-									<td>
-										<button (click)="delete(tag)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+									<tr *ngFor="let tag of tags" class="hover-pointer-td">
+										<td (click)="edit(tag)">{{ tag.name }}</td>
+										<td (click)="edit(tag)">{{ tag.description }}</td>
+										<td (click)="edit(tag)">{{ tag.content }}</td>
+										<td (click)="edit(tag)">
+											<img [src]="tag.imgUrl" alt="Tag image" class="tag-thumb" *ngIf="tag.imgUrl" style="max-width: 60px;">
+											<span *ngIf="!tag.imgUrl">No image</span>
+										</td>
+										<td>
+											<button (click)="delete(tag)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
 												<div class="mdc-icon-button__ripple"></div>
 												delete
 											</button>
-											</td>
-										</tr>
+										</td>
+									</tr>
 								</tbody>
 							</table>
+						</div>
+
+						<!-- Mobile Card View -->
+						<div class="d-block d-md-none" *ngIf="!loading && tags && tags.length > 0">
+							<div class="mobile-card-item" *ngFor="let tag of tags">
+								<div class="mobile-card-content" (click)="edit(tag)">
+									<div class="mobile-card-header">
+										<h6 class="mobile-card-title">{{ tag.name }}</h6>
+									</div>
+									<div class="mobile-card-body">
+										<div class="mobile-card-image">
+											<img [src]="tag.imgUrl" alt="Tag image" class="tag-thumb-mobile" *ngIf="tag.imgUrl">
+											<span class="no-image-text" *ngIf="!tag.imgUrl">No image</span>
+										</div>
+										<div class="mobile-card-info">
+											<p class="mobile-card-description" *ngIf="tag?.description">{{ tag?.description }}</p>
+											<p class="mobile-card-content" *ngIf="tag?.content">{{ tag?.content || '' | slice:0:50 }}{{ (tag?.content || '').length > 50 ? '...' : '' }}</p>
+										</div>
+									</div>
+								</div>
+								<div class="mobile-card-actions">
+									<button (click)="delete(tag)" type="button" class="btn btn-sm btn-outline-danger">
+										<i class="material-icons">delete</i>
+									</button>
+								</div>
+							</div>
+						</div>
 
 						<div *ngIf="!loading && (!tags || tags.length === 0)" class="alert alert-info">
 							No tags found. Create your first tag by clicking the "New Tag" button.

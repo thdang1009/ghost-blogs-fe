@@ -16,34 +16,63 @@
 							</div>
 						</div>
 
-						<table class="table table-striped" *ngIf="!loading && categories && categories.length > 0">
-							<thead class="text-primary">
-								<tr>
-									<th>Name</th>
-									<th>Description</th>
-									<th>Content</th>
-									<th>Image URL</th>
-									<th>Actions</th>
-								</tr>
+						<!-- Desktop Table View -->
+						<div class="d-none d-md-block" *ngIf="!loading && categories && categories.length > 0">
+							<table class="table table-striped">
+								<thead class="text-primary">
+									<tr>
+										<th>Name</th>
+										<th>Description</th>
+										<th>Content</th>
+										<th>Image URL</th>
+										<th>Actions</th>
+									</tr>
 								</thead>
 								<tbody>
-								<tr *ngFor="let category of categories" class="hover-pointer-td">
-											<td (click)="edit(category)">{{ category.name }}</td>
-									<td (click)="edit(category)">{{ category.description }}</td>
-									<td (click)="edit(category)">{{ category.content }}</td>
-											<td (click)="edit(category)">
-										<img [src]="category.imgUrl" alt="Category image" class="category-thumb" *ngIf="category.imgUrl" style="max-width: 60px;">
-										<span *ngIf="!category.imgUrl">No image</span>
-											</td>
-									<td>
-										<button (click)="delete(category)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
+									<tr *ngFor="let category of categories" class="hover-pointer-td">
+										<td (click)="edit(category)">{{ category.name }}</td>
+										<td (click)="edit(category)">{{ category.description }}</td>
+										<td (click)="edit(category)">{{ category.content }}</td>
+										<td (click)="edit(category)">
+											<img [src]="category.imgUrl" alt="Category image" class="category-thumb" *ngIf="category.imgUrl" style="max-width: 60px;">
+											<span *ngIf="!category.imgUrl">No image</span>
+										</td>
+										<td>
+											<button (click)="delete(category)" type="button" class="btn-float-in-row pull-right mdc-icon-button material-icons red">
 												<div class="mdc-icon-button__ripple"></div>
 												delete
 											</button>
-											</td>
-										</tr>
+										</td>
+									</tr>
 								</tbody>
 							</table>
+						</div>
+
+						<!-- Mobile Card View -->
+						<div class="d-block d-md-none" *ngIf="!loading && categories && categories.length > 0">
+							<div class="mobile-card-item" *ngFor="let category of categories">
+								<div class="mobile-card-content" (click)="edit(category)">
+									<div class="mobile-card-header">
+										<h6 class="mobile-card-title">{{ category?.name }}</h6>
+									</div>
+									<div class="mobile-card-body">
+										<div class="mobile-card-image">
+											<img [src]="category?.imgUrl" alt="Category image" class="category-thumb-mobile" *ngIf="category?.imgUrl">
+											<span class="no-image-text" *ngIf="!category?.imgUrl">No image</span>
+										</div>
+										<div class="mobile-card-info">
+											<p class="mobile-card-description" *ngIf="category?.description">{{ category?.description }}</p>
+											<p class="mobile-card-content" *ngIf="category?.content">{{ (category?.content || '') | slice:0:50 }}{{ (category?.content || '').length > 50 ? '...' : '' }}</p>
+										</div>
+									</div>
+								</div>
+								<div class="mobile-card-actions">
+									<button (click)="delete(category)" type="button" class="btn btn-sm btn-outline-danger">
+										<i class="material-icons">delete</i>
+									</button>
+								</div>
+							</div>
+						</div>
 
 						<div *ngIf="!loading && (!categories || categories.length === 0)" class="alert alert-info">
 							No categories found. Create your first category by clicking the "New Category" button.

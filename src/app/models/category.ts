@@ -1,8 +1,8 @@
 export class Category {
-    _id?: String;
-    id?: String;
-    name?: String;
-    description?: String;
-    imgUrl?: String;
-    content?: String;
+    _id?: string;
+    id?: string;
+    name?: string;
+    description?: string;
+    imgUrl?: string;
+    content?: string;
 }
