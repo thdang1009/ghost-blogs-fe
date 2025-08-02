@@ -135,11 +135,38 @@
   font-size: 12px;
 }
 
+// Status indicator styles
+.text-success {
+  color: #4caf50 !important;
+}
+
+.text-danger {
+  color: #f44336 !important;
+}
+
+.text-warning {
+  color: #ff9800 !important;
+}
+
 // Responsive adjustments
+@media (max-width: 1200px) {
+  // Stack metrics cards into rows of 2 on large tablets
+  .row .col-md-3 {
+    width: 50%;
+    margin-bottom: 15px;
+  }
+}
+
 @media (max-width: 992px) {
   .card-header .d-flex {
     flex-direction: column;
     align-items: flex-start !important;
+  }
+
+  // Stack metrics cards single column on tablets
+  .row .col-md-3 {
+    width: 100%;
+    margin-bottom: 15px;
   }
 
   .date-range-container {
@@ -187,6 +214,25 @@
 }
 
 @media (max-width: 576px) {
+  // Mobile-specific adjustments for metrics cards
+  .card-stats {
+    .card-header .card-category {
+      font-size: 13px;
+    }
+    
+    .card-title {
+      font-size: 1.5rem !important;
+    }
+    
+    .card-footer .stats {
+      font-size: 11px;
+      
+      i {
+        font-size: 14px;
+      }
+    }
+  }
+
   .date-range-container {
     .date-controls {
       mat-form-field {
@@ -198,6 +244,30 @@
     .system-btn {
       .btn-text {
         font-size: 12px;
+      }
+    }
+  }
+
+  // Adjust chart containers for mobile
+  .chart-container {
+    .chart-label {
+      min-width: 60px;
+      font-size: 12px;
+    }
+    
+    .chart-bar {
+      height: 18px;
+      font-size: 12px;
+    }
+  }
+
+  // Make tables more mobile-friendly
+  .table-responsive {
+    font-size: 14px;
+    
+    .table {
+      th, td {
+        padding: 8px 6px;
       }
     }
   }

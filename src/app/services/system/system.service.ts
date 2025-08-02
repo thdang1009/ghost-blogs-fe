@@ -43,4 +43,14 @@ export class SystemService {
         catchError(handleError('restartBackend', null))
       );
   }
+
+  getMongoDBConnections(): Observable<any> {
+    return this.http.get<any>(apiUrl + '/mongodb-connections')
+      .pipe(
+        tap(response => {
+          ghostLog('MongoDB connections response:', response);
+        }),
+        catchError(handleError('getMongoDBConnections', null))
+      );
+  }
 } 

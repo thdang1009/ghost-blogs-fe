@@ -84,7 +84,6 @@ export interface DashboardData {
     sessions: number;
     users: number;
   }[];
-  awsEC2Usage: string;
 }
 
 @Injectable({
@@ -177,7 +176,7 @@ export class AnalyticsService {
         { country: 'Canada', sessions: 198, users: 176 },
         { country: 'Australia', sessions: 143, users: 126 },
         { country: 'Germany', sessions: 87, users: 79 }
-      ]
+      ],
     };
   }
 

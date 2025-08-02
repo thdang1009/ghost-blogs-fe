@@ -171,7 +171,7 @@
 
 							<!-- Second Row of Metrics Cards -->
 							<div class="row">
-								<div class="col-md-4">
+								<div class="col-md-3">
 									<div class="card card-stats">
 										<div class="card-header card-header-primary card-header-icon">
 											<div class="card-icon">
@@ -190,7 +190,7 @@
 										</div>
 									</div>
 								</div>
-								<div class="col-md-4">
+								<div class="col-md-3">
 									<div class="card card-stats">
 										<div class="card-header card-header-rose card-header-icon">
 											<div class="card-icon">
@@ -205,6 +205,44 @@
 											<div class="stats">
 												<i class="material-icons">date_range</i>
 												Selected date range
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="card card-stats">
+										<div class="card-header card-header-info card-header-icon">
+											<div class="card-icon">
+												<i class="material-icons">storage</i>
+											</div>
+											<p class="card-category">MongoDB Connections</p>
+											<h3 class="card-title">
+												{{activeConnections || 0}}
+											</h3>
+										</div>
+										<div class="card-footer">
+											<div class="stats">
+												<i class="material-icons">storage</i>
+												Disk usage
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="card card-stats">
+										<div class="card-header card-header-warning card-header-icon">
+											<div class="card-icon">
+												<i class="material-icons">cloud_queue</i>
+											</div>
+											<p class="card-category">AWS EC2 Storage</p>
+											<h3 class="card-title">
+												{{awsEC2Usage || 'N/A'}}
+											</h3>
+										</div>
+										<div class="card-footer">
+											<div class="stats">
+												<i class="material-icons">storage</i>
+												Disk usage
 											</div>
 										</div>
 									</div>

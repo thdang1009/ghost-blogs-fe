@@ -23,8 +23,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     deviceBreakdown: { labels: [], datasets: [] },
     topPages: [],
     geoDistribution: [],
-    awsEC2Usage: ''
   };
+  awsEC2Usage: string = '';
+  activeConnections: number = 0;
 
   loading = true;
   dateRange: DateRange = {
@@ -46,7 +47,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDashboardData();
-    this.getAWSStoragedSpace();
   }
 
   ngOnDestroy(): void {
@@ -59,11 +59,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
       .subscribe(res => {
 
         const regex = regexPercentage;
-        this.dashboardData.awsEC2Usage = (res?.message?.match(regex) || [])[0] || '';
+        this.awsEC2Usage = (res?.message?.match(regex) || [])[0] || '';
       }, (err) => {
         console.log(err);
         this.alertService.showNoti(`getAWSStoragedSpace fail!`, 'danger');
       });;
+  }
+
+  getMongoDBConnections() {
+    this.systemService.getMongoDBConnections()
+      .subscribe(res => {
+        if (res && res.success && res.connections) {
+          this.activeConnections = res.connections.activeConnections;
+        }
+      }, (err) => {
+        console.log(err);
+        this.alertService.showNoti(`Failed to get MongoDB connections info!`, 'danger');
+      });
   }
 
   loadDashboardData(): void {
@@ -85,6 +97,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.alertService.showNoti('Failed to load analytics data', 'danger');
         this.loading = false;
       });
+
+    this.getAWSStoragedSpace();
+    this.getMongoDBConnections();
   }
 
   // Called when either date in the range changes
