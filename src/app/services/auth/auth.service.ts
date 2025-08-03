@@ -2,15 +2,13 @@ import { Injectable, Output, EventEmitter } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { environment } from '@environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CONSTANT } from '@shared/constant';
 import { LoginResponse, ghostLog, handleError } from '@shared/common';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { StorageService } from '@services/storage/storage.service';
-
-const apiUrl = environment.apiUrl + '/v1/auth';
+import { ApiConfigService } from '@services/api-config/api-config.service';
 
 @Injectable({
   providedIn: 'root',
@@ -22,12 +20,17 @@ export class AuthService {
   loggedInStatus = false;
   redirectUrl: string | null = null;
 
+  private get apiUrl(): string {
+    return this.apiConfigService.getApiUrl('/v1/auth');
+  }
+
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private apiConfigService: ApiConfigService
   ) {
     this.loggedInStatus = this.isLogin();
     if (this.loggedInStatus && isPlatformBrowser(this.platformId)) {
@@ -43,7 +46,7 @@ export class AuthService {
 
   login(data: any): Observable<any> {
     return this.http
-      .post<any>(apiUrl + '/login', data, { withCredentials: true })
+      .post<any>(this.apiUrl + '/login', data, { withCredentials: true })
       .pipe(
         tap((resp: LoginResponse) => {
           this.handleLoginResponse(resp);
@@ -70,7 +73,7 @@ export class AuthService {
 
   logout(): Observable<any> {
     return this.http
-      .post<any>(apiUrl + '/logout', {}, { withCredentials: true })
+      .post<any>(this.apiUrl + '/logout', {}, { withCredentials: true })
       .pipe(
         tap(_ => {
           this.isLoggedIn.emit(false);
@@ -87,21 +90,21 @@ export class AuthService {
   }
 
   changePassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/change-password', data).pipe(
+    return this.http.post<any>(this.apiUrl + '/change-password', data).pipe(
       tap(_ => ghostLog('change password')),
       catchError(handleError('change password', []))
     );
   }
 
   register(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/register', data).pipe(
+    return this.http.post<any>(this.apiUrl + '/register', data).pipe(
       tap(_ => ghostLog('login')),
       catchError(handleError('login', []))
     );
   }
 
   confirmEmail(code: string) {
-    return this.http.get<any>(apiUrl + `/confirm/${code}`).pipe(
+    return this.http.get<any>(this.apiUrl + `/confirm/${code}`).pipe(
       tap(_ => ghostLog('confirm email')),
       catchError(handleError('confirm email', []))
     );
@@ -109,7 +112,7 @@ export class AuthService {
 
   // call reset
   resetPassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/reset-password', data).pipe(
+    return this.http.post<any>(this.apiUrl + '/reset-password', data).pipe(
       tap(_ => ghostLog('reset password')),
       catchError(handleError('reset password', []))
     );
@@ -117,7 +120,7 @@ export class AuthService {
 
   // after receive redirect from email, call this to set new password
   setNewPassword(data: any): Observable<any> {
-    return this.http.post<any>(apiUrl + '/set-new-password', data).pipe(
+    return this.http.post<any>(this.apiUrl + '/set-new-password', data).pipe(
       tap(_ => {
         tap(_ => ghostLog('set new password'));
       }),

@@ -1,3 +1,4 @@
+export * from './api-config/api-config.service';
 export * from './auth/auth.service';
 export * from './auth/google-auth.service';
 export * from './post/post.service';

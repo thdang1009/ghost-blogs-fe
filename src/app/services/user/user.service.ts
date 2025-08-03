@@ -2,26 +2,30 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { environment } from '@environments/environment';
 import { User } from '@models/_index';
 import { ghostLog, handleError } from '@shared/common';
-
-const apiUrl = environment.apiUrl + '/v1/user';
+import { ApiConfigService } from '@services/api-config/api-config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  private get apiUrl(): string {
+    return this.apiConfigService.getApiUrl('/v1/user');
+  }
 
   cacheUser: any = [];
   loggedInStatus = false;
   redirectUrl!: string;
 
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private apiConfigService: ApiConfigService
+  ) { }
 
   getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(apiUrl)
+    return this.http.get<User[]>(this.apiUrl)
       .pipe(
         tap(_ => {
           ghostLog('fetched Users');
@@ -31,7 +35,7 @@ export class UserService {
   }
 
   getUser(id: any): Observable<User> {
-    const url = `${apiUrl}/${id}`;
+    const url = `${this.apiUrl}/${id}`;
     return this.http.get<User>(url).pipe(
       tap(_ => ghostLog(`fetched user by id=${id}`)),
       catchError(handleError<User>(`getUser id=${id}`))
@@ -39,14 +43,14 @@ export class UserService {
   }
 
   addUser(tdtd: User): Observable<User> {
-    return this.http.post<User>(apiUrl, tdtd).pipe(
+    return this.http.post<User>(this.apiUrl, tdtd).pipe(
       tap((prod: User) => ghostLog(`added user id=${tdtd.id}`)),
       catchError(handleError<User>('addUser'))
     );
   }
 
   updateUser(id: any, tdtd: User): Observable<any> {
-    const url = `${apiUrl}/${id}`;
+    const url = `${this.apiUrl}/${id}`;
     return this.http.put(url, tdtd).pipe(
       tap(_ => ghostLog(`updated tdtd id=${id}`)),
       catchError(handleError<any>('updateUser'))
@@ -54,7 +58,7 @@ export class UserService {
   }
 
   deleteUser(id: any): Observable<User> {
-    const url = `${apiUrl}/${id}`;
+    const url = `${this.apiUrl}/${id}`;
     return this.http.delete<User>(url).pipe(
       tap(_ => ghostLog(`deleted tdtd id=${id}`)),
       catchError(handleError<User>('deleteUser'))
