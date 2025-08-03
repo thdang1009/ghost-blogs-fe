@@ -74,10 +74,23 @@ export class TodoLabelService {
     if (!content || content.length === 0) {
       return Array.from(listTentativeIcon);
     } else {
-      const arrayContent = content.toLowerCase().split(/\s+/g);
+      const contentLower = content.toLowerCase();
+      const matchedKeywords = new Set<string>();
+      
+      // First pass: Check for multi-word phrases (phrases with spaces)
+      for (let [keyword, icons] of this.mapTodoLabel) {
+        if (keyword.includes(' ') && contentLower.includes(keyword)) {
+          icons?.forEach(el => listTentativeIcon.add(el));
+          matchedKeywords.add(keyword);
+        }
+      }
+      
+      // Second pass: Check for single words (backward compatibility)
+      const arrayContent = contentLower.split(/\s+/g);
       arrayContent.forEach(word => {
-        if (this.mapTodoLabel.has(word)) {
+        if (this.mapTodoLabel.has(word) && !matchedKeywords.has(word)) {
           this.mapTodoLabel.get(word)?.forEach(el => listTentativeIcon.add(el));
+          matchedKeywords.add(word);
         }
       })
     }
