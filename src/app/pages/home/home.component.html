@@ -3,7 +3,13 @@
 		<div class="ghost-box">
 			<div>
 				<a [routerLink]="['/']">
-					<img loading="lazy" width="80" height="80" alt="Ghost Blog" src="assets/img/ghost.png">
+					<img loading="eager" 
+					     fetchpriority="high"
+					     width="80" 
+					     height="80" 
+					     style="aspect-ratio: 1; object-fit: contain;" 
+					     alt="Ghost Blog" 
+					     src="assets/img/ghost.png">
 				</a>
 			</div>
 			<!-- Badge Section -->
@@ -163,8 +169,12 @@
 						<div *ngFor="let series of seriesSummary(); trackBy: trackBySeriesId"
 							(click)="navigateToSeriesFilter(series.slug)" class="series-card">
 							<div class="series-image">
-								<img [src]="series.imageUrl || 'assets/img/default-series.jpg'" [alt]="series.name"
-									loading="lazy">
+								<img [src]="series.imageUrl || 'assets/img/default-series.jpg'" 
+								     [alt]="series.name"
+								     loading="lazy"
+								     width="200"
+								     height="120"
+								     style="aspect-ratio: 5/3; object-fit: cover;">
 							</div>
 							<div class="series-info">
 								<h3 class="series-name">{{series.name}}</h3>

@@ -1,5 +1,29 @@
 // @import "jsoneditor/dist/jsoneditor.min.css";
 
+/* Prevent layout shifts with default image dimensions */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Font display optimization to reduce layout shifts */
+@font-face {
+  font-family: 'Material Icons';
+  font-display: swap;
+}
+
+/* Prevent CLS from loading states */
+.skeleton-loader {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 :root {
   --bg-black-900: #f2f2fc;
   --bg-black-100: #fdf9ff;

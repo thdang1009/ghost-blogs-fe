@@ -44,7 +44,7 @@ export class UserService {
 
   addUser(tdtd: User): Observable<User> {
     return this.http.post<User>(this.apiUrl, tdtd).pipe(
-      tap((prod: User) => ghostLog(`added user id=${tdtd.id}`)),
+      tap(() => ghostLog(`added user id=${tdtd.id}`)),
       catchError(handleError<User>('addUser'))
     );
   }

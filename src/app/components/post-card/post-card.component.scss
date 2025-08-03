@@ -19,7 +19,7 @@
 
     .post-thumbnail {
       width: 120px;
-      // height: 80px;
+      height: 80px;
       flex-shrink: 0;
     }
 
@@ -40,12 +40,14 @@
   overflow: hidden;
   display: block;
   text-decoration: none;
+  background-color: #f8f9fa; // Placeholder background
 
   .post-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+    display: block; // Prevents inline spacing issues
   }
 
   &:hover .post-image {

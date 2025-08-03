@@ -16,7 +16,20 @@
 
   <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'>
   <meta name="viewport" content="width=device-width">
-  <link rel=preconnect rel="stylesheet" href="assets/css/w3.css">
+  <!-- Preload critical CSS -->
+  <link rel="preload" href="assets/css/w3.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="assets/css/w3.css"></noscript>
+  
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="assets/fonts/fontawesome-webfont.woff2" as="font" type="font/woff2" crossorigin>
+  
+  <!-- Preload critical images for LCP -->
+  <link rel="preload" href="assets/img/ghost.png" as="image">
+  
+  <!-- Preconnect to external domains -->
+  <link rel="preconnect" href="https://connect.facebook.net">
+  <link rel="preconnect" href="https://accounts.google.com">
+  
   <script>
     window.fbAsyncInit = function () {
       FB.init({
@@ -37,8 +50,10 @@
   </script>
 
   <!-- Fonts and icons -->
-  <link rel=preconnect href="assets/css/font-awesome.min.css" rel="stylesheet">
-  <link href='assets/css/material-icon.css' rel='stylesheet' type='text/css'>
+  <link rel="preload" href="assets/css/font-awesome.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="assets/css/font-awesome.min.css"></noscript>
+  <link rel="preload" href="assets/css/material-icon.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="assets/css/material-icon.css"></noscript>
 
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Post } from '@models/_index';
 import { buildQueryString, handleError, ghostLog } from '@shared/common';
@@ -115,7 +115,7 @@ export class PostService {
 
   addPost(post: Post): Observable<Post> {
     return this.http.post<Post>(this.apiUrl, post).pipe(
-      tap((prod: Post) => ghostLog(`added post id=${post.id}`)),
+      tap(() => ghostLog(`added post id=${post.id}`)),
       catchError(handleError<Post>('addPost'))
     );
   }
@@ -123,7 +123,7 @@ export class PostService {
   clapPost(post: Post, num: number): Observable<Post> {
     return this.http.put<Post>(`${this.apiUrl}/clap-post/${post.id}`, { numIncrease: num })
       .pipe(
-        tap((prod: Post) => ghostLog(`clap post id=${post.id}`)),
+        tap(() => ghostLog(`clap post id=${post.id}`)),
         catchError(handleError<Post>('clap post'))
       );
   }

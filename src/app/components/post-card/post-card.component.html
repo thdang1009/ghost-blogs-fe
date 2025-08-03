@@ -1,9 +1,13 @@
 <article [ngClass]="{'private-post': post.permission === 'PRIVATE', 'compact-card': compact}"
   class="post-card hover-moved">
-  <a [routerLink]="'/blogs/' + post.postReference" [ngStyle]="{
-      'background-image': 'url(' + post.postBackgroundImg + ')'
-    }" class="post-thumbnail">
-    <img [src]="post.postBackgroundImg" [alt]="post.title" loading="lazy" class="post-image">
+  <a [routerLink]="'/blogs/' + post.postReference" class="post-thumbnail">
+    <img [src]="post.postBackgroundImg" 
+         [alt]="post.title" 
+         loading="lazy" 
+         width="300" 
+         height="200" 
+         style="aspect-ratio: 3/2; object-fit: cover;"
+         class="post-image">
   </a>
 
   <div class="post-content">
