@@ -57,7 +57,7 @@
                                   </span>
                                 </td>
                                 <td class="actions">
-                                  <!-- Complete button - only Partner A can complete their own rewards -->
+                                  <!-- Complete button - only the person doing the task (viewer) can complete it -->
                                   <button
                                     *ngIf="
                                       isPartnerA && reward.status === 'pending'
@@ -69,10 +69,10 @@
                                   >
                                     <i class="material-icons">check_circle</i>
                                   </button>
-                                  <!-- Edit button - only Partner A can edit their own rewards -->
+                                  <!-- Edit button - only the reward creator can edit -->
                                   <button
                                     *ngIf="
-                                      isPartnerA && reward.status === 'pending'
+                                      (reward.partner === 'B' && isPartnerB) && reward.status === 'pending'
                                     "
                                     mat-icon-button
                                     class="btn btn-primary btn-link btn-sm"
@@ -80,9 +80,9 @@
                                   >
                                     <i class="material-icons">edit</i>
                                   </button>
-                                  <!-- Delete button - only Partner A can delete their own rewards -->
+                                  <!-- Delete button - only the reward creator can delete -->
                                   <button
-                                    *ngIf="isPartnerA"
+                                    *ngIf="reward.partner === 'B' && isPartnerB"
                                     mat-icon-button
                                     class="btn btn-danger btn-link btn-sm"
                                     (click)="deleteReward(reward, 'A')"
@@ -102,7 +102,7 @@
 
                         <!-- Reward Edit Form for Pé Huế -->
                         <div
-                          *ngIf="editingRewardId && currentActiveTab === 'A'"
+                          *ngIf="editingRewardId && currentActiveTab === 'A' && editingRewardPartner === 'B' && isPartnerB"
                           class="mt-4"
                         >
                           <form
@@ -527,7 +527,7 @@
                                   </span>
                                 </td>
                                 <td class="actions">
-                                  <!-- Complete button - only Partner B can complete their own rewards -->
+                                  <!-- Complete button - only the person doing the task (viewer) can complete it -->
                                   <button
                                     *ngIf="
                                       isPartnerB && reward.status === 'pending'
@@ -539,10 +539,10 @@
                                   >
                                     <i class="material-icons">check_circle</i>
                                   </button>
-                                  <!-- Edit button - only Partner B can edit their own rewards -->
+                                  <!-- Edit button - only the reward creator can edit -->
                                   <button
                                     *ngIf="
-                                      isPartnerB && reward.status === 'pending'
+                                      (reward.partner === 'A' && isPartnerA) && reward.status === 'pending'
                                     "
                                     mat-icon-button
                                     class="btn btn-primary btn-link btn-sm"
@@ -550,9 +550,9 @@
                                   >
                                     <i class="material-icons">edit</i>
                                   </button>
-                                  <!-- Delete button - only Partner B can delete their own rewards -->
+                                  <!-- Delete button - only the reward creator can delete -->
                                   <button
-                                    *ngIf="isPartnerB"
+                                    *ngIf="reward.partner === 'A' && isPartnerA"
                                     mat-icon-button
                                     class="btn btn-danger btn-link btn-sm"
                                     (click)="deleteReward(reward, 'B')"
@@ -572,7 +572,7 @@
 
                         <!-- Reward Edit Form for Anh Đăng -->
                         <div
-                          *ngIf="editingRewardId && currentActiveTab === 'B'"
+                          *ngIf="editingRewardId && currentActiveTab === 'B' && editingRewardPartner === 'A' && isPartnerA"
                           class="mt-4"
                         >
                           <form

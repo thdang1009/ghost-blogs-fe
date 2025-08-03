@@ -48,6 +48,7 @@ export class CouponComponent implements OnInit {
   showingBulkForm = false;
   editingCouponId: string | null = null;
   editingRewardId: string | null = null;
+  editingRewardPartner: 'A' | 'B' | null = null;
 
   // Current active partner in the UI
   currentActiveTab: 'A' | 'B' = 'A';
@@ -146,25 +147,21 @@ export class CouponComponent implements OnInit {
   }
 
   loadPendingRewards(): void {
-    const partner = this.currentActiveTab;
-    // Load all rewards (pending and completed) for the partner
+    // Load all rewards (pending and completed)
     this.rewardService.getRewards().subscribe(
       allRewards => {
-        const partnerRewards = allRewards.filter(
-          reward => reward.partner === partner
+        // Partner A should see rewards created by Partner B (tasks A needs to do for B)
+        this.pendingRewardsA = allRewards.filter(
+          reward => reward.partner === 'B'
         );
-        if (partner === 'A') {
-          this.pendingRewardsA = partnerRewards;
-        } else {
-          this.pendingRewardsB = partnerRewards;
-        }
+        // Partner B should see rewards created by Partner A (tasks B needs to do for A)
+        this.pendingRewardsB = allRewards.filter(
+          reward => reward.partner === 'A'
+        );
       },
       error => {
-        console.error(`Error loading rewards for partner ${partner}`, error);
-        this.alertService.showNoti(
-          `Failed to load rewards for partner ${partner}`,
-          'danger'
-        );
+        console.error('Error loading rewards', error);
+        this.alertService.showNoti('Failed to load rewards', 'danger');
       }
     );
   }
@@ -213,6 +210,7 @@ export class CouponComponent implements OnInit {
     this.isEditing = false;
     this.editingCouponId = null;
     this.editingRewardId = null;
+    this.editingRewardPartner = null;
     this.couponForm.reset();
     this.rewardForm.reset();
   }
@@ -398,28 +396,35 @@ export class CouponComponent implements OnInit {
   }
 
   editReward(reward: Reward, partner: 'A' | 'B'): void {
+    // Only the creator of the reward can edit it
+    // If reward.partner === 'A', then Partner A created it and can edit it
+    // If reward.partner === 'B', then Partner B created it and can edit it
     const canEdit =
-      (partner === 'A' && this.isPartnerA) ||
-      (partner === 'B' && this.isPartnerB);
+      (reward.partner === 'A' && this.isPartnerA) ||
+      (reward.partner === 'B' && this.isPartnerB);
     if (!canEdit) return;
 
     this.currentActiveTab = partner;
     this.editingRewardId = reward._id || null;
+    this.editingRewardPartner = reward.partner || null; // Store the original creator
     this.rewardForm.patchValue({
       description: reward.description,
     });
   }
 
   saveReward(partner: 'A' | 'B'): void {
+    // Only the creator of the reward can save/edit it
+    // Use the stored editing reward partner to maintain original creator
+    const actualPartner = this.editingRewardPartner || partner;
     const canEdit =
-      (partner === 'A' && this.isPartnerA) ||
-      (partner === 'B' && this.isPartnerB);
+      (actualPartner === 'A' && this.isPartnerA) ||
+      (actualPartner === 'B' && this.isPartnerB);
     if (!canEdit || !this.rewardForm.valid) return;
 
     const rewardData: Reward = {
       description: this.rewardForm.value.description,
       status: 'pending', // Maintain the status
-      partner: partner,
+      partner: actualPartner, // Use the original creator, not the tab
     };
 
     if (this.editingRewardId) {
@@ -433,6 +438,7 @@ export class CouponComponent implements OnInit {
             );
             this.loadPendingRewards();
             this.editingRewardId = null;
+            this.editingRewardPartner = null;
             this.rewardForm.reset();
           },
           error => {
@@ -444,9 +450,12 @@ export class CouponComponent implements OnInit {
   }
 
   deleteReward(reward: Reward, partner: 'A' | 'B'): void {
+    // Only the creator of the reward can delete it
+    // If reward.partner === 'A', then Partner A created it and can delete it
+    // If reward.partner === 'B', then Partner B created it and can delete it
     const canDelete =
-      (partner === 'A' && this.isPartnerA) ||
-      (partner === 'B' && this.isPartnerB);
+      (reward.partner === 'A' && this.isPartnerA) ||
+      (reward.partner === 'B' && this.isPartnerB);
     if (!canDelete || !reward._id) return;
     if (confirm('Are you sure you want to delete this reward?')) {
       this.rewardService.deleteReward(reward._id!).subscribe(
