@@ -2,8 +2,8 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Post } from '@models/_index';
-import { PostService } from '@services/_index';
+import { Post, Tag, Category, Series } from '@models/_index';
+import { PostService, TagService, CategoryService, SeriesService } from '@services/_index';
 import * as dateFns from 'date-fns';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
 import { PostSaveWrapper } from '../post-edit/post-edit.component';
@@ -25,11 +25,18 @@ export class PostListComponent implements OnInit {
   ];
 
   today = dateFns.startOfToday();
-  lastYearDay = dateFns.subYears(this.today, 5);
+  lastYearDay = dateFns.subYears(this.today, 1);
   searchDateFrom = new UntypedFormControl(this.lastYearDay);
   searchDateTo = new UntypedFormControl(this.today);
   searchStatus = 'NONE';
   statusList = [POST_STATUS.NONE, POST_STATUS.PRIVATE, POST_STATUS.PUBLIC, POST_STATUS.PROTECTED];
+  searchTitle = '';
+  searchTag = '';
+  searchCategory = '';
+  searchSeries = '';
+  tags: Tag[] = [];
+  categories: Category[] = [];
+  series: Series[] = [];
   itemSelected: any = {} as any;
   editMode = false;
 
@@ -38,10 +45,14 @@ export class PostListComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private ref: ChangeDetectorRef,
+    private tagService: TagService,
+    private categoryService: CategoryService,
+    private seriesService: SeriesService,
   ) {
   }
 
   ngOnInit() {
+    this.loadDropdownData();
     this.activatedRoute.queryParams.subscribe(params => {
       const id = Number(params['id']);
       if (id) {
@@ -99,15 +110,28 @@ export class PostListComponent implements OnInit {
     this.editMode = true;
   }
 
+  loadDropdownData() {
+    this.tagService.getTags().subscribe(tags => this.tags = tags);
+    this.categoryService.getCategorys().subscribe(categories => this.categories = categories);
+    this.seriesService.getAllSeries().subscribe(series => this.series = series);
+  }
+
   funcGetAllPost(id: number | undefined) {
-    const from = this.searchDateFrom && this.searchDateFrom.value || new Date();
-    const to = this.searchDateTo && this.searchDateTo.value || new Date();
-    const fromDate = dateFns.startOfDay(from);
-    const toDate = dateFns.endOfDay(to);
+    const hasNonDateFilters = this.searchTitle || this.searchTag || this.searchCategory || this.searchSeries || (this.searchStatus !== 'NONE');
+    
+    const from = hasNonDateFilters ? undefined : (this.searchDateFrom && this.searchDateFrom.value || new Date());
+    const to = hasNonDateFilters ? undefined : (this.searchDateTo && this.searchDateTo.value || new Date());
+    const fromDate = from ? dateFns.startOfDay(from) : undefined;
+    const toDate = to ? dateFns.endOfDay(to) : undefined;
+    
     const req = {
-      from: fromDate || undefined,
-      to: toDate || undefined,
-      status: this.searchStatus === 'NONE' && undefined || this.searchStatus
+      from: fromDate,
+      to: toDate,
+      status: this.searchStatus === 'NONE' ? undefined : this.searchStatus,
+      title: this.searchTitle || undefined,
+      tag: this.searchTag || undefined,
+      category: this.searchCategory || undefined,
+      series: this.searchSeries || undefined
     }
     this.isLoadingResults = true;
     this.postService.getAllPost(req)
