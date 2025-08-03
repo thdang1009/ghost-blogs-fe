@@ -41,16 +41,6 @@ export class TokenInterceptor implements HttpInterceptor {
       });
     }
 
-    // Fallback: If localStorage token exists (for backward compatibility)
-    const token = this.storageService.getItem(CONSTANT.TOKEN);
-    if (token) {
-      modifiedRequest = modifiedRequest.clone({
-        setHeaders: {
-          Authorization: token,
-        },
-      });
-    }
-
     return next.handle(modifiedRequest).pipe(
       map((event: HttpEvent<any>) => {
         if (event instanceof HttpResponse) {
@@ -64,6 +54,7 @@ export class TokenInterceptor implements HttpInterceptor {
         if (error.status === 401) {
           // Clear any stored user info and redirect to login
           this.storageService.removeItem(CONSTANT.USER_INFO);
+          // for backward compatibility
           this.storageService.removeItem(CONSTANT.TOKEN);
           this.router.navigate(['/login']);
         }

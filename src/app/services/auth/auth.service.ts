@@ -158,6 +158,5 @@ export class AuthService {
 
   private clearUserInfo() {
     this.storageService.removeItem(CONSTANT.USER_INFO);
-    this.storageService.removeItem(CONSTANT.TOKEN);
   }
 }
