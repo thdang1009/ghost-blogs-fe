@@ -60,12 +60,15 @@ export class TokenInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         console.log('ghost error--->>>', error);
 
-        if (error.status === 401 && error.error?.code === 'TOKEN_EXPIRED') {
-          return this.handle401Error(request, next);
-        }
-
         if (error.status === 401) {
-          // For other 401 errors (invalid token, no token, etc.), logout
+          // Check if this is a token expiration error
+          const errorCode = error.error?.code;
+
+          if (errorCode === 'TOKEN_EXPIRED') {
+            return this.handle401Error(request, next);
+          }
+
+          // For other 401 errors (invalid token, no token, etc.), logout immediately
           this.handleLogout();
         }
 
