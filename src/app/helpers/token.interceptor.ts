@@ -7,17 +7,26 @@ import {
   HttpResponse,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { map, catchError, switchMap, filter, take } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { CONSTANT } from '@shared/constant';
 import { StorageService } from '../services/storage/storage.service';
+import { HttpClient } from '@angular/common/http';
+import { ApiConfigService } from '../services/api-config/api-config.service';
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
+  private isRefreshing = false;
+  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
+    null
+  );
+
   constructor(
     private router: Router,
-    private storageService: StorageService
+    private storageService: StorageService,
+    private http: HttpClient,
+    private apiConfigService: ApiConfigService
   ) {}
 
   intercept(
@@ -51,12 +60,13 @@ export class TokenInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         console.log('ghost error--->>>', error);
 
+        if (error.status === 401 && error.error?.code === 'TOKEN_EXPIRED') {
+          return this.handle401Error(request, next);
+        }
+
         if (error.status === 401) {
-          // Clear any stored user info and redirect to login
-          this.storageService.removeItem(CONSTANT.USER_INFO);
-          // for backward compatibility
-          this.storageService.removeItem(CONSTANT.TOKEN);
-          this.router.navigate(['/login']);
+          // For other 401 errors (invalid token, no token, etc.), logout
+          this.handleLogout();
         }
 
         if (error.status === 400) {
@@ -66,5 +76,61 @@ export class TokenInterceptor implements HttpInterceptor {
         return throwError(error);
       })
     );
+  }
+
+  private handle401Error(
+    request: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      this.refreshTokenSubject.next(null);
+
+      return this.refreshToken().pipe(
+        switchMap((response: any) => {
+          this.isRefreshing = false;
+          this.refreshTokenSubject.next(response);
+
+          // Update user info if available in response
+          if (response.data) {
+            this.storageService.setItem(
+              CONSTANT.USER_INFO,
+              JSON.stringify(response.data)
+            );
+          }
+
+          // Retry the original request
+          return next.handle(request);
+        }),
+        catchError(err => {
+          this.isRefreshing = false;
+          this.handleLogout();
+          return throwError(err);
+        })
+      );
+    } else {
+      // If refresh is in progress, wait for the new token
+      return this.refreshTokenSubject.pipe(
+        filter(token => token != null),
+        take(1),
+        switchMap(() => next.handle(request))
+      );
+    }
+  }
+
+  private refreshToken(): Observable<any> {
+    return this.http.post<any>(
+      this.apiConfigService.getApiUrl('/v1/auth/refresh'),
+      {},
+      { withCredentials: true }
+    );
+  }
+
+  private handleLogout(): void {
+    // Clear any stored user info and redirect to login
+    this.storageService.removeItem(CONSTANT.USER_INFO);
+    // for backward compatibility
+    this.storageService.removeItem(CONSTANT.TOKEN);
+    this.router.navigate(['/login']);
   }
 }

@@ -162,4 +162,22 @@ export class AuthService {
   private clearUserInfo() {
     this.storageService.removeItem(CONSTANT.USER_INFO);
   }
+
+  /**
+   * Refresh the access token using the refresh token
+   */
+  refreshToken(): Observable<any> {
+    return this.http
+      .post<any>(this.apiUrl + '/refresh', {}, { withCredentials: true })
+      .pipe(
+        tap((resp: any) => {
+          if (resp.success && resp.data) {
+            // Update stored user info with fresh data
+            this.userInfo = resp.data;
+            this.saveUserLoginInfo(resp.data);
+          }
+        }),
+        catchError(handleError('refresh token', []))
+      );
+  }
 }
