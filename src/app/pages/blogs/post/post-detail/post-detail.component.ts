@@ -1,8 +1,18 @@
-import { AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, PLATFORM_ID, Renderer2, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  Renderer2,
+  ViewChild,
+} from '@angular/core';
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PostService } from '@services/_index';
 import { Router } from '@angular/router';
-import { Title, Meta } from "@angular/platform-browser";
+import { Title, Meta } from '@angular/platform-browser';
 import { POST_TYPE } from '@shared/enum';
 import { Post } from '@models/post';
 import { addStructuredData } from '@shared/common';
@@ -15,10 +25,9 @@ declare const FB: any;
 @Component({
   selector: 'app-post-detail',
   templateUrl: './post-detail.component.html',
-  styleUrls: ['./post-detail.component.scss']
+  styleUrls: ['./post-detail.component.scss'],
 })
 export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
-
   ready = false;
   item!: Post;
   idDebounce: any = undefined;
@@ -44,9 +53,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2
   ) {
     addStructuredData(this.document);
-    this.router.routeReuseStrategy.shouldReuseRoute = function(){
-        return false;
-    }
+    this.router.routeReuseStrategy.shouldReuseRoute = function () {
+      return false;
+    };
   }
 
   private setCurrentPageUrl() {
@@ -56,20 +65,25 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       // For example, if you are using a Node.js server with Express:
       // this.currentPageUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
       // However, for the client-side rendering after SSR, we'll use PlatformLocation
-      this.currentPageUrl = environment.production ?
-        this.platformLocation.href.replace('http://', 'https://') : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+      this.currentPageUrl = environment.production
+        ? this.platformLocation.href.replace('http://', 'https://')
+        : 'https://dangtrinh.site/blogs/test-post-and-markdown';
     } else {
       // This code will run on the client
-      this.currentPageUrl = environment.production ?
-        this.platformLocation.href.replace('http://', 'https://') : 'https://dangtrinh.site/blogs/test-post-and-markdown';
+      this.currentPageUrl = environment.production
+        ? this.platformLocation.href.replace('http://', 'https://')
+        : 'https://dangtrinh.site/blogs/test-post-and-markdown';
     }
 
     // Update the URL when the route changes (optional, for single-page applications)
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      this.currentPageUrl = this.platformLocation.href.replace('http://', 'https://');
-    });
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        this.currentPageUrl = this.platformLocation.href.replace(
+          'http://',
+          'https://'
+        );
+      });
   }
 
   ngOnInit(): void {
@@ -125,7 +139,10 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     const fbShareButtonLink = this.fbShareButtonLink.nativeElement;
     if (fbShareButtonLink) {
-      fbShareButtonLink.setAttribute('href', 'https://www.facebook.com/sharer/sharer.php?u=' + this.currentPageUrl);
+      fbShareButtonLink.setAttribute(
+        'href',
+        'https://www.facebook.com/sharer/sharer.php?u=' + this.currentPageUrl
+      );
     }
   }
   /**
@@ -173,13 +190,18 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.idDebounce);
     }
     this.idDebounce = setTimeout(() => {
-      this.postService.clapPost(this.item, this.num)
-        .subscribe(_ => {
-          this.item = _;
-          this.num = 0;
-          this.count = _.clapCount || 0;
-          clearTimeout(this.idDebounce);
-        });
+      this.postService.clapPost(this.item, this.num).subscribe(_ => {
+        // Preserve series navigation data when updating the post
+        const previousPostId = this.item.previousPostId;
+        const nextPostId = this.item.nextPostId;
+        this.item = _;
+        // Restore series navigation data
+        this.item.previousPostId = previousPostId;
+        this.item.nextPostId = nextPostId;
+        this.num = 0;
+        this.count = _.clapCount || 0;
+        clearTimeout(this.idDebounce);
+      });
     }, 500);
   }
 
@@ -220,7 +242,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.renderer.appendChild(this.document.body, heart);
     // Animate the heart
     setTimeout(() => {
-      this.renderer.setStyle(heart, 'transform', 'translateY(-50px) scale(1.5)');
+      this.renderer.setStyle(
+        heart,
+        'transform',
+        'translateY(-50px) scale(1.5)'
+      );
       this.renderer.setStyle(heart, 'opacity', '0');
       // Remove the element after animation completes
       setTimeout(() => {
@@ -236,9 +262,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   removeClap() {
     console.log('remove');
   }
-  imgClick() {
-
-  }
+  imgClick() {}
   backToHome() {
     this.router.navigate(['home']);
   }
@@ -249,12 +273,12 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       console.error('Post object is null or undefined');
       return;
     }
-    
+
     if (!post.postReference) {
       console.error('Post reference is missing for post:', post);
       return;
     }
-    
+
     try {
       this.router.navigate(['/blogs', post.postReference]);
     } catch (error) {
