@@ -1,14 +1,23 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AnalyticsService, DateRange, DashboardData } from '@services/analytics/analytics.service';
-import { AlertService, AuthService, AWSService, SystemService } from '@services/_index';
+import {
+  AnalyticsService,
+  DateRange,
+  DashboardData,
+} from '@services/analytics/analytics.service';
+import {
+  AlertService,
+  AuthService,
+  AWSService,
+  SystemService,
+} from '@services/_index';
 import { regexPercentage } from '@shared/constant';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   dashboardData: DashboardData = {
@@ -30,7 +39,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loading = true;
   dateRange: DateRange = {
     startDate: this.getLastMonthDate(),
-    endDate: this.getCurrentDate()
+    endDate: this.getCurrentDate(),
   };
   private destroy$ = new Subject<void>();
 
@@ -43,7 +52,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private systemService: SystemService,
     private awsService: AWSService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -55,27 +64,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   getAWSStoragedSpace() {
-    this.awsService.getAWSStoragedSpace()
-      .subscribe(res => {
-
+    this.awsService.getAWSStoragedSpace().subscribe(
+      res => {
         const regex = regexPercentage;
         this.awsEC2Usage = (res?.message?.match(regex) || [])[0] || '';
-      }, (err) => {
+      },
+      err => {
         console.log(err);
         this.alertService.showNoti(`getAWSStoragedSpace fail!`, 'danger');
-      });;
+      }
+    );
   }
 
   getMongoDBConnections() {
-    this.systemService.getMongoDBConnections()
-      .subscribe(res => {
+    this.systemService.getMongoDBConnections().subscribe(
+      res => {
         if (res && res.success && res.connections) {
           this.activeConnections = res.connections.activeConnections;
         }
-      }, (err) => {
+      },
+      err => {
         console.log(err);
-        this.alertService.showNoti(`Failed to get MongoDB connections info!`, 'danger');
-      });
+        this.alertService.showNoti(
+          `Failed to get MongoDB connections info!`,
+          'danger'
+        );
+      }
+    );
   }
 
   loadDashboardData(): void {
@@ -84,19 +99,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Create a deep copy of dateRange to ensure we're using formatted dates
     const formattedDateRange: DateRange = {
       startDate: this.formatDate(this.dateRange.startDate),
-      endDate: this.formatDate(this.dateRange.endDate)
+      endDate: this.formatDate(this.dateRange.endDate),
     };
 
-    this.analyticsService.getDashboardData(formattedDateRange)
+    this.analyticsService
+      .getDashboardData(formattedDateRange)
       .pipe(takeUntil(this.destroy$))
-      .subscribe((data: DashboardData) => {
-        this.dashboardData = data;
-        this.loading = false;
-      }, (error: any) => {
-        console.error('Error loading dashboard data', error);
-        this.alertService.showNoti('Failed to load analytics data', 'danger');
-        this.loading = false;
-      });
+      .subscribe(
+        (data: DashboardData) => {
+          this.dashboardData = data;
+          this.loading = false;
+        },
+        (error: any) => {
+          console.error('Error loading dashboard data', error);
+          this.alertService.showNoti('Failed to load analytics data', 'danger');
+          this.loading = false;
+        }
+      );
 
     this.getAWSStoragedSpace();
     this.getMongoDBConnections();
@@ -121,7 +140,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const endDate = new Date(this.formatDate(this.dateRange.endDate));
 
     if (endDate < startDate) {
-      this.alertService.showNoti('End date must be after start date', 'warning');
+      this.alertService.showNoti(
+        'End date must be after start date',
+        'warning'
+      );
       return false;
     }
 
@@ -145,7 +167,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       '#9C27B0', // Purple
       '#03A9F4', // Light Blue
       '#E91E63', // Pink
-      '#8BC34A'  // Light Green
+      '#8BC34A', // Light Green
     ];
   }
 
@@ -161,62 +183,158 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   startProduction(): void {
     if (!this.isGrandAdmin()) {
-      this.alertService.showNoti('Unauthorized. Only GRAND_ADMIN can start production.', 'danger');
+      this.alertService.showNoti(
+        'Unauthorized. Only GRAND_ADMIN can start production.',
+        'danger'
+      );
       return;
     }
 
-    if (confirm('Are you sure you want to start the production environment? This will execute the start-production.sh script.')) {
-      this.systemService.startProduction()
+    if (
+      confirm(
+        'Are you sure you want to start the production environment? This will execute the start-production.sh script.'
+      )
+    ) {
+      this.systemService
+        .startProduction()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
+          next: response => {
             if (response && response.success) {
-              this.alertService.showNoti('Production start initiated successfully!', 'success');
+              this.alertService.showNoti(
+                'Production start initiated successfully!',
+                'success'
+              );
               console.log('Production start output:', response.output);
               if (response.warnings) {
                 console.warn('Production start warnings:', response.warnings);
-                this.alertService.showNoti('Production started with warnings. Check console for details.', 'warning');
+                this.alertService.showNoti(
+                  'Production started with warnings. Check console for details.',
+                  'warning'
+                );
               }
             } else {
-              this.alertService.showNoti(response?.msg || 'Failed to start production', 'danger');
+              this.alertService.showNoti(
+                response?.msg || 'Failed to start production',
+                'danger'
+              );
             }
           },
-          error: (error) => {
+          error: error => {
             console.error('Error starting production:', error);
-            const errorMsg = error?.error?.msg || error?.message || 'Failed to start production';
+            const errorMsg =
+              error?.error?.msg ||
+              error?.message ||
+              'Failed to start production';
             this.alertService.showNoti(errorMsg, 'danger');
-          }
+          },
         });
     }
   }
 
   restartBackend(): void {
     if (!this.isGrandAdmin()) {
-      this.alertService.showNoti('Unauthorized. Only GRAND_ADMIN can restart backend.', 'danger');
+      this.alertService.showNoti(
+        'Unauthorized. Only GRAND_ADMIN can restart backend.',
+        'danger'
+      );
       return;
     }
 
-    if (confirm('Are you sure you want to restart the backend? This will stop and start the application using PM2.')) {
-      this.systemService.restartBackend()
+    if (
+      confirm(
+        'Are you sure you want to restart the backend? This will stop and start the application using PM2.'
+      )
+    ) {
+      this.systemService
+        .restartBackend()
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response) => {
+          next: response => {
             if (response && response.success) {
-              this.alertService.showNoti('Backend restart completed successfully!', 'success');
+              this.alertService.showNoti(
+                'Backend restart completed successfully!',
+                'success'
+              );
               console.log('Backend restart output:', response.output);
               if (response.warnings) {
                 console.warn('Backend restart warnings:', response.warnings);
-                this.alertService.showNoti('Backend restarted with warnings. Check console for details.', 'warning');
+                this.alertService.showNoti(
+                  'Backend restarted with warnings. Check console for details.',
+                  'warning'
+                );
               }
             } else {
-              this.alertService.showNoti(response?.msg || 'Failed to restart backend', 'danger');
+              this.alertService.showNoti(
+                response?.msg || 'Failed to restart backend',
+                'danger'
+              );
             }
           },
-          error: (error) => {
+          error: error => {
             console.error('Error restarting backend:', error);
-            const errorMsg = error?.error?.msg || error?.message || 'Failed to restart backend';
+            const errorMsg =
+              error?.error?.msg ||
+              error?.message ||
+              'Failed to restart backend';
             this.alertService.showNoti(errorMsg, 'danger');
-          }
+          },
+        });
+    }
+  }
+
+  createMongoDBDump(): void {
+    if (!this.isGrandAdmin()) {
+      this.alertService.showNoti(
+        'Unauthorized. Only GRAND_ADMIN can create MongoDB dumps.',
+        'danger'
+      );
+      return;
+    }
+
+    if (
+      confirm(
+        'Are you sure you want to create a MongoDB dump? This will export the entire database to a file.'
+      )
+    ) {
+      this.alertService.showNoti(
+        'Creating MongoDB dump... This may take a few minutes.',
+        'info'
+      );
+
+      this.systemService
+        .createMongoDBDump()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: response => {
+            if (response && response.success) {
+              this.alertService.showNoti(
+                `MongoDB dump created successfully! File: ${response.dumpFileName}`,
+                'success'
+              );
+              console.log('MongoDB dump details:', response);
+              if (response.warnings) {
+                console.warn('MongoDB dump warnings:', response.warnings);
+                this.alertService.showNoti(
+                  'Dump created with warnings. Check console for details.',
+                  'warning'
+                );
+              }
+            } else {
+              this.alertService.showNoti(
+                response?.msg || 'Failed to create MongoDB dump',
+                'danger'
+              );
+            }
+          },
+          error: error => {
+            console.error('Error creating MongoDB dump:', error);
+            const errorMsg =
+              error?.error?.msg ||
+              error?.message ||
+              'Failed to create MongoDB dump';
+            this.alertService.showNoti(errorMsg, 'danger');
+          },
         });
     }
   }
@@ -229,7 +347,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private getLastMonthDate(): string {
     const today = new Date();
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    const lastMonth = new Date(
+      today.getFullYear(),
+      today.getMonth() - 1,
+      today.getDate()
+    );
     return this.formatDate(lastMonth);
   }
 
