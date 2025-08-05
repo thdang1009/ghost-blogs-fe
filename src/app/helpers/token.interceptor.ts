@@ -42,7 +42,12 @@ export class TokenInterceptor implements HttpInterceptor {
     });
 
     // Only add Content-Type for non-GET requests and when not already set
-    if (request.method !== 'GET' && !request.headers.has('Content-Type')) {
+    // Skip Content-Type for FormData uploads (multipart/form-data should be set automatically)
+    if (
+      request.method !== 'GET' &&
+      !request.headers.has('Content-Type') &&
+      !(request.body instanceof FormData)
+    ) {
       modifiedRequest = modifiedRequest.clone({
         setHeaders: {
           'Content-Type': 'application/json',
