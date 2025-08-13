@@ -1,424 +1,497 @@
 <div class="main-content">
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-12">
-				<div class="card">
-					<div class="card-header card-header-info">
-						<div class="d-flex justify-content-between align-items-center">
-							<div>
-								<h4 class="card-title">Analytics Dashboard</h4>
-								<p class="card-category">
-									Google Analytics metrics for your blog
-								</p>
-							</div>
-							<div class="date-range-container">
-								<form class="d-flex align-items-center flex-wrap">
-									<!-- Date Range Controls -->
-									<div class="date-controls d-flex align-items-center">
-										<mat-form-field appearance="outline"
-											class="me-2">
-											<mat-label>Start Date</mat-label>
-											<input [matDatepicker]="startPicker"
-												[(ngModel)]="dateRange.startDate"
-												(dateChange)="onDateRangeChange()"
-												matInput
-												name="startDate">
-											<mat-datepicker-toggle [for]="startPicker"
-												matSuffix></mat-datepicker-toggle>
-											<mat-datepicker #startPicker></mat-datepicker>
-										</mat-form-field>
-										<mat-form-field appearance="outline"
-											class="me-2">
-											<mat-label>End Date</mat-label>
-											<input [matDatepicker]="endPicker"
-												[(ngModel)]="dateRange.endDate"
-												(dateChange)="onDateRangeChange()"
-												matInput
-												name="endDate">
-											<mat-datepicker-toggle [for]="endPicker"
-												matSuffix></mat-datepicker-toggle>
-											<mat-datepicker #endPicker></mat-datepicker>
-										</mat-form-field>
-										<button (click)="loadDashboardData()"
-											mat-raised-button
-											color="primary"
-											class="me-3"
-											type="button">
-											Apply
-										</button>
-									</div>
-									
-									<!-- GRAND_ADMIN Only: System Management Buttons -->
-									<div *ngIf="isGrandAdmin()" class="system-controls d-flex align-items-center">
-										<button (click)="startProduction()"
-											mat-raised-button
-											color="warn"
-											class="me-2 system-btn"
-											type="button"
-											title="Start Production Environment">
-											<mat-icon>play_arrow</mat-icon>
-											<span class="btn-text">Start Production</span>
-										</button>
-										
-										<button (click)="restartBackend()"
-											mat-raised-button
-											color="accent"
-											class="system-btn"
-											type="button"
-											title="Restart Backend Application">
-											<mat-icon>refresh</mat-icon>
-											<span class="btn-text">Restart Backend</span>
-										</button>
-									</div>
-								</form>
-							</div>
-						</div>
-					</div>
-					<div class="card-body">
-						<!-- Loading State -->
-						<div *ngIf="loading"
-							class="text-center my-5">
-							<mat-spinner diameter="50"
-								class="mx-auto"></mat-spinner>
-							<p class="mt-3">
-								Loading analytics data...
-							</p>
-						</div>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header card-header-info">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="card-title">Analytics Dashboard</h4>
+                <p class="card-category">
+                  Google Analytics metrics for your blog
+                </p>
+              </div>
+              <div class="date-range-container">
+                <form class="d-flex align-items-center flex-wrap">
+                  <!-- Date Range Controls -->
+                  <div class="date-controls d-flex align-items-center">
+                    <mat-form-field appearance="outline" class="me-2">
+                      <mat-label>Start Date</mat-label>
+                      <input
+                        [matDatepicker]="startPicker"
+                        [(ngModel)]="dateRange.startDate"
+                        (dateChange)="onDateRangeChange()"
+                        matInput
+                        name="startDate"
+                      />
+                      <mat-datepicker-toggle
+                        [for]="startPicker"
+                        matSuffix
+                      ></mat-datepicker-toggle>
+                      <mat-datepicker #startPicker></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="me-2">
+                      <mat-label>End Date</mat-label>
+                      <input
+                        [matDatepicker]="endPicker"
+                        [(ngModel)]="dateRange.endDate"
+                        (dateChange)="onDateRangeChange()"
+                        matInput
+                        name="endDate"
+                      />
+                      <mat-datepicker-toggle
+                        [for]="endPicker"
+                        matSuffix
+                      ></mat-datepicker-toggle>
+                      <mat-datepicker #endPicker></mat-datepicker>
+                    </mat-form-field>
+                    <button
+                      (click)="loadDashboardData()"
+                      mat-raised-button
+                      color="primary"
+                      class="me-3"
+                      type="button"
+                    >
+                      Apply
+                    </button>
+                  </div>
 
-						<!-- Dashboard Content -->
-						<div *ngIf="!loading && dashboardData">
-							<!-- Main Metrics Cards -->
-							<div class="row">
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-warning card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">person</i>
-											</div>
-											<p class="card-category">Total Users</p>
-											<h3 class="card-title">
-												{{dashboardData.totalUsers | number}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-success card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">visibility</i>
-											</div>
-											<p class="card-category">Page Views</p>
-											<h3 class="card-title">
-												{{dashboardData.pageViews | number}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-info card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">laptop</i>
-											</div>
-											<p class="card-category">Sessions</p>
-											<h3 class="card-title">
-												{{dashboardData.sessions | number}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-danger card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">timer</i>
-											</div>
-											<p class="card-category">
-												Avg Session Duration
-											</p>
-											<h3 class="card-title">
-												{{formatTime(dashboardData.avgSessionDuration)}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
+                  <!-- GRAND_ADMIN Only: System Management Buttons -->
+                  <div
+                    *ngIf="isGrandAdmin()"
+                    class="system-controls d-flex align-items-center"
+                  >
+                    <button
+                      (click)="startProduction()"
+                      mat-raised-button
+                      color="warn"
+                      class="me-2 system-btn"
+                      type="button"
+                      title="Start Production Environment"
+                    >
+                      <mat-icon>play_arrow</mat-icon>
+                      <span class="btn-text">Start Production</span>
+                    </button>
 
-							<!-- Second Row of Metrics Cards -->
-							<div class="row">
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-primary card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">menu_book</i>
-											</div>
-											<p class="card-category">Pages per Session</p>
-											<h3 class="card-title">
-												{{dashboardData.pagesPerSession | number:'1.2-2'}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-rose card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">exit_to_app</i>
-											</div>
-											<p class="card-category">Bounce Rate</p>
-											<h3 class="card-title">
-												{{dashboardData.bounceRate | number:'1.1-1'}}%
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">date_range</i>
-												Selected date range
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-info card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">storage</i>
-											</div>
-											<p class="card-category">MongoDB Connections</p>
-											<h3 class="card-title">
-												{{activeConnections || 0}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">storage</i>
-												Active Connections
-											</div>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-3">
-									<div class="card card-stats">
-										<div class="card-header card-header-warning card-header-icon">
-											<div class="card-icon">
-												<i class="material-icons">cloud_queue</i>
-											</div>
-											<p class="card-category">AWS EC2 Storage</p>
-											<h3 class="card-title">
-												{{awsEC2Usage || 'N/A'}}
-											</h3>
-										</div>
-										<div class="card-footer">
-											<div class="stats">
-												<i class="material-icons">storage</i>
-												Disk usage
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
+                    <button
+                      (click)="restartBackend()"
+                      mat-raised-button
+                      color="accent"
+                      class="me-2 system-btn"
+                      type="button"
+                      title="Restart Backend Application"
+                    >
+                      <mat-icon>refresh</mat-icon>
+                      <span class="btn-text">Restart Backend</span>
+                    </button>
 
-							<!-- Charts Section -->
-							<div class="row">
-								<!-- New vs. Returning Users -->
-								<div class="col-md-4">
-									<div class="card">
-										<div class="card-header card-header-warning">
-											<h4 class="card-title">
-												New vs. Returning Users
-											</h4>
-										</div>
-										<div class="card-body">
-											<!-- Chart will go here - in real implementation, use chart.js or similar -->
-											<div class="chart-container"
-												style="height: 250px;">
-												<div *ngFor="let value of dashboardData.newVsReturning.datasets[0].data; let i = index"
-													class="chart-bar-item">
-													<div class="chart-label">
-														{{dashboardData.newVsReturning.labels[i]}}
-													</div>
-													<div [style.width.%]="calculatePercentage(value, dashboardData.totalUsers)"
-														[style.background-color]="dashboardData.newVsReturning.datasets[0].backgroundColor?.[i]"
-														class="chart-bar">
-														{{value | number}}
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+                    <button
+                      (click)="createMongoDBDump()"
+                      mat-raised-button
+                      color="primary"
+                      class="system-btn"
+                      type="button"
+                      title="Create MongoDB Database Dump"
+                    >
+                      <mat-icon>cloud_download</mat-icon>
+                      <span class="btn-text">Dump MongoDB</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Loading State -->
+            <div *ngIf="loading" class="text-center my-5">
+              <mat-spinner diameter="50" class="mx-auto"></mat-spinner>
+              <p class="mt-3">Loading analytics data...</p>
+            </div>
 
-								<!-- Traffic Sources -->
-								<div class="col-md-4">
-									<div class="card">
-										<div class="card-header card-header-info">
-											<h4 class="card-title">Traffic Sources</h4>
-										</div>
-										<div class="card-body">
-											<!-- Chart will go here - in real implementation, use chart.js or similar -->
-											<div class="chart-container"
-												style="height: 250px;">
-												<div *ngFor="let value of dashboardData.trafficSources.datasets[0].data; let i = index"
-													class="chart-bar-item">
-													<div class="chart-label">
-														{{dashboardData.trafficSources.labels[i]}}
-													</div>
-													<div [style.width.%]="calculatePercentage(value, Math.max.apply(null, dashboardData.trafficSources.datasets[0].data))"
-														[style.background-color]="dashboardData.trafficSources.datasets[0].backgroundColor?.[i]"
-														class="chart-bar">
-														{{value | number}}
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
+            <!-- Dashboard Content -->
+            <div *ngIf="!loading && dashboardData">
+              <!-- Main Metrics Cards -->
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div
+                      class="card-header card-header-warning card-header-icon"
+                    >
+                      <div class="card-icon">
+                        <i class="material-icons">person</i>
+                      </div>
+                      <p class="card-category">Total Users</p>
+                      <h3 class="card-title">
+                        {{ dashboardData.totalUsers | number }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div
+                      class="card-header card-header-success card-header-icon"
+                    >
+                      <div class="card-icon">
+                        <i class="material-icons">visibility</i>
+                      </div>
+                      <p class="card-category">Page Views</p>
+                      <h3 class="card-title">
+                        {{ dashboardData.pageViews | number }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div class="card-header card-header-info card-header-icon">
+                      <div class="card-icon">
+                        <i class="material-icons">laptop</i>
+                      </div>
+                      <p class="card-category">Sessions</p>
+                      <h3 class="card-title">
+                        {{ dashboardData.sessions | number }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div
+                      class="card-header card-header-danger card-header-icon"
+                    >
+                      <div class="card-icon">
+                        <i class="material-icons">timer</i>
+                      </div>
+                      <p class="card-category">Avg Session Duration</p>
+                      <h3 class="card-title">
+                        {{ formatTime(dashboardData.avgSessionDuration) }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-								<!-- Device Breakdown -->
-								<div class="col-md-4">
-									<div class="card">
-										<div class="card-header card-header-success">
-											<h4 class="card-title">Device Breakdown</h4>
-										</div>
-										<div class="card-body">
-											<!-- Chart will go here - in real implementation, use chart.js or similar -->
-											<div class="chart-container"
-												style="height: 250px;">
-												<div *ngFor="let value of dashboardData.deviceBreakdown.datasets[0].data; let i = index"
-													class="chart-bar-item">
-													<div class="chart-label">
-														{{dashboardData.deviceBreakdown.labels[i]}}
-													</div>
-													<div [style.width.%]="calculatePercentage(value, Math.max.apply(null, dashboardData.deviceBreakdown.datasets[0].data))"
-														[style.background-color]="dashboardData.deviceBreakdown.datasets[0].backgroundColor?.[i]"
-														class="chart-bar">
-														{{value | number}}
-													</div>
-												</div>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
+              <!-- Second Row of Metrics Cards -->
+              <div class="row">
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div
+                      class="card-header card-header-primary card-header-icon"
+                    >
+                      <div class="card-icon">
+                        <i class="material-icons">menu_book</i>
+                      </div>
+                      <p class="card-category">Pages per Session</p>
+                      <h3 class="card-title">
+                        {{ dashboardData.pagesPerSession | number: '1.2-2' }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div class="card-header card-header-rose card-header-icon">
+                      <div class="card-icon">
+                        <i class="material-icons">exit_to_app</i>
+                      </div>
+                      <p class="card-category">Bounce Rate</p>
+                      <h3 class="card-title">
+                        {{ dashboardData.bounceRate | number: '1.1-1' }}%
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">date_range</i>
+                        Selected date range
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div class="card-header card-header-info card-header-icon">
+                      <div class="card-icon">
+                        <i class="material-icons">storage</i>
+                      </div>
+                      <p class="card-category">MongoDB Connections</p>
+                      <h3 class="card-title">
+                        {{ activeConnections || 0 }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">storage</i>
+                        Active Connections
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="card card-stats">
+                    <div
+                      class="card-header card-header-warning card-header-icon"
+                    >
+                      <div class="card-icon">
+                        <i class="material-icons">cloud_queue</i>
+                      </div>
+                      <p class="card-category">AWS EC2 Storage</p>
+                      <h3 class="card-title">
+                        {{ awsEC2Usage || 'N/A' }}
+                      </h3>
+                    </div>
+                    <div class="card-footer">
+                      <div class="stats">
+                        <i class="material-icons">storage</i>
+                        Disk usage
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-							<!-- Tables Section -->
-							<div class="row">
-								<!-- Top Pages -->
-								<div class="col-md-6">
-									<div class="card">
-										<div class="card-header card-header-primary">
-											<h4 class="card-title">Top Pages</h4>
-											<p class="card-category">
-												Pages with the most views
-											</p>
-										</div>
-										<div class="card-body table-responsive">
-											<table class="table table-hover">
-												<thead class="text-primary">
-													<tr>
-														<th>Page</th>
-														<th>Views</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr *ngFor="let page of dashboardData.topPages">
-														<td class="truncate">{{page.page}}</td>
-														<td>
-															{{page.views | number}}
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-									</div>
-								</div>
+              <!-- Charts Section -->
+              <div class="row">
+                <!-- New vs. Returning Users -->
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-header card-header-warning">
+                      <h4 class="card-title">New vs. Returning Users</h4>
+                    </div>
+                    <div class="card-body">
+                      <!-- Chart will go here - in real implementation, use chart.js or similar -->
+                      <div class="chart-container" style="height: 250px">
+                        <div
+                          *ngFor="
+                            let value of dashboardData.newVsReturning
+                              .datasets[0].data;
+                            let i = index
+                          "
+                          class="chart-bar-item"
+                        >
+                          <div class="chart-label">
+                            {{ dashboardData.newVsReturning.labels[i] }}
+                          </div>
+                          <div
+                            [style.width.%]="
+                              calculatePercentage(
+                                value,
+                                dashboardData.totalUsers
+                              )
+                            "
+                            [style.background-color]="
+                              dashboardData.newVsReturning.datasets[0]
+                                .backgroundColor?.[i]
+                            "
+                            class="chart-bar"
+                          >
+                            {{ value | number }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-								<!-- Geographic Distribution -->
-								<div class="col-md-6">
-									<div class="card">
-										<div class="card-header card-header-rose">
-											<h4 class="card-title">
-												Geographic Distribution
-											</h4>
-											<p class="card-category">
-												User location by country
-											</p>
-										</div>
-										<div class="card-body table-responsive">
-											<table class="table table-hover">
-												<thead class="text-rose">
-													<tr>
-														<th>Country</th>
-														<th>Sessions</th>
-														<th>Users</th>
-													</tr>
-												</thead>
-												<tbody>
-													<tr *ngFor="let item of dashboardData.geoDistribution">
-														<td>{{item.country}}</td>
-														<td>
-															{{item.sessions | number}}
-														</td>
-														<td>
-															{{item.users | number}}
-														</td>
-													</tr>
-												</tbody>
-											</table>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
+                <!-- Traffic Sources -->
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-header card-header-info">
+                      <h4 class="card-title">Traffic Sources</h4>
+                    </div>
+                    <div class="card-body">
+                      <!-- Chart will go here - in real implementation, use chart.js or similar -->
+                      <div class="chart-container" style="height: 250px">
+                        <div
+                          *ngFor="
+                            let value of dashboardData.trafficSources
+                              .datasets[0].data;
+                            let i = index
+                          "
+                          class="chart-bar-item"
+                        >
+                          <div class="chart-label">
+                            {{ dashboardData.trafficSources.labels[i] }}
+                          </div>
+                          <div
+                            [style.width.%]="
+                              calculatePercentage(
+                                value,
+                                Math.max.apply(
+                                  null,
+                                  dashboardData.trafficSources.datasets[0].data
+                                )
+                              )
+                            "
+                            [style.background-color]="
+                              dashboardData.trafficSources.datasets[0]
+                                .backgroundColor?.[i]
+                            "
+                            class="chart-bar"
+                          >
+                            {{ value | number }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-						<!-- No Data State -->
-						<div *ngIf="!loading && !dashboardData"
-							class="text-center my-5">
-							<i class="material-icons"
-								style="font-size: 48px; color: #999;">
-								analytics_off
-							</i>
-							<h3 class="mt-3">
-								No Analytics Data Available
-							</h3>
-							<p>
-								We couldn't retrieve your Google Analytics data. Please check your configuration.
-							</p>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                <!-- Device Breakdown -->
+                <div class="col-md-4">
+                  <div class="card">
+                    <div class="card-header card-header-success">
+                      <h4 class="card-title">Device Breakdown</h4>
+                    </div>
+                    <div class="card-body">
+                      <!-- Chart will go here - in real implementation, use chart.js or similar -->
+                      <div class="chart-container" style="height: 250px">
+                        <div
+                          *ngFor="
+                            let value of dashboardData.deviceBreakdown
+                              .datasets[0].data;
+                            let i = index
+                          "
+                          class="chart-bar-item"
+                        >
+                          <div class="chart-label">
+                            {{ dashboardData.deviceBreakdown.labels[i] }}
+                          </div>
+                          <div
+                            [style.width.%]="
+                              calculatePercentage(
+                                value,
+                                Math.max.apply(
+                                  null,
+                                  dashboardData.deviceBreakdown.datasets[0].data
+                                )
+                              )
+                            "
+                            [style.background-color]="
+                              dashboardData.deviceBreakdown.datasets[0]
+                                .backgroundColor?.[i]
+                            "
+                            class="chart-bar"
+                          >
+                            {{ value | number }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tables Section -->
+              <div class="row">
+                <!-- Top Pages -->
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header card-header-primary">
+                      <h4 class="card-title">Top Pages</h4>
+                      <p class="card-category">Pages with the most views</p>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-hover">
+                        <thead class="text-primary">
+                          <tr>
+                            <th>Page</th>
+                            <th>Views</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let page of dashboardData.topPages">
+                            <td class="truncate">{{ page.page }}</td>
+                            <td>
+                              {{ page.views | number }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Geographic Distribution -->
+                <div class="col-md-6">
+                  <div class="card">
+                    <div class="card-header card-header-rose">
+                      <h4 class="card-title">Geographic Distribution</h4>
+                      <p class="card-category">User location by country</p>
+                    </div>
+                    <div class="card-body table-responsive">
+                      <table class="table table-hover">
+                        <thead class="text-rose">
+                          <tr>
+                            <th>Country</th>
+                            <th>Sessions</th>
+                            <th>Users</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr
+                            *ngFor="let item of dashboardData.geoDistribution"
+                          >
+                            <td>{{ item.country }}</td>
+                            <td>
+                              {{ item.sessions | number }}
+                            </td>
+                            <td>
+                              {{ item.users | number }}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Data State -->
+            <div *ngIf="!loading && !dashboardData" class="text-center my-5">
+              <i class="material-icons" style="font-size: 48px; color: #999">
+                analytics_off
+              </i>
+              <h3 class="mt-3">No Analytics Data Available</h3>
+              <p>
+                We couldn't retrieve your Google Analytics data. Please check
+                your configuration.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

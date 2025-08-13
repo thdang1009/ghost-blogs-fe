@@ -6,7 +6,7 @@ import { FileService, AlertService } from '@services/_index';
 @Component({
   selector: 'app-file-list',
   templateUrl: './file-list.component.html',
-  styleUrls: ['./file-list.component.scss']
+  styleUrls: ['./file-list.component.scss'],
 })
 export class FileListComponent implements OnInit {
   index = 0;
@@ -17,7 +17,8 @@ export class FileListComponent implements OnInit {
   constructor(
     private fileService: FileService,
     private router: Router,
-    private alertService: AlertService) { }
+    private alertService: AlertService
+  ) {}
 
   ngOnInit(): void {
     this.getFiles();
@@ -31,19 +32,21 @@ export class FileListComponent implements OnInit {
 
   getFiles() {
     this.resetParams();
-    this.fileService.getAllFile().subscribe(files => {
-      this.listAll = files;
-      this.files = this.getMoreFiles();
-    }, (err) => {
-      console.log(err);
-      this.alertService.showNoti(`Get file fail!`, 'danger');
-    });
+    this.fileService.getAllFile().subscribe(
+      files => {
+        this.listAll = files;
+        this.files = this.getMoreFiles();
+      },
+      err => {
+        console.log(err);
+        this.alertService.showNoti(`Get file fail!`, 'danger');
+      }
+    );
   }
   getMoreFiles(pageSize = 10) {
     const tempArray = [];
     for (let i = 0; i < pageSize; i++, this.index++) {
-      if (this.listAll[this.index])
-        tempArray.push(this.listAll[this.index]);
+      if (this.listAll[this.index]) tempArray.push(this.listAll[this.index]);
     }
     return tempArray;
   }
@@ -52,16 +55,17 @@ export class FileListComponent implements OnInit {
       return;
     }
     if (id) {
-      this.fileService.deleteFile(id)
-        .subscribe((res: any) => {
+      this.fileService.deleteFile(id).subscribe(
+        (res: any) => {
           if (res.success) {
             this.alertService.showNoti('File deleted!', 'success');
             this.listAll = this.listAll.filter(el => el.id !== id);
             this.files = this.files.filter(el => el.id !== id);
             // this.getFiles();
           }
-        }, err => {
-        });
+        },
+        err => {}
+      );
     }
   }
   deleteItem(item: MyFile) {
@@ -74,22 +78,27 @@ export class FileListComponent implements OnInit {
     if (!file) {
       return;
     }
-    this.router.navigate(
-      ['admin/file/file'],
-      {
-        queryParams: { id: file.id }
-      });
+    this.router.navigate(['admin/file/file'], {
+      queryParams: { id: file.id },
+    });
   }
   uploadNewFile() {
-    this.router.navigate(
-      ['admin/file/file'],
-      {
-      });
+    this.router.navigate(['admin/file/file'], {});
   }
   showPreview() {
     this.isPreview = !this.isPreview;
   }
   showMore() {
     this.files = [...this.files, ...this.getMoreFiles()];
+  }
+
+  formatFileSize(bytes: number): string {
+    if (!bytes || bytes === 0) return '0 B';
+
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }

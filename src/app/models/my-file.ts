@@ -3,10 +3,11 @@ export class MyFile {
   url?: string;
   user?: any;
   originName?: string;
-  nameOnDisk?: string
+  nameOnDisk?: string;
   urlGet?: string;
   pathOnDisk?: string;
   ext?: String;
   type?: String;
+  sizeInBytes?: number;
   permission?: String;
 }

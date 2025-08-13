@@ -42,7 +42,12 @@ export class TokenInterceptor implements HttpInterceptor {
     });
 
     // Only add Content-Type for non-GET requests and when not already set
-    if (request.method !== 'GET' && !request.headers.has('Content-Type')) {
+    // Skip Content-Type for FormData uploads (multipart/form-data should be set automatically)
+    if (
+      request.method !== 'GET' &&
+      !request.headers.has('Content-Type') &&
+      !(request.body instanceof FormData)
+    ) {
       modifiedRequest = modifiedRequest.clone({
         setHeaders: {
           'Content-Type': 'application/json',
@@ -60,12 +65,15 @@ export class TokenInterceptor implements HttpInterceptor {
       catchError((error: HttpErrorResponse) => {
         console.log('ghost error--->>>', error);
 
-        if (error.status === 401 && error.error?.code === 'TOKEN_EXPIRED') {
-          return this.handle401Error(request, next);
-        }
-
         if (error.status === 401) {
-          // For other 401 errors (invalid token, no token, etc.), logout
+          // Check if this is a token expiration error or no token error
+          const errorCode = error.error?.code;
+
+          if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'NO_TOKEN') {
+            return this.handle401Error(request, next);
+          }
+
+          // For other 401 errors (invalid token, user not found, etc.), logout immediately
           this.handleLogout();
         }
 
@@ -99,8 +107,11 @@ export class TokenInterceptor implements HttpInterceptor {
             );
           }
 
-          // Retry the original request
-          return next.handle(request);
+          // Retry the original request with credentials
+          const retryRequest = request.clone({
+            withCredentials: true,
+          });
+          return next.handle(retryRequest);
         }),
         catchError(err => {
           this.isRefreshing = false;
@@ -113,7 +124,12 @@ export class TokenInterceptor implements HttpInterceptor {
       return this.refreshTokenSubject.pipe(
         filter(token => token != null),
         take(1),
-        switchMap(() => next.handle(request))
+        switchMap(() => {
+          const retryRequest = request.clone({
+            withCredentials: true,
+          });
+          return next.handle(retryRequest);
+        })
       );
     }
   }

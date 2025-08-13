@@ -15,13 +15,11 @@ import { MatButtonModule } from '@angular/material/button';
 
 // Define routes for dashboard
 const routes: Routes = [
-  { path: '', component: DashboardComponent, pathMatch: 'full' }
+  { path: '', component: DashboardComponent, pathMatch: 'full' },
 ];
 
 @NgModule({
-  declarations: [
-    DashboardComponent
-  ],
+  declarations: [DashboardComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -34,7 +32,7 @@ const routes: Routes = [
     MatDatepickerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule
-  ]
+    MatButtonModule,
+  ],
 })
-export class DashboardModule { }
+export class DashboardModule {}
