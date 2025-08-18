@@ -67,6 +67,86 @@ export interface PostAnalyticsResponse {
   timeBreakdown: { _id: string; views: number; uniqueViews: number }[];
 }
 
+export interface SeriesAnalytics {
+  seriesId: string;
+  seriesName: string;
+  totalViews: number;
+  uniqueViews: number;
+  avgViewDuration: number;
+  avgScrollDepth: number;
+  bounceRate: number;
+  uniqueUsers: number;
+  postCount: number;
+}
+
+export interface SeriesPostProgression {
+  _id: string;
+  title: string;
+  totalViews: number;
+  uniqueViews: number;
+  avgViewDuration: number;
+  avgScrollDepth: number;
+}
+
+export interface SeriesUserProgression {
+  userId: string;
+  postsViewedCount: number;
+  totalViews: number;
+  lastViewed: string;
+}
+
+export interface SeriesAnalyticsResponse {
+  seriesAnalytics: SeriesAnalytics;
+  postProgression: SeriesPostProgression[];
+  userProgression: SeriesUserProgression[];
+  trafficSources: { _id: string; count: number; uniqueViews: number }[];
+}
+
+export interface TopPerformingSeries {
+  seriesId: string;
+  seriesName: string;
+  seriesSlug: string;
+  totalViews: number;
+  uniqueViews: number;
+  avgViewDuration: number;
+  avgScrollDepth: number;
+  bounceRate: number;
+  uniqueUsers: number;
+  postCount: number;
+  engagementScore: number;
+}
+
+export interface ReadingPattern {
+  _id: { hour: number; dayOfWeek: number };
+  views: number;
+  avgViewDuration: number;
+  avgScrollDepth: number;
+}
+
+export interface UserJourney {
+  userId: string;
+  sessionLength: number;
+  posts: {
+    postId: string;
+    title: string;
+    timestamp: string;
+    viewDuration: number;
+    scrollDepth: number;
+  }[];
+}
+
+export interface AdvancedAnalytics {
+  readingPatterns: ReadingPattern[];
+  geographicPatterns: { _id: string; views: number; uniqueViews: number }[];
+  userJourney: UserJourney[];
+  performanceTrends: {
+    _id: { date: string };
+    views: number;
+    uniqueViews: number;
+    avgEngagement: number;
+  }[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -241,5 +321,107 @@ export class PostAnalyticsService {
       startTime,
       getViewDuration: () => Math.round((Date.now() - startTime) / 1000),
     };
+  }
+
+  // Series Analytics Methods
+  getSeriesAnalytics(
+    seriesId: string,
+    startDate?: string,
+    endDate?: string
+  ): Observable<SeriesAnalyticsResponse> {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+
+    return this.http
+      .get<SeriesAnalyticsResponse>(`${this.apiUrl}/series/${seriesId}`, {
+        params,
+      })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching series analytics:', error);
+          return of({
+            seriesAnalytics: {
+              seriesId: '',
+              seriesName: '',
+              totalViews: 0,
+              uniqueViews: 0,
+              avgViewDuration: 0,
+              avgScrollDepth: 0,
+              bounceRate: 0,
+              uniqueUsers: 0,
+              postCount: 0,
+            },
+            postProgression: [],
+            userProgression: [],
+            trafficSources: [],
+          });
+        })
+      );
+  }
+
+  getSeriesAnalyticsSummary(
+    startDate?: string,
+    endDate?: string
+  ): Observable<SeriesAnalytics[]> {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+
+    return this.http
+      .get<SeriesAnalytics[]>(`${this.apiUrl}/series-summary`, { params })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching series analytics summary:', error);
+          return of([]);
+        })
+      );
+  }
+
+  getTopPerformingSeries(
+    startDate?: string,
+    endDate?: string,
+    limit: number = 10
+  ): Observable<TopPerformingSeries[]> {
+    const params: any = { limit: limit.toString() };
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+
+    return this.http
+      .get<TopPerformingSeries[]>(`${this.apiUrl}/top-series`, { params })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching top performing series:', error);
+          return of([]);
+        })
+      );
+  }
+
+  // Advanced Analytics Methods
+  getAdvancedAnalytics(
+    startDate?: string,
+    endDate?: string,
+    postId?: string,
+    seriesId?: string
+  ): Observable<AdvancedAnalytics> {
+    const params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    if (postId) params.postId = postId;
+    if (seriesId) params.seriesId = seriesId;
+
+    return this.http
+      .get<AdvancedAnalytics>(`${this.apiUrl}/advanced`, { params })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching advanced analytics:', error);
+          return of({
+            readingPatterns: [],
+            geographicPatterns: [],
+            userJourney: [],
+            performanceTrends: [],
+          });
+        })
+      );
   }
 }

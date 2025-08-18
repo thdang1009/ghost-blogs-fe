@@ -163,6 +163,58 @@
                         </table>
                       </div>
 
+                      <!-- Top Performing Series -->
+                      <div
+                        class="table-responsive"
+                        style="margin-top: 30px"
+                        *ngIf="topPerformingSeries.length > 0"
+                      >
+                        <h5>Top Performing Series</h5>
+                        <table class="table">
+                          <thead class="text-primary">
+                            <tr>
+                              <th>Series Name</th>
+                              <th>Total Views</th>
+                              <th>Unique Views</th>
+                              <th>Posts</th>
+                              <th>Engagement Score</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let series of topPerformingSeries">
+                              <td>
+                                <span
+                                  [title]="series.seriesName"
+                                  class="truncate-text"
+                                  >{{ series.seriesName }}</span
+                                >
+                              </td>
+                              <td>{{ series.totalViews | number }}</td>
+                              <td>{{ series.uniqueViews | number }}</td>
+                              <td>{{ series.postCount }}</td>
+                              <td>
+                                <span class="badge badge-success">{{
+                                  series.engagementScore | number: '1.0-0'
+                                }}</span>
+                              </td>
+                              <td>
+                                <button
+                                  (click)="
+                                    selectSeriesFromTopList(series.seriesId)
+                                  "
+                                  type="button"
+                                  class="btn btn-primary btn-sm"
+                                >
+                                  <i class="material-icons">visibility</i>
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
                       <!-- Traffic Sources -->
                       <div style="margin-top: 30px">
                         <h5>Traffic Sources Overview</h5>
@@ -558,6 +610,439 @@
                             </tbody>
                           </table>
                         </div>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                  <!-- Series Analytics Tab -->
+                  <mat-tab label="Series Analytics">
+                    <div class="tab-content" *ngIf="!loading">
+                      <!-- Series Selection -->
+                      <div class="row">
+                        <div class="col-md-6">
+                          <mat-form-field
+                            class="example-full-width"
+                            appearance="fill"
+                          >
+                            <mat-label
+                              >Search and Select Series (optional)</mat-label
+                            >
+                            <input
+                              type="text"
+                              matInput
+                              [formControl]="seriesControl"
+                              [matAutocomplete]="seriesAuto"
+                              placeholder="Type to search series..."
+                            />
+                            <mat-autocomplete
+                              #seriesAuto="matAutocomplete"
+                              [displayWith]="displaySeriesFn"
+                              (optionSelected)="
+                                onSeriesAutocompleteSelected(
+                                  $event.option.value
+                                )
+                              "
+                            >
+                              <mat-option
+                                *ngFor="let series of filteredSeries | async"
+                                [value]="series"
+                              >
+                                <span>{{ series.name }}</span>
+                                <small *ngIf="series.description">
+                                  - {{ series.description }}</small
+                                >
+                              </mat-option>
+                            </mat-autocomplete>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                          <button
+                            *ngIf="selectedSeries"
+                            (click)="clearSeriesSelection()"
+                            type="button"
+                            class="btn btn-warning"
+                          >
+                            <i class="material-icons">clear</i>
+                            Clear Selection
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Series Analytics Cards -->
+                      <div
+                        *ngIf="selectedSeriesAnalytics && selectedSeries"
+                        class="row"
+                      >
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-warning card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">library_books</i>
+                              </div>
+                              <p class="card-category">Total Views</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedSeriesAnalytics.seriesAnalytics
+                                    .totalViews | number
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">date_range</i>
+                                Series performance
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-success card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">people</i>
+                              </div>
+                              <p class="card-category">Unique Users</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedSeriesAnalytics.seriesAnalytics
+                                    .uniqueUsers | number
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">person</i>
+                                Engaged readers
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-danger card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">article</i>
+                              </div>
+                              <p class="card-category">Posts Count</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedSeriesAnalytics.seriesAnalytics
+                                    .postCount | number
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">description</i>
+                                Total posts
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-info card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">trending_up</i>
+                              </div>
+                              <p class="card-category">Avg Scroll Depth</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedSeriesAnalytics.seriesAnalytics
+                                    .avgScrollDepth | number: '1.0-0'
+                                }}%
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">timeline</i>
+                                Reading engagement
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Post Progression in Series -->
+                      <div *ngIf="selectedSeriesAnalytics" class="row">
+                        <div class="col-md-12">
+                          <div class="table-responsive">
+                            <h5>Post Performance in Series</h5>
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>Post Title</th>
+                                  <th>Views</th>
+                                  <th>Unique Views</th>
+                                  <th>Avg Duration</th>
+                                  <th>Scroll Depth</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let post of selectedSeriesAnalytics.postProgression
+                                  "
+                                >
+                                  <td>{{ post.title }}</td>
+                                  <td>{{ post.totalViews | number }}</td>
+                                  <td>{{ post.uniqueViews | number }}</td>
+                                  <td>
+                                    {{ formatDuration(post.avgViewDuration) }}
+                                  </td>
+                                  <td>
+                                    {{ post.avgScrollDepth | number: '1.0-0' }}%
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Series Analytics Summary Table -->
+                      <div
+                        *ngIf="
+                          !selectedSeries && seriesAnalyticsSummary.length > 0
+                        "
+                        class="table-responsive"
+                      >
+                        <h5>All Series Performance</h5>
+                        <table class="table">
+                          <thead class="text-primary">
+                            <tr>
+                              <th>Series Name</th>
+                              <th>Total Views</th>
+                              <th>Unique Views</th>
+                              <th>Posts</th>
+                              <th>Unique Users</th>
+                              <th>Avg Duration</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let series of seriesAnalyticsSummary">
+                              <td>{{ series.seriesName }}</td>
+                              <td>{{ series.totalViews | number }}</td>
+                              <td>{{ series.uniqueViews | number }}</td>
+                              <td>{{ series.postCount }}</td>
+                              <td>{{ series.uniqueUsers | number }}</td>
+                              <td>
+                                {{ formatDuration(series.avgViewDuration) }}
+                              </td>
+                              <td>
+                                <button
+                                  (click)="
+                                    selectSeriesFromTopList(series.seriesId)
+                                  "
+                                  type="button"
+                                  class="btn btn-primary btn-sm"
+                                >
+                                  <i class="material-icons">visibility</i>
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                  <!-- Advanced Analytics Tab -->
+                  <mat-tab label="Advanced Analytics">
+                    <div class="tab-content" *ngIf="!loading">
+                      <!-- Reading Patterns -->
+                      <div
+                        *ngIf="advancedAnalytics?.readingPatterns?.length"
+                        class="row"
+                      >
+                        <div class="col-md-12">
+                          <h5>Peak Reading Times</h5>
+                          <div class="table-responsive">
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>Day of Week</th>
+                                  <th>Hour</th>
+                                  <th>Views</th>
+                                  <th>Avg Duration</th>
+                                  <th>Scroll Depth</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let pattern of advancedAnalytics?.readingPatterns?.slice(
+                                      0,
+                                      10
+                                    ) || []
+                                  "
+                                >
+                                  <td>
+                                    <span class="badge badge-info">
+                                      {{
+                                        [
+                                          'Sun',
+                                          'Mon',
+                                          'Tue',
+                                          'Wed',
+                                          'Thu',
+                                          'Fri',
+                                          'Sat',
+                                        ][pattern._id.dayOfWeek - 1]
+                                      }}
+                                    </span>
+                                  </td>
+                                  <td>{{ pattern._id.hour }}:00</td>
+                                  <td>{{ pattern.views | number }}</td>
+                                  <td>
+                                    {{
+                                      formatDuration(pattern.avgViewDuration)
+                                    }}
+                                  </td>
+                                  <td>
+                                    {{
+                                      pattern.avgScrollDepth | number: '1.0-0'
+                                    }}%
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- User Journey Analysis -->
+                      <div
+                        *ngIf="advancedAnalytics?.userJourney?.length"
+                        class="row"
+                        style="margin-top: 30px"
+                      >
+                        <div class="col-md-12">
+                          <h5>User Journey Insights</h5>
+                          <div class="table-responsive">
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>User Session</th>
+                                  <th>Posts Read</th>
+                                  <th>Session Length</th>
+                                  <th>Most Recent Posts</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let journey of advancedAnalytics?.userJourney?.slice(
+                                      0,
+                                      10
+                                    )
+                                  "
+                                >
+                                  <td>{{ journey.userId || 'Anonymous' }}</td>
+                                  <td>
+                                    <span class="badge badge-success">{{
+                                      journey.sessionLength
+                                    }}</span>
+                                  </td>
+                                  <td>
+                                    <span class="badge badge-primary">
+                                      {{
+                                        formatDuration(
+                                          journey.posts[0]?.viewDuration || 0
+                                        )
+                                      }}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span
+                                      *ngFor="
+                                        let post of journey.posts.slice(0, 2)
+                                      "
+                                      class="badge badge-light"
+                                      [title]="post.title"
+                                      style="margin-right: 5px"
+                                    >
+                                      {{
+                                        post.title.length > 20
+                                          ? (post.title | slice: 0 : 20) + '...'
+                                          : post.title
+                                      }}
+                                    </span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Performance Trends -->
+                      <div
+                        *ngIf="advancedAnalytics?.performanceTrends?.length"
+                        class="row"
+                        style="margin-top: 30px"
+                      >
+                        <div class="col-md-12">
+                          <h5>Performance Trends</h5>
+                          <div class="table-responsive">
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>Date</th>
+                                  <th>Total Views</th>
+                                  <th>Unique Views</th>
+                                  <th>Engagement Score</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let trend of advancedAnalytics?.performanceTrends?.slice(
+                                      -14
+                                    )
+                                  "
+                                >
+                                  <td>
+                                    {{ trend._id.date | date: 'mediumDate' }}
+                                  </td>
+                                  <td>{{ trend.views | number }}</td>
+                                  <td>{{ trend.uniqueViews | number }}</td>
+                                  <td>
+                                    <span class="badge badge-warning">{{
+                                      trend.avgEngagement | number: '1.0-0'
+                                    }}</span>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Load Advanced Analytics Button -->
+                      <div
+                        *ngIf="!advancedAnalytics"
+                        class="text-center"
+                        style="padding: 50px"
+                      >
+                        <button
+                          (click)="loadAdvancedAnalytics()"
+                          type="button"
+                          class="btn btn-primary"
+                        >
+                          <i class="material-icons">analytics</i>
+                          Load Advanced Analytics
+                        </button>
                       </div>
                     </div>
                   </mat-tab>

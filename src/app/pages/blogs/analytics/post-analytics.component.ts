@@ -5,11 +5,17 @@ import {
   TagAnalytics,
   TopPerformingPost,
   TrafficSource,
+  SeriesAnalytics,
+  TopPerformingSeries,
+  SeriesAnalyticsResponse,
+  AdvancedAnalytics,
 } from '../../../services/post-analytics/post-analytics.service';
 import { PostService } from '../../../services/post/post.service';
 import { TagService } from '../../../services/tag/tag.service';
+import { SeriesService } from '../../../services/series/series.service';
 import { Post } from '../../../models/post';
 import { Tag } from '../../../models/tag';
+import { Series } from '../../../models/series';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil, map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
@@ -25,14 +31,24 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   // Data properties
   posts: Post[] = [];
   tags: Tag[] = [];
+  series: Series[] = [];
   topPosts: TopPerformingPost[] = [];
   tagAnalytics: TagAnalytics[] = [];
   trafficSources: TrafficSource[] = [];
   selectedPostAnalytics?: PostAnalyticsResponse;
 
+  // Series Analytics Data
+  seriesAnalyticsSummary: SeriesAnalytics[] = [];
+  topPerformingSeries: TopPerformingSeries[] = [];
+  selectedSeriesAnalytics?: SeriesAnalyticsResponse;
+
+  // Advanced Analytics Data
+  advancedAnalytics?: AdvancedAnalytics;
+
   // Filter properties
   selectedPost?: Post;
   selectedTag?: Tag;
+  selectedSeries?: Series;
   startDate: Date = new Date();
   endDate: Date = new Date();
   groupBy: 'day' | 'hour' = 'day';
@@ -40,10 +56,12 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   // Form controls for autocomplete
   postControl = new FormControl();
   tagControl = new FormControl();
+  seriesControl = new FormControl();
 
   // Filtered observables for autocomplete
   filteredPosts!: Observable<Post[]>;
   filteredTags!: Observable<Tag[]>;
+  filteredSeries!: Observable<Series[]>;
 
   // UI state
   loading = false;
@@ -51,7 +69,9 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
     | 'overview'
     | 'post-details'
     | 'tag-analytics'
-    | 'traffic-sources' = 'overview';
+    | 'series-analytics'
+    | 'traffic-sources'
+    | 'advanced-analytics' = 'overview';
   selectedTabIndex = 0;
 
   // Expose Math for template
@@ -64,6 +84,12 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
 
   compareTagsFn = (tag1: Tag, tag2: Tag): boolean => {
     return tag1 && tag2 ? tag1._id === tag2._id : tag1 === tag2;
+  };
+
+  compareSeriesFn = (series1: Series, series2: Series): boolean => {
+    return series1 && series2
+      ? series1._id === series2._id
+      : series1 === series2;
   };
 
   // Filter functions for autocomplete
@@ -87,6 +113,16 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
     );
   }
 
+  private filterSeries(value: string | Series): Series[] {
+    const filterValue =
+      typeof value === 'string'
+        ? value.toLowerCase()
+        : value?.name?.toLowerCase() || '';
+    return this.series.filter(series =>
+      series.name?.toLowerCase().includes(filterValue)
+    );
+  }
+
   // Display functions for autocomplete
   displayPostFn = (post: Post): string => {
     return post && post.title ? post.title : '';
@@ -94,6 +130,10 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
 
   displayTagFn = (tag: Tag): string => {
     return tag && tag.name ? tag.name : '';
+  };
+
+  displaySeriesFn = (series: Series): string => {
+    return series && series.name ? series.name : '';
   };
 
   private formatDateForAPI(date: Date, isEndDate: boolean = false): string {
@@ -114,7 +154,8 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   constructor(
     private postAnalyticsService: PostAnalyticsService,
     private postService: PostService,
-    private tagService: TagService
+    private tagService: TagService,
+    private seriesService: SeriesService
   ) {
     // Set default date range (last 30 days to today)
     const endDate = new Date();
@@ -163,6 +204,19 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
           map(value => this.filterTags(value))
         );
       });
+
+    this.seriesService
+      .getAllSeries()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((series: Series[]) => {
+        this.series = series;
+
+        // Initialize filtered series observable after series are loaded
+        this.filteredSeries = this.seriesControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this.filterSeries(value))
+        );
+      });
   }
 
   loadOverviewData(): void {
@@ -184,6 +238,22 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(data => {
         this.tagAnalytics = data.tagAnalytics;
+      });
+
+    // Load series analytics summary
+    this.postAnalyticsService
+      .getSeriesAnalyticsSummary(startDateStr, endDateStr)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(seriesData => {
+        this.seriesAnalyticsSummary = seriesData;
+      });
+
+    // Load top performing series
+    this.postAnalyticsService
+      .getTopPerformingSeries(startDateStr, endDateStr, 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(topSeries => {
+        this.topPerformingSeries = topSeries;
       });
 
     // Load traffic sources
@@ -216,6 +286,13 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
     this.selectedView = 'tag-analytics';
     this.selectedTabIndex = 2;
     this.loadTagSpecificAnalytics();
+  }
+
+  onSeriesAutocompleteSelected(series: Series): void {
+    this.selectedSeries = series;
+    this.selectedView = 'series-analytics';
+    this.selectedTabIndex = 3;
+    this.loadSeriesSpecificAnalytics();
   }
 
   onTagSelected(): void {
@@ -276,6 +353,22 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadSeriesSpecificAnalytics(): void {
+    if (!this.selectedSeries || !this.selectedSeries._id) return;
+
+    this.loading = true;
+    const startDateStr = this.formatDateForAPI(this.startDate);
+    const endDateStr = this.formatDateForAPI(this.endDate, true);
+
+    this.postAnalyticsService
+      .getSeriesAnalytics(this.selectedSeries._id, startDateStr, endDateStr)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.selectedSeriesAnalytics = data;
+        this.loading = false;
+      });
+  }
+
   applyFilters(): void {
     switch (this.selectedView) {
       case 'overview':
@@ -287,8 +380,14 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       case 'tag-analytics':
         this.loadTagSpecificAnalytics();
         break;
+      case 'series-analytics':
+        this.loadSeriesSpecificAnalytics();
+        break;
       case 'traffic-sources':
         this.loadTrafficSourceAnalytics();
+        break;
+      case 'advanced-analytics':
+        this.loadAdvancedAnalytics();
         break;
     }
   }
@@ -392,9 +491,53 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
         this.selectedView = 'tag-analytics';
         break;
       case 3:
+        this.selectedView = 'series-analytics';
+        break;
+      case 4:
         this.selectedView = 'traffic-sources';
         this.loadTrafficSourceAnalytics();
         break;
+      case 5:
+        this.selectedView = 'advanced-analytics';
+        this.loadAdvancedAnalytics();
+        break;
+    }
+  }
+
+  loadAdvancedAnalytics(): void {
+    this.loading = true;
+    const startDateStr = this.formatDateForAPI(this.startDate);
+    const endDateStr = this.formatDateForAPI(this.endDate, true);
+
+    this.postAnalyticsService
+      .getAdvancedAnalytics(
+        startDateStr,
+        endDateStr,
+        this.selectedPost?._id,
+        this.selectedSeries?._id
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.advancedAnalytics = data;
+        this.loading = false;
+      });
+  }
+
+  clearSeriesSelection(): void {
+    this.selectedSeries = undefined;
+    this.selectedSeriesAnalytics = undefined;
+    this.seriesControl.setValue('');
+    this.selectedView = 'overview';
+    this.selectedTabIndex = 0;
+    this.loadOverviewData();
+  }
+
+  selectSeriesFromTopList(seriesId: string): void {
+    this.selectedSeries = this.series.find(s => s._id === seriesId);
+    if (this.selectedSeries) {
+      this.selectedView = 'series-analytics';
+      this.selectedTabIndex = 3; // Switch to Series Analytics tab
+      this.loadSeriesSpecificAnalytics();
     }
   }
 
@@ -408,6 +551,10 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       tagAnalytics: this.tagAnalytics,
       trafficSources: this.trafficSources,
       selectedPostAnalytics: this.selectedPostAnalytics,
+      seriesAnalyticsSummary: this.seriesAnalyticsSummary,
+      topPerformingSeries: this.topPerformingSeries,
+      selectedSeriesAnalytics: this.selectedSeriesAnalytics,
+      advancedAnalytics: this.advancedAnalytics,
     };
 
     const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {
