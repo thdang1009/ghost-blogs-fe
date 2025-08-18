@@ -73,7 +73,7 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
         ? value.toLowerCase()
         : value?.title?.toLowerCase() || '';
     return this.posts.filter(post =>
-      post.title.toLowerCase().includes(filterValue)
+      post.title?.toLowerCase().includes(filterValue)
     );
   }
 
@@ -83,7 +83,7 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
         ? value.toLowerCase()
         : value?.name?.toLowerCase() || '';
     return this.tags.filter(tag =>
-      tag.name.toLowerCase().includes(filterValue)
+      tag.name?.toLowerCase().includes(filterValue)
     );
   }
 
