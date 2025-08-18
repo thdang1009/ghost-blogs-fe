@@ -102,7 +102,9 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       .getAllPost({})
       .pipe(takeUntil(this.destroy$))
       .subscribe((response: any) => {
-        this.posts = response.posts || [];
+        // getAllPost returns posts directly, not wrapped in a 'posts' property
+        this.posts = Array.isArray(response) ? response : response.posts || [];
+        console.log('Posts loaded:', this.posts.length, this.posts);
       });
 
     this.tagService
@@ -110,6 +112,7 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((tags: Tag[]) => {
         this.tags = tags;
+        console.log('Tags loaded:', this.tags.length);
       });
   }
 
@@ -145,6 +148,7 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   onPostSelected(): void {
+    console.log('onPostSelected called', this.selectedPost);
     if (this.selectedPost) {
       this.selectedView = 'post-details';
       this.loadPostAnalytics();
@@ -159,11 +163,17 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   loadPostAnalytics(): void {
-    if (!this.selectedPost) return;
+    if (!this.selectedPost) {
+      console.log('No selected post');
+      return;
+    }
 
+    console.log('Loading post analytics for:', this.selectedPost);
     this.loading = true;
     const startDateStr = this.formatDateForAPI(this.startDate);
     const endDateStr = this.formatDateForAPI(this.endDate, true);
+
+    console.log('Date range:', startDateStr, 'to', endDateStr);
 
     this.postAnalyticsService
       .getPostAnalytics(
@@ -174,10 +184,17 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
         this.groupBy
       )
       .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        this.selectedPostAnalytics = data;
-        this.loading = false;
-      });
+      .subscribe(
+        data => {
+          console.log('Post analytics received:', data);
+          this.selectedPostAnalytics = data;
+          this.loading = false;
+        },
+        error => {
+          console.error('Error loading post analytics:', error);
+          this.loading = false;
+        }
+      );
   }
 
   loadTagSpecificAnalytics(): void {

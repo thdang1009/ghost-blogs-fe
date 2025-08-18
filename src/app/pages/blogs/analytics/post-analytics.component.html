@@ -57,6 +57,7 @@
                   <mat-select
                     [(ngModel)]="groupBy"
                     [ngModelOptions]="{ standalone: true }"
+                    name="groupBy"
                   >
                     <mat-option value="day">Day</mat-option>
                     <mat-option value="hour">Hour</mat-option>
@@ -214,6 +215,7 @@
                               [(ngModel)]="selectedPost"
                               (selectionChange)="onPostSelected()"
                               [compareWith]="comparePostsFn"
+                              name="selectedPost"
                             >
                               <mat-option [value]="null"
                                 >Choose a post...</mat-option
@@ -237,6 +239,16 @@
                             Clear Selection
                           </button>
                         </div>
+                      </div>
+
+                      <!-- Debug info -->
+                      <div *ngIf="selectedPost">
+                        <p>Selected Post: {{ selectedPost.title }}</p>
+                        <p>Has Analytics Data: {{ !!selectedPostAnalytics }}</p>
+                        <p *ngIf="selectedPostAnalytics">
+                          Analytics:
+                          {{ selectedPostAnalytics.analytics.totalViews }} views
+                        </p>
                       </div>
 
                       <!-- Post Analytics Cards -->
@@ -419,6 +431,7 @@
                               [(ngModel)]="selectedTag"
                               (selectionChange)="onTagSelected()"
                               [compareWith]="compareTagsFn"
+                              name="selectedTag"
                             >
                               <mat-option [value]="null">All tags</mat-option>
                               <mat-option
