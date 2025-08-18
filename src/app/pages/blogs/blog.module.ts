@@ -1,12 +1,20 @@
 import { NgModule, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { BlogRoutingModule } from './blog-routing.module';
 import { PostDetailComponent } from './post/post-detail/post-detail.component';
 import { SharedModule } from '@shared/shared-module.module';
-import { ClipboardButtonComponent, CLIPBOARD_OPTIONS, MarkdownModule, MARKED_OPTIONS, MarkedOptions, MarkedRenderer } from 'ngx-markdown';
+import {
+  ClipboardButtonComponent,
+  CLIPBOARD_OPTIONS,
+  MarkdownModule,
+  MARKED_OPTIONS,
+  MarkedOptions,
+  MarkedRenderer,
+} from 'ngx-markdown';
 import { HttpClient } from '@angular/common/http';
-import { ReuseComponentModule } from '@reuse/reuse.module';;
+import { ReuseComponentModule } from '@reuse/reuse.module';
 import { ComponentsModule } from '@components/components.module';
 import { AnchorService } from '@shared/anchor/anchor.service';
 import { AddCategoryComponent } from './category/add-category/add-category.component';
@@ -19,14 +27,21 @@ import { SeriesListComponent } from './series/series-list/series-list.component'
 import { SeriesAddComponent } from './series/series-add/series-add.component';
 import { PostBySeriesComponent } from './post/post-by-series/post-by-series.component';
 import { PostByComponent } from './post/post-by/post-by.component';
+import { PostAnalyticsComponent } from './analytics/post-analytics.component';
 
-
-export function markedOptionsFactory(anchorService: AnchorService): MarkedOptions {
+export function markedOptionsFactory(
+  anchorService: AnchorService
+): MarkedOptions {
   const renderer = new MarkedRenderer();
 
   // fix `href` for absolute link with fragments so that _copy-paste_ urls are correct
   renderer.link = (href: string, title: string, text: string) => {
-    return MarkedRenderer.prototype.link.call(renderer, anchorService.normalizeExternalUrl(href), title, text) as string;
+    return MarkedRenderer.prototype.link.call(
+      renderer,
+      anchorService.normalizeExternalUrl(href),
+      title,
+      text
+    ) as string;
   };
 
   return { renderer };
@@ -44,11 +59,12 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
     SeriesListComponent,
     SeriesAddComponent,
     PostBySeriesComponent,
-    PostByComponent
+    PostByComponent,
+    PostAnalyticsComponent,
   ],
   imports: [
-
     CommonModule,
+    FormsModule,
     SharedModule,
     ReuseComponentModule,
     BlogRoutingModule,
@@ -69,6 +85,6 @@ export function markedOptionsFactory(anchorService: AnchorService): MarkedOption
       },
       sanitize: SecurityContext.NONE,
     }),
-  ]
+  ],
 })
-export class BlogManagementModule { }
+export class BlogManagementModule {}

@@ -1,0 +1,555 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">Post Analytics</h4>
+            <div class="pull-right">
+              <button
+                (click)="exportData()"
+                type="button"
+                class="btn btn-info pull-right"
+              >
+                <i class="material-icons">download</i>
+                Export Data
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <!-- Filters Form -->
+            <form class="form-under-table-header row">
+              <div class="col-md-3">
+                <mat-form-field class="example-full-width" appearance="fill">
+                  <mat-label>Start Date</mat-label>
+                  <input
+                    [matDatepicker]="startPicker"
+                    [(ngModel)]="startDate"
+                    [ngModelOptions]="{ standalone: true }"
+                    matInput
+                  />
+                  <mat-datepicker-toggle
+                    [for]="startPicker"
+                    matSuffix
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+              <div class="col-md-3">
+                <mat-form-field class="example-full-width" appearance="fill">
+                  <mat-label>End Date</mat-label>
+                  <input
+                    [matDatepicker]="endPicker"
+                    [(ngModel)]="endDate"
+                    [ngModelOptions]="{ standalone: true }"
+                    matInput
+                  />
+                  <mat-datepicker-toggle
+                    [for]="endPicker"
+                    matSuffix
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+              </div>
+              <div class="col-md-2">
+                <mat-form-field class="example-full-width" appearance="fill">
+                  <mat-label>Group By</mat-label>
+                  <mat-select
+                    [(ngModel)]="groupBy"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <mat-option value="day">Day</mat-option>
+                    <mat-option value="hour">Hour</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-md-2">
+                <button
+                  (click)="applyFilters()"
+                  type="button"
+                  class="btn btn-success pull-right btn-w100"
+                  style="margin: 0"
+                >
+                  <i class="material-icons">refresh</i>
+                  Apply Filters
+                </button>
+              </div>
+            </form>
+
+            <!-- View Tabs -->
+            <div class="row">
+              <div class="col-md-12">
+                <mat-tab-group
+                  [(selectedIndex)]="selectedTabIndex"
+                  (selectedTabChange)="onTabChange($event)"
+                >
+                  <!-- Overview Tab -->
+                  <mat-tab label="Overview">
+                    <div class="tab-content" *ngIf="!loading">
+                      <!-- Top Performing Posts -->
+                      <div class="table-responsive">
+                        <h5>Top Performing Posts</h5>
+                        <table class="table">
+                          <thead class="text-primary">
+                            <tr>
+                              <th>Title</th>
+                              <th>Total Views</th>
+                              <th>Unique Views</th>
+                              <th>Avg Duration</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let post of topPosts">
+                              <td>
+                                <span
+                                  [title]="post.title"
+                                  class="truncate-text"
+                                  >{{ post.title }}</span
+                                >
+                              </td>
+                              <td>{{ post.totalViews | number }}</td>
+                              <td>{{ post.uniqueViews | number }}</td>
+                              <td>
+                                {{ formatDuration(post.avgViewDuration) }}
+                              </td>
+                              <td>
+                                <button
+                                  (click)="selectPostFromTopList(post._id)"
+                                  type="button"
+                                  class="btn btn-primary btn-sm"
+                                >
+                                  <i class="material-icons">visibility</i>
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Top Tags -->
+                      <div class="table-responsive" style="margin-top: 30px">
+                        <h5>Top Tags by Views</h5>
+                        <table class="table">
+                          <thead class="text-primary">
+                            <tr>
+                              <th>Tag</th>
+                              <th>Total Views</th>
+                              <th>Posts</th>
+                              <th>Avg Duration</th>
+                              <th>Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let tag of tagAnalytics.slice(0, 10)">
+                              <td>{{ tag.tagName }}</td>
+                              <td>{{ tag.totalViews | number }}</td>
+                              <td>{{ tag.postCount }}</td>
+                              <td>{{ formatDuration(tag.avgViewDuration) }}</td>
+                              <td>
+                                <button
+                                  (click)="selectTagFromList(tag.tagId)"
+                                  type="button"
+                                  class="btn btn-primary btn-sm"
+                                >
+                                  <i class="material-icons">visibility</i>
+                                  View
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Traffic Sources -->
+                      <div style="margin-top: 30px">
+                        <h5>Traffic Sources Overview</h5>
+                        <div class="row">
+                          <div
+                            class="col-md-4"
+                            *ngFor="let source of trafficSources.slice(0, 6)"
+                          >
+                            <div class="card card-stats">
+                              <div
+                                class="card-header card-header-warning card-header-icon"
+                              >
+                                <div class="card-icon">
+                                  <i class="material-icons">{{
+                                    getTrafficSourceIcon(source._id)
+                                  }}</i>
+                                </div>
+                                <p class="card-category">
+                                  {{ source._id | titlecase }}
+                                </p>
+                                <h3 class="card-title">
+                                  {{ source.totalViews | number }}
+                                </h3>
+                              </div>
+                              <div class="card-footer">
+                                <div class="stats">
+                                  <i class="material-icons">person</i>
+                                  {{ source.totalUniqueViews | number }} unique
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                  <!-- Post Details Tab -->
+                  <mat-tab label="Post Details">
+                    <div class="tab-content" *ngIf="!loading">
+                      <!-- Post Selection -->
+                      <div class="row">
+                        <div class="col-md-6">
+                          <mat-form-field
+                            class="example-full-width"
+                            appearance="fill"
+                          >
+                            <mat-label>Select Post</mat-label>
+                            <mat-select
+                              [(ngModel)]="selectedPost"
+                              (selectionChange)="onPostSelected()"
+                              [compareWith]="comparePostsFn"
+                            >
+                              <mat-option [value]="null"
+                                >Choose a post...</mat-option
+                              >
+                              <mat-option
+                                *ngFor="let post of posts"
+                                [value]="post"
+                                >{{ post.title }}</mat-option
+                              >
+                            </mat-select>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                          <button
+                            *ngIf="selectedPost"
+                            (click)="clearPostSelection()"
+                            type="button"
+                            class="btn btn-warning"
+                          >
+                            <i class="material-icons">clear</i>
+                            Clear Selection
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Post Analytics Cards -->
+                      <div
+                        *ngIf="selectedPostAnalytics && selectedPost"
+                        class="row"
+                      >
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-warning card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">visibility</i>
+                              </div>
+                              <p class="card-category">Total Views</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedPostAnalytics.analytics.totalViews
+                                    | number
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">date_range</i>
+                                Selected period
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-success card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">person</i>
+                              </div>
+                              <p class="card-category">Unique Views</p>
+                              <h3 class="card-title">
+                                {{
+                                  selectedPostAnalytics.analytics.uniqueViews
+                                    | number
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">people</i>
+                                Unique visitors
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-danger card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">timer</i>
+                              </div>
+                              <p class="card-category">Avg Duration</p>
+                              <h3 class="card-title">
+                                {{
+                                  formatDuration(
+                                    selectedPostAnalytics.analytics
+                                      .avgViewDuration
+                                  )
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">schedule</i>
+                                Reading time
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                          <div class="card card-stats">
+                            <div
+                              class="card-header card-header-info card-header-icon"
+                            >
+                              <div class="card-icon">
+                                <i class="material-icons">exit_to_app</i>
+                              </div>
+                              <p class="card-category">Bounce Rate</p>
+                              <h3 class="card-title">
+                                {{
+                                  formatPercentage(
+                                    selectedPostAnalytics.analytics.bounceRate
+                                  )
+                                }}
+                              </h3>
+                            </div>
+                            <div class="card-footer">
+                              <div class="stats">
+                                <i class="material-icons">trending_up</i>
+                                Engagement
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Device & Traffic Breakdown -->
+                      <div *ngIf="selectedPostAnalytics" class="row">
+                        <div class="col-md-6">
+                          <div class="table-responsive">
+                            <h5>Device Breakdown</h5>
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>Device</th>
+                                  <th>Count</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let device of selectedPostAnalytics.deviceBreakdown
+                                  "
+                                >
+                                  <td>
+                                    {{ device._id || 'Unknown' | titlecase }}
+                                  </td>
+                                  <td>{{ device.count | number }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="table-responsive">
+                            <h5>Traffic Sources</h5>
+                            <table class="table">
+                              <thead class="text-primary">
+                                <tr>
+                                  <th>Source</th>
+                                  <th>Views</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr
+                                  *ngFor="
+                                    let source of selectedPostAnalytics.trafficSources
+                                  "
+                                >
+                                  <td>
+                                    <i class="material-icons">{{
+                                      getTrafficSourceIcon(source._id)
+                                    }}</i>
+                                    {{ source._id | titlecase }}
+                                  </td>
+                                  <td>{{ source.totalViews | number }}</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                  <!-- Tag Analytics Tab -->
+                  <mat-tab label="Tag Analytics">
+                    <div class="tab-content" *ngIf="!loading">
+                      <!-- Tag Selection -->
+                      <div class="row">
+                        <div class="col-md-6">
+                          <mat-form-field
+                            class="example-full-width"
+                            appearance="fill"
+                          >
+                            <mat-label>Select Tag (optional)</mat-label>
+                            <mat-select
+                              [(ngModel)]="selectedTag"
+                              (selectionChange)="onTagSelected()"
+                              [compareWith]="compareTagsFn"
+                            >
+                              <mat-option [value]="null">All tags</mat-option>
+                              <mat-option
+                                *ngFor="let tag of tags"
+                                [value]="tag"
+                                >{{ tag.name }}</mat-option
+                              >
+                            </mat-select>
+                          </mat-form-field>
+                        </div>
+                        <div class="col-md-6">
+                          <button
+                            *ngIf="selectedTag"
+                            (click)="clearTagSelection()"
+                            type="button"
+                            class="btn btn-warning"
+                          >
+                            <i class="material-icons">clear</i>
+                            Clear Selection
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Tag Analytics Table -->
+                      <div class="table-responsive">
+                        <table class="table">
+                          <thead class="text-primary">
+                            <tr>
+                              <th>Tag Name</th>
+                              <th>Total Views</th>
+                              <th>Unique Views</th>
+                              <th>Post Count</th>
+                              <th>Avg Duration</th>
+                              <th>Avg Scroll Depth</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let tag of tagAnalytics">
+                              <td>{{ tag.tagName }}</td>
+                              <td>{{ tag.totalViews | number }}</td>
+                              <td>{{ tag.uniqueViews | number }}</td>
+                              <td>{{ tag.postCount }}</td>
+                              <td>{{ formatDuration(tag.avgViewDuration) }}</td>
+                              <td>
+                                {{
+                                  tag.avgScrollDepth
+                                    ? (tag.avgScrollDepth | number: '1.0-0')
+                                    : 0
+                                }}%
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </mat-tab>
+
+                  <!-- Traffic Sources Tab -->
+                  <mat-tab label="Traffic Sources">
+                    <div class="tab-content" *ngIf="!loading">
+                      <div
+                        *ngFor="let source of trafficSources"
+                        style="margin-bottom: 30px"
+                      >
+                        <h5>
+                          <i class="material-icons">{{
+                            getTrafficSourceIcon(source._id)
+                          }}</i>
+                          {{ source._id | titlecase }}
+                          <span class="badge badge-secondary"
+                            >{{ source.totalViews | number }} views</span
+                          >
+                        </h5>
+
+                        <div class="table-responsive">
+                          <table class="table">
+                            <thead class="text-primary">
+                              <tr>
+                                <th>Domain/Source</th>
+                                <th>Views</th>
+                                <th>Unique Views</th>
+                                <th>Top Posts</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let domain of source.domains">
+                                <td>{{ domain.domain || 'Direct' }}</td>
+                                <td>{{ domain.count | number }}</td>
+                                <td>{{ domain.uniqueViews | number }}</td>
+                                <td>
+                                  <span
+                                    *ngFor="
+                                      let post of domain.posts.slice(0, 2)
+                                    "
+                                    class="badge badge-light"
+                                    [title]="post.title"
+                                  >
+                                    {{
+                                      post.title.length > 20
+                                        ? (post.title | slice: 0 : 20) + '...'
+                                        : post.title
+                                    }}
+                                  </span>
+                                  <span
+                                    *ngIf="domain.posts.length > 2"
+                                    class="badge badge-info"
+                                  >
+                                    +{{ domain.posts.length - 2 }}
+                                  </span>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </mat-tab>
+                </mat-tab-group>
+              </div>
+            </div>
+
+            <!-- Loading State -->
+            <div *ngIf="loading" class="text-center" style="padding: 50px">
+              <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+              <p style="margin-top: 15px">Loading analytics data...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

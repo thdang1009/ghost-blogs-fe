@@ -1,0 +1,24 @@
+// Minimal styles using app's existing design system
+
+.tab-content {
+  padding: 20px 0;
+}
+
+.truncate-text {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+}
+
+.badge {
+  margin-right: 5px;
+  margin-bottom: 3px;
+}
+
+// Loading state
+.text-center p {
+  color: #999;
+  font-size: 14px;
+}

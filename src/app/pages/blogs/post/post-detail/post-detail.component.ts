@@ -11,13 +11,15 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PostService } from '@services/_index';
+import { PostAnalyticsService } from '@services/post-analytics/post-analytics.service';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { POST_TYPE } from '@shared/enum';
 import { Post } from '@models/post';
 import { addStructuredData } from '@shared/common';
 import { DOCUMENT, isPlatformServer, PlatformLocation } from '@angular/common';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
 // Declare FB globally to access the Facebook SDK
 declare const FB: any;
@@ -36,6 +38,12 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   count: Number = 0;
   currentPageUrl: string = '';
 
+  // Analytics tracking
+  private destroy$ = new Subject<void>();
+  private viewStartTime: number = 0;
+  private maxScrollDepth: number = 0;
+  private scrollTrackingActive: boolean = false;
+
   // @ViewChild('fbLike') fbLike!: ElementRef;
   @ViewChild('fbComments') fbComments!: ElementRef;
   @ViewChild('fbShareButton') fbShareButton!: ElementRef;
@@ -43,6 +51,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private postService: PostService,
+    private postAnalyticsService: PostAnalyticsService,
     private route: ActivatedRoute,
     private router: Router,
     private titleService: Title,
@@ -114,6 +123,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       this.meta.updateTag({ property: 'og:image', content: img });
       this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
       this.ready = true;
+
+      // Start analytics tracking
+      this.startAnalyticsTracking();
     });
   }
 
@@ -162,6 +174,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Stop analytics tracking and send final data
+    this.stopAnalyticsTracking();
+
     this.meta.removeTag('itemprop="name"');
     this.meta.removeTag('itemprop="description"');
     this.meta.removeTag('name="twitter:card"');
@@ -175,6 +190,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.meta.removeTag('property="og:image"');
     this.meta.removeTag('property="og:url"');
     this.titleService.setTitle('Ghost Site');
+
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   /**
@@ -286,5 +304,114 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       // Fallback: navigate to home if navigation fails
       this.router.navigate(['/home']);
     }
+  }
+
+  private startAnalyticsTracking(): void {
+    if (!this.item || isPlatformServer(this.platformId)) {
+      return; // Don't track on server side
+    }
+
+    this.viewStartTime = Date.now();
+    this.maxScrollDepth = 0;
+    this.scrollTrackingActive = true;
+
+    // Track initial page view
+    this.postAnalyticsService
+      .trackPostView({
+        postId: this.item._id,
+        postReference: this.item.postReference as string,
+        title: this.item.title as string,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+
+    // Set up scroll tracking
+    this.setupScrollTracking();
+
+    // Set up periodic tracking (every 30 seconds while active)
+    this.setupPeriodicTracking();
+  }
+
+  private setupScrollTracking(): void {
+    if (isPlatformServer(this.platformId)) return;
+
+    const scrollHandler = () => {
+      if (!this.scrollTrackingActive) return;
+
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollDepth = Math.round(
+        ((scrollTop + windowHeight) / documentHeight) * 100
+      );
+
+      if (scrollDepth > this.maxScrollDepth) {
+        this.maxScrollDepth = Math.min(scrollDepth, 100);
+      }
+    };
+
+    window.addEventListener('scroll', scrollHandler, { passive: true });
+
+    // Remove listener when component is destroyed
+    this.destroy$.subscribe(() => {
+      window.removeEventListener('scroll', scrollHandler);
+    });
+  }
+
+  private setupPeriodicTracking(): void {
+    if (isPlatformServer(this.platformId)) return;
+
+    // Track every 30 seconds
+    const interval = setInterval(() => {
+      if (!this.scrollTrackingActive || !this.item) {
+        clearInterval(interval);
+        return;
+      }
+
+      const viewDuration = Math.round((Date.now() - this.viewStartTime) / 1000);
+
+      this.postAnalyticsService
+        .trackPostView({
+          postId: this.item._id,
+          postReference: this.item.postReference as string,
+          title: this.item.title as string,
+          viewDuration,
+          scrollDepth: this.maxScrollDepth,
+        })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }, 30000); // Every 30 seconds
+
+    // Clear interval when component is destroyed
+    this.destroy$.subscribe(() => {
+      clearInterval(interval);
+    });
+  }
+
+  private stopAnalyticsTracking(): void {
+    if (
+      !this.item ||
+      !this.scrollTrackingActive ||
+      isPlatformServer(this.platformId)
+    ) {
+      return;
+    }
+
+    this.scrollTrackingActive = false;
+    const viewDuration = Math.round((Date.now() - this.viewStartTime) / 1000);
+
+    // Send final tracking data
+    this.postAnalyticsService
+      .trackPostView({
+        postId: this.item._id,
+        postReference: this.item.postReference as string,
+        title: this.item.title as string,
+        viewDuration,
+        scrollDepth: this.maxScrollDepth,
+        exitPage: true,
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
   }
 }
