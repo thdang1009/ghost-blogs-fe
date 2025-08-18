@@ -10,8 +10,9 @@ import { PostService } from '../../../services/post/post.service';
 import { TagService } from '../../../services/tag/tag.service';
 import { Post } from '../../../models/post';
 import { Tag } from '../../../models/tag';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil, map, startWith } from 'rxjs/operators';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-post-analytics',
@@ -36,6 +37,14 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   endDate: Date = new Date();
   groupBy: 'day' | 'hour' = 'day';
 
+  // Form controls for autocomplete
+  postControl = new FormControl();
+  tagControl = new FormControl();
+
+  // Filtered observables for autocomplete
+  filteredPosts!: Observable<Post[]>;
+  filteredTags!: Observable<Tag[]>;
+
   // UI state
   loading = false;
   selectedView:
@@ -55,6 +64,36 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
 
   compareTagsFn = (tag1: Tag, tag2: Tag): boolean => {
     return tag1 && tag2 ? tag1._id === tag2._id : tag1 === tag2;
+  };
+
+  // Filter functions for autocomplete
+  private filterPosts(value: string | Post): Post[] {
+    const filterValue =
+      typeof value === 'string'
+        ? value.toLowerCase()
+        : value?.title?.toLowerCase() || '';
+    return this.posts.filter(post =>
+      post.title.toLowerCase().includes(filterValue)
+    );
+  }
+
+  private filterTags(value: string | Tag): Tag[] {
+    const filterValue =
+      typeof value === 'string'
+        ? value.toLowerCase()
+        : value?.name?.toLowerCase() || '';
+    return this.tags.filter(tag =>
+      tag.name.toLowerCase().includes(filterValue)
+    );
+  }
+
+  // Display functions for autocomplete
+  displayPostFn = (post: Post): string => {
+    return post && post.title ? post.title : '';
+  };
+
+  displayTagFn = (tag: Tag): string => {
+    return tag && tag.name ? tag.name : '';
   };
 
   private formatDateForAPI(date: Date, isEndDate: boolean = false): string {
@@ -104,7 +143,12 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       .subscribe((response: any) => {
         // getAllPost returns posts directly, not wrapped in a 'posts' property
         this.posts = Array.isArray(response) ? response : response.posts || [];
-        console.log('Posts loaded:', this.posts.length, this.posts);
+
+        // Initialize filtered posts observable after posts are loaded
+        this.filteredPosts = this.postControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this.filterPosts(value))
+        );
       });
 
     this.tagService
@@ -112,7 +156,12 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((tags: Tag[]) => {
         this.tags = tags;
-        console.log('Tags loaded:', this.tags.length);
+
+        // Initialize filtered tags observable after tags are loaded
+        this.filteredTags = this.tagControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this.filterTags(value))
+        );
       });
   }
 
@@ -148,11 +197,25 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   onPostSelected(): void {
-    console.log('onPostSelected called', this.selectedPost);
     if (this.selectedPost) {
       this.selectedView = 'post-details';
       this.loadPostAnalytics();
     }
+  }
+
+  // Autocomplete selection handlers
+  onPostAutocompleteSelected(post: Post): void {
+    this.selectedPost = post;
+    this.selectedView = 'post-details';
+    this.selectedTabIndex = 1;
+    this.loadPostAnalytics();
+  }
+
+  onTagAutocompleteSelected(tag: Tag): void {
+    this.selectedTag = tag;
+    this.selectedView = 'tag-analytics';
+    this.selectedTabIndex = 2;
+    this.loadTagSpecificAnalytics();
   }
 
   onTagSelected(): void {
@@ -252,13 +315,17 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   clearPostSelection(): void {
     this.selectedPost = undefined;
     this.selectedPostAnalytics = undefined;
+    this.postControl.setValue('');
     this.selectedView = 'overview';
+    this.selectedTabIndex = 0;
     this.loadOverviewData();
   }
 
   clearTagSelection(): void {
     this.selectedTag = undefined;
+    this.tagControl.setValue('');
     this.selectedView = 'overview';
+    this.selectedTabIndex = 0;
     this.loadOverviewData();
   }
 

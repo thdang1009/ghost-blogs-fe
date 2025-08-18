@@ -1,12 +1,11 @@
-import { Tag } from "./_index";
-import { Series } from "./series";
-
+import { Tag } from './_index';
+import { Series } from './series';
 
 export class Post {
   _id?: string;
   category?: String[];
   id?: number;
-  title?: String;
+  title?: string;
   author?: String;
   user?: number;
   permission?: String;

@@ -72,7 +72,7 @@
                   style="margin: 0"
                 >
                   <i class="material-icons">refresh</i>
-                  Apply Filters
+                  Apply
                 </button>
               </div>
             </form>
@@ -210,22 +210,31 @@
                             class="example-full-width"
                             appearance="fill"
                           >
-                            <mat-label>Select Post</mat-label>
-                            <mat-select
-                              [(ngModel)]="selectedPost"
-                              (selectionChange)="onPostSelected()"
-                              [compareWith]="comparePostsFn"
-                              name="selectedPost"
+                            <mat-label>Search and Select Post</mat-label>
+                            <input
+                              type="text"
+                              matInput
+                              [formControl]="postControl"
+                              [matAutocomplete]="postAuto"
+                              placeholder="Type to search posts..."
+                            />
+                            <mat-autocomplete
+                              #postAuto="matAutocomplete"
+                              [displayWith]="displayPostFn"
+                              (optionSelected)="
+                                onPostAutocompleteSelected($event.option.value)
+                              "
                             >
-                              <mat-option [value]="null"
-                                >Choose a post...</mat-option
-                              >
                               <mat-option
-                                *ngFor="let post of posts"
+                                *ngFor="let post of filteredPosts | async"
                                 [value]="post"
-                                >{{ post.title }}</mat-option
                               >
-                            </mat-select>
+                                <span>{{ post.title }}</span>
+                                <small *ngIf="post.createdAt">
+                                  - {{ post.createdAt | date: 'short' }}</small
+                                >
+                              </mat-option>
+                            </mat-autocomplete>
                           </mat-form-field>
                         </div>
                         <div class="col-md-6">
@@ -239,16 +248,6 @@
                             Clear Selection
                           </button>
                         </div>
-                      </div>
-
-                      <!-- Debug info -->
-                      <div *ngIf="selectedPost">
-                        <p>Selected Post: {{ selectedPost.title }}</p>
-                        <p>Has Analytics Data: {{ !!selectedPostAnalytics }}</p>
-                        <p *ngIf="selectedPostAnalytics">
-                          Analytics:
-                          {{ selectedPostAnalytics.analytics.totalViews }} views
-                        </p>
                       </div>
 
                       <!-- Post Analytics Cards -->
@@ -426,20 +425,33 @@
                             class="example-full-width"
                             appearance="fill"
                           >
-                            <mat-label>Select Tag (optional)</mat-label>
-                            <mat-select
-                              [(ngModel)]="selectedTag"
-                              (selectionChange)="onTagSelected()"
-                              [compareWith]="compareTagsFn"
-                              name="selectedTag"
+                            <mat-label
+                              >Search and Select Tag (optional)</mat-label
                             >
-                              <mat-option [value]="null">All tags</mat-option>
+                            <input
+                              type="text"
+                              matInput
+                              [formControl]="tagControl"
+                              [matAutocomplete]="tagAuto"
+                              placeholder="Type to search tags..."
+                            />
+                            <mat-autocomplete
+                              #tagAuto="matAutocomplete"
+                              [displayWith]="displayTagFn"
+                              (optionSelected)="
+                                onTagAutocompleteSelected($event.option.value)
+                              "
+                            >
                               <mat-option
-                                *ngFor="let tag of tags"
+                                *ngFor="let tag of filteredTags | async"
                                 [value]="tag"
-                                >{{ tag.name }}</mat-option
                               >
-                            </mat-select>
+                                <span>{{ tag.name }}</span>
+                                <small *ngIf="tag.description">
+                                  - {{ tag.description }}</small
+                                >
+                              </mat-option>
+                            </mat-autocomplete>
                           </mat-form-field>
                         </div>
                         <div class="col-md-6">
