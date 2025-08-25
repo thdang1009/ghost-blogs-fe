@@ -1,21 +1,54 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AlertService } from '../../../components/alert/alert.service';
-import { VibeCodingService } from '../../../services/vibe-coding/vibe-coding.service';
+import {
+  VibeCodingService,
+  VibeCodingWebSocketMessage,
+} from '../../../services/vibe-coding/vibe-coding.service';
 
 @Component({
   selector: 'app-vibe-coding',
   templateUrl: './vibe-coding.component.html',
   styleUrls: ['./vibe-coding.component.scss'],
 })
-export class VibeCodingComponent {
+export class VibeCodingComponent implements OnInit, OnDestroy {
   machineStatus: 'sleeping' | 'waking' | 'ready' | 'error' = 'sleeping';
   isLoading = false;
   lastWakeTime: string | null = null;
+  statusMessage = '';
+  attempts = 0;
+  maxAttempts = 0;
+
+  private statusSubscription?: Subscription;
 
   constructor(
     private vibeCodingService: VibeCodingService,
     private alertService: AlertService
   ) {}
+
+  ngOnInit(): void {
+    // Connect to WebSocket for real-time status updates
+    this.vibeCodingService.connectToWebSocket();
+
+    // Subscribe to status updates
+    this.statusSubscription = this.vibeCodingService.status$.subscribe(
+      (message: VibeCodingWebSocketMessage | null) => {
+        if (message) {
+          this.handleStatusUpdate(message);
+        }
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscriptions
+    if (this.statusSubscription) {
+      this.statusSubscription.unsubscribe();
+    }
+
+    // Disconnect WebSocket
+    this.vibeCodingService.disconnectWebSocket();
+  }
 
   async wakeUpMachine(): Promise<void> {
     if (this.isLoading) return;
@@ -28,10 +61,10 @@ export class VibeCodingComponent {
 
       if (response && response.success) {
         this.alertService.success(
-          'Magic packet sent successfully! Machine should wake up in ~30 seconds.'
+          'Magic packet sent successfully! Monitoring wake-up status via WebSocket.'
         );
         this.lastWakeTime = new Date().toLocaleTimeString();
-        this.pollMachineStatus();
+        // WebSocket will automatically receive status updates from the server
       } else {
         throw new Error(response?.message || 'Failed to send magic packet');
       }
@@ -63,33 +96,27 @@ export class VibeCodingComponent {
     }
   }
 
-  private pollMachineStatus(): void {
-    let attempts = 0;
-    const maxAttempts = 15; // Poll for 30 seconds (2s intervals)
+  private handleStatusUpdate(message: VibeCodingWebSocketMessage): void {
+    this.statusMessage = message.message;
+    this.attempts = message.attempts || 0;
+    this.maxAttempts = message.maxAttempts || 0;
 
-    const interval = setInterval(async () => {
-      attempts++;
-
-      try {
-        await this.checkMachineStatus();
-
-        if (this.machineStatus === 'ready' || attempts >= maxAttempts) {
-          clearInterval(interval);
-          if (attempts >= maxAttempts && this.machineStatus !== 'ready') {
-            this.machineStatus = 'sleeping';
-            this.alertService.warn(
-              'Machine may still be waking up. Check manually.'
-            );
-          }
-        }
-      } catch (error) {
-        console.log(`Polling attempt ${attempts}: Machine still waking up...`);
-        if (attempts >= maxAttempts) {
-          clearInterval(interval);
-          this.machineStatus = 'sleeping';
-        }
-      }
-    }, 2000);
+    switch (message.status) {
+      case 'waking':
+        this.machineStatus = 'waking';
+        break;
+      case 'ready':
+        this.machineStatus = 'ready';
+        this.alertService.success('Development machine is ready!');
+        break;
+      case 'error':
+        this.machineStatus = 'error';
+        this.alertService.error('Error while waking up machine');
+        break;
+      default:
+        this.machineStatus = 'sleeping';
+        break;
+    }
   }
 
   openVSCode(): void {

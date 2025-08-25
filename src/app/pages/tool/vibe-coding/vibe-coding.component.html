@@ -23,6 +23,15 @@
               <p class="text-muted" *ngIf="lastWakeTime">
                 Last wake attempt: {{ lastWakeTime }}
               </p>
+              <p
+                class="text-muted"
+                *ngIf="statusMessage && machineStatus === 'waking'"
+              >
+                {{ statusMessage }}
+                <span *ngIf="attempts > 0"
+                  >({{ attempts }}/{{ maxAttempts }})</span
+                >
+              </p>
             </div>
 
             <!-- Wake Machine Section -->

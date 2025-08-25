@@ -8,11 +8,11 @@ export const environment = {
   apiUrl: `http://localhost:3000`,
   siteUrl: `http://localhost:4500`,
   gaCode: 'G-FWH80SC06E',
-  // SOCKET_ENDPOINT: 'http://localhost:3200'
-  SOCKET_ENDPOINT: 'https://dangtrinh.site',
+  SOCKET_ENDPOINT: 'http://localhost:3200',
+  // SOCKET_ENDPOINT: 'https://dangtrinh.site',
   googleAnalytics: {
-    propertyId: '317190690' // Replace with your actual GA4 property ID
-  }
+    propertyId: '317190690', // Replace with your actual GA4 property ID
+  },
 };
 
 /*

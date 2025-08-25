@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import { ghostLog, handleError } from '@shared/common';
@@ -43,10 +43,29 @@ export interface VibeCodingConfigResponse {
   timestamp: string;
 }
 
+export interface VibeCodingWebSocketMessage {
+  type: 'status_update';
+  status: string;
+  message: string;
+  timestamp: string;
+  attempts?: number;
+  maxAttempts?: number;
+  services?: {
+    vscode: string;
+    claudeCode: string;
+    devServer: string;
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class VibeCodingService {
+  private ws: WebSocket | null = null;
+  private statusSubject =
+    new BehaviorSubject<VibeCodingWebSocketMessage | null>(null);
+  public status$ = this.statusSubject.asObservable();
+
   constructor(private http: HttpClient) {}
 
   /**
@@ -87,5 +106,60 @@ export class VibeCodingService {
       }),
       catchError(handleError<VibeCodingConfigResponse>('getConfig'))
     );
+  }
+
+  /**
+   * Connect to WebSocket for real-time status updates
+   */
+  connectToWebSocket(): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      return; // Already connected
+    }
+
+    const wsUrl = environment.apiUrl.replace(/^http/, 'ws') + '/ws/vibe-coding';
+    ghostLog(`Connecting to WebSocket: ${wsUrl}`);
+
+    this.ws = new WebSocket(wsUrl);
+
+    this.ws.onopen = () => {
+      ghostLog('WebSocket connected for vibe coding status updates');
+    };
+
+    this.ws.onmessage = event => {
+      try {
+        const message: VibeCodingWebSocketMessage = JSON.parse(event.data);
+        ghostLog(`WebSocket message received: ${message.status}`);
+        this.statusSubject.next(message);
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    this.ws.onclose = () => {
+      ghostLog('WebSocket connection closed');
+      this.ws = null;
+    };
+
+    this.ws.onerror = error => {
+      console.error('WebSocket error:', error);
+      this.ws = null;
+    };
+  }
+
+  /**
+   * Disconnect from WebSocket
+   */
+  disconnectWebSocket(): void {
+    if (this.ws) {
+      this.ws.close();
+      this.ws = null;
+    }
+  }
+
+  /**
+   * Get the current status from the BehaviorSubject
+   */
+  getCurrentStatus(): VibeCodingWebSocketMessage | null {
+    return this.statusSubject.value;
   }
 }
