@@ -109,6 +109,10 @@ export class VibeCodingComponent implements OnInit, OnDestroy {
         this.machineStatus = 'ready';
         this.alertService.success('Development machine is ready!');
         break;
+      case 'shutting_down':
+        this.machineStatus = 'sleeping';
+        this.alertService.info(message.message);
+        break;
       case 'error':
         this.machineStatus = 'error';
         this.alertService.error('Error while waking up machine');
@@ -116,6 +120,89 @@ export class VibeCodingComponent implements OnInit, OnDestroy {
       default:
         this.machineStatus = 'sleeping';
         break;
+    }
+  }
+
+  async shutdownMachine(delay: number = 30): Promise<void> {
+    if (this.isLoading) return;
+
+    const confirmShutdown = confirm(
+      `Are you sure you want to shutdown the machine in ${delay} seconds? This will turn off your PC!`
+    );
+    if (!confirmShutdown) return;
+
+    this.isLoading = true;
+
+    try {
+      const response = await this.vibeCodingService
+        .shutdownMachine(delay, false)
+        .toPromise();
+
+      if (response && response.success) {
+        this.alertService.warn(
+          `Shutdown command sent! Machine will shutdown in ${delay} seconds on ${response.platform}.`
+        );
+        this.machineStatus = 'sleeping';
+
+        // Set a timeout to change status after the delay
+        setTimeout(
+          () => {
+            this.machineStatus = 'sleeping';
+            this.statusMessage = 'Machine has been shut down';
+          },
+          (delay + 5) * 1000
+        ); // Add 5 seconds buffer
+      } else {
+        throw new Error(response?.message || 'Failed to send shutdown command');
+      }
+    } catch (error: any) {
+      console.error('Error sending shutdown command:', error);
+      this.alertService.error(
+        `Failed to shutdown machine: ${error.message || 'Unknown error'}`
+      );
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  async forceShutdownMachine(): Promise<void> {
+    if (this.isLoading) return;
+
+    const confirmForceShutdown = confirm(
+      'Are you sure you want to FORCE SHUTDOWN the machine immediately? This will turn off your PC without saving!'
+    );
+    if (!confirmForceShutdown) return;
+
+    this.isLoading = true;
+
+    try {
+      const response = await this.vibeCodingService
+        .shutdownMachine(0, true)
+        .toPromise();
+
+      if (response && response.success) {
+        this.alertService.warn(
+          'Force shutdown command sent! Machine will shutdown immediately.'
+        );
+        this.machineStatus = 'sleeping';
+
+        // Machine should be off almost immediately
+        setTimeout(() => {
+          this.machineStatus = 'sleeping';
+          this.statusMessage = 'Machine has been shut down (forced)';
+        }, 3000);
+      } else {
+        throw new Error(
+          response?.message || 'Failed to send force shutdown command'
+        );
+      }
+    } catch (error: any) {
+      console.error('Error sending force shutdown command:', error);
+      this.alertService.error(
+        `Failed to force shutdown machine: ${error.message || 'Unknown error'}`
+      );
+    } finally {
+      this.isLoading = false;
     }
   }
 

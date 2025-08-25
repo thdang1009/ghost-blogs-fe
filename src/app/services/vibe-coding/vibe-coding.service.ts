@@ -39,8 +39,19 @@ export interface VibeCodingConfigResponse {
     wakeOnLan: boolean;
     statusCheck: boolean;
     autoLaunch: boolean;
+    remoteShutdown: boolean;
   };
   timestamp: string;
+}
+
+export interface VibeCodingShutdownResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  delay: number;
+  force: boolean;
+  platform: string;
+  error?: string;
 }
 
 export interface VibeCodingWebSocketMessage {
@@ -161,5 +172,28 @@ export class VibeCodingService {
    */
   getCurrentStatus(): VibeCodingWebSocketMessage | null {
     return this.statusSubject.value;
+  }
+
+  /**
+   * Shutdown the development machine remotely
+   */
+  shutdownMachine(
+    delay: number = 30,
+    force: boolean = false
+  ): Observable<VibeCodingShutdownResponse> {
+    return this.http
+      .post<VibeCodingShutdownResponse>(`${apiUrl}/shutdown`, { delay, force })
+      .pipe(
+        tap((response: VibeCodingShutdownResponse) => {
+          if (response.success) {
+            ghostLog(
+              `Shutdown command sent successfully. Platform: ${response.platform}, Delay: ${response.delay}s`
+            );
+          } else {
+            console.error('Failed to send shutdown command:', response.error);
+          }
+        }),
+        catchError(handleError<VibeCodingShutdownResponse>('shutdownMachine'))
+      );
   }
 }
