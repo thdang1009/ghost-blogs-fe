@@ -1,0 +1,152 @@
+<div class="main-content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header card-header-primary">
+            <h4 class="card-title">🎯 Vibe Coding</h4>
+            <p class="card-category">
+              Wake up your development machine and start coding from anywhere
+            </p>
+          </div>
+
+          <div class="card-body">
+            <!-- Machine Status -->
+            <div class="text-center mb-4">
+              <div
+                class="status-icon"
+                style="font-size: 4rem; margin-bottom: 1rem"
+              >
+                {{ getStatusIcon() }}
+              </div>
+              <h3 [class]="getStatusClass()">{{ getStatusText() }}</h3>
+              <p class="text-muted" *ngIf="lastWakeTime">
+                Last wake attempt: {{ lastWakeTime }}
+              </p>
+            </div>
+
+            <!-- Wake Machine Section -->
+            <div class="row mb-4">
+              <div class="col-md-6 offset-md-3">
+                <div class="card">
+                  <div class="card-body text-center">
+                    <h5 class="card-title">💻 Development Machine</h5>
+                    <p class="card-text">MAC: 04-7C-16-82-54-34</p>
+
+                    <button
+                      class="btn btn-primary btn-lg"
+                      [disabled]="isLoading || machineStatus === 'waking'"
+                      (click)="wakeUpMachine()"
+                    >
+                      <span
+                        *ngIf="isLoading"
+                        class="spinner-border spinner-border-sm me-2"
+                        role="status"
+                      ></span>
+                      {{
+                        isLoading
+                          ? 'Sending Magic Packet...'
+                          : 'Wake Up Machine'
+                      }}
+                    </button>
+
+                    <button
+                      class="btn btn-outline-secondary ms-2"
+                      [disabled]="isLoading"
+                      (click)="checkMachineStatus()"
+                    >
+                      Check Status
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions (Coming Soon) -->
+            <div class="row" *ngIf="machineStatus === 'ready'">
+              <div class="col-md-12">
+                <h5>🚀 Quick Actions</h5>
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="card">
+                      <div class="card-body text-center">
+                        <h6 class="card-title">VS Code</h6>
+                        <button
+                          class="btn btn-outline-primary"
+                          (click)="openVSCode()"
+                        >
+                          Open IDE
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="card">
+                      <div class="card-body text-center">
+                        <h6 class="card-title">Claude Code</h6>
+                        <button
+                          class="btn btn-outline-success"
+                          (click)="openClaudeCode()"
+                        >
+                          Start AI Coding
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="card">
+                      <div class="card-body text-center">
+                        <h6 class="card-title">Dev Server</h6>
+                        <button
+                          class="btn btn-outline-info"
+                          (click)="openDevServer()"
+                        >
+                          View App
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info Section -->
+            <div class="row mt-4">
+              <div class="col-md-12">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title">ℹ️ How it works</h6>
+                    <ul class="list-unstyled">
+                      <li>
+                        • Send magic packet to wake up your development machine
+                      </li>
+                      <li>
+                        • Machine automatically starts VS Code, Claude Code, and
+                        dev servers
+                      </li>
+                      <li>
+                        • Access your full development environment from mobile
+                      </li>
+                      <li>
+                        • Code with AI assistance through Claude Code
+                        integration
+                      </li>
+                    </ul>
+
+                    <div class="alert alert-info mt-3" role="alert">
+                      <strong>Phase 1:</strong> Magic packet functionality is
+                      ready! Advanced features like auto-launch and remote IDE
+                      access are coming in future phases.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

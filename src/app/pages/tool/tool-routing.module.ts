@@ -8,18 +8,55 @@ import { AdminGuard } from '@guards/admin.guard';
 import { JournalComponent } from './journal/journal.component';
 import { LoginGuard } from '@guards/login.guard';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
+import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 
 const routes: Routes = [
-  { path: 'todo-today', title: `Todo Today`, component: TodoTodayComponent, canActivate: [LoginGuard] },
-  { path: 'note', title: `Note`, component: NoteComponent, canActivate: [LoginGuard] },
-  { path: 'guest-message', title: `List Guest Message`, component: GuestMessageComponent, canActivate: [GrandAdminGuard] },
-  { path: 'coupon', title: `Coupon Management`, component: CouponComponent, canActivate: [GrandAdminGuard] },
-  { path: 'note', title: `Notes`, component: NoteComponent, canActivate: [AdminGuard] },
-  { path: 'journal', title: `Journal & Gratitude`, component: JournalComponent, canActivate: [AdminGuard] }
+  {
+    path: 'todo-today',
+    title: `Todo Today`,
+    component: TodoTodayComponent,
+    canActivate: [LoginGuard],
+  },
+  {
+    path: 'note',
+    title: `Note`,
+    component: NoteComponent,
+    canActivate: [LoginGuard],
+  },
+  {
+    path: 'guest-message',
+    title: `List Guest Message`,
+    component: GuestMessageComponent,
+    canActivate: [GrandAdminGuard],
+  },
+  {
+    path: 'coupon',
+    title: `Coupon Management`,
+    component: CouponComponent,
+    canActivate: [GrandAdminGuard],
+  },
+  {
+    path: 'note',
+    title: `Notes`,
+    component: NoteComponent,
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'journal',
+    title: `Journal & Gratitude`,
+    component: JournalComponent,
+    canActivate: [AdminGuard],
+  },
+  {
+    path: 'vibe-coding',
+    title: `Vibe Coding`,
+    component: VibeCodingComponent,
+    canActivate: [GrandAdminGuard],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class ToolRoutingModule { }
+export class ToolRoutingModule {}

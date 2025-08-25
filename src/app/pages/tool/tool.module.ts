@@ -3,13 +3,17 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { ToolRoutingModule } from './tool-routing.module';
 import { SharedModule } from '@shared/shared-module.module';
 import { ReuseComponentModule } from '@reuse/reuse.module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AngularEditorModule } from '@kolkov/angular-editor';
 import { NoteComponent } from './note/note.component';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
-import { CouponComponent, CouponDetailDialogComponent, RedemptionInfoDialogComponent } from './coupon/coupon.component';
+import {
+  CouponComponent,
+  CouponDetailDialogComponent,
+  RedemptionInfoDialogComponent,
+} from './coupon/coupon.component';
 import { JournalComponent } from './journal/journal.component';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
+import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 @NgModule({
@@ -20,7 +24,8 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     CouponComponent,
     CouponDetailDialogComponent,
     RedemptionInfoDialogComponent,
-    JournalComponent
+    JournalComponent,
+    VibeCodingComponent,
   ],
   imports: [
     CommonModule,
@@ -31,8 +36,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     AngularEditorModule,
     ReuseComponentModule,
   ],
-  providers: [
-    DatePipe,
-  ]
+  providers: [DatePipe],
 })
-export class ToolModule { }
+export class ToolModule {}

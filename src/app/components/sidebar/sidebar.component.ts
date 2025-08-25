@@ -87,6 +87,13 @@ export const ROUTES: RouteInfo[] = [
         class: '',
         permission: 'isMember',
       },
+      {
+        path: 'tool/vibe-coding',
+        title: 'Vibe coding',
+        icon: 'code',
+        class: '',
+        permission: 'isGrandAdmin',
+      },
       // { path: 'tool/run-js', title: 'Run JS', icon: 'code', class: '', permission: 'isGrandAdmin' }
     ],
   },
