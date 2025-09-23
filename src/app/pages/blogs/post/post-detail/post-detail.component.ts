@@ -479,6 +479,21 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateMetaTagsForLanguage(language);
   }
 
+  onContentUpdated(updatedPost: any): void {
+    // Update the item with the new alternativeContent
+    this.item = { ...this.item, ...updatedPost };
+    // Save the updated post to the server
+    this.postService.updatePost(this.item._id, this.item).subscribe(
+      savedPost => {
+        this.item = savedPost;
+        this.updateDisplayContent();
+      },
+      error => {
+        console.error('Failed to save auto-translated content:', error);
+      }
+    );
+  }
+
   private updateMetaTagsForLanguage(language: Language): void {
     const content =
       language === this.primaryLanguage

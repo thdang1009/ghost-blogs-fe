@@ -13,10 +13,12 @@
     mat-stroked-button
     [color]="isLanguageActive(alternativeLanguage) ? 'primary' : 'basic'"
     [class.active]="isLanguageActive(alternativeLanguage)"
-    [disabled]="isTranslating"
+    [disabled]="isTranslating || isAlternativeLanguageDisabled()"
     (click)="handleAlternativeLanguageClick()"
     class="lang-btn"
     [class.translating]="isTranslating"
+    [class.no-content]="isAlternativeLanguageDisabled()"
+    [matTooltip]="getButtonTooltip()"
   >
     <mat-spinner *ngIf="isTranslating" diameter="16"></mat-spinner>
     <span *ngIf="!isTranslating">{{

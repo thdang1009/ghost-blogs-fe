@@ -13,6 +13,7 @@ import { TranslationService } from '../../services/translation.service';
 export class LanguageSwitcherComponent implements OnInit {
   @Input() post: any;
   @Output() languageChanged = new EventEmitter<Language>();
+  @Output() contentUpdated = new EventEmitter<any>();
 
   currentLanguage: Language = 'en';
   primaryLanguage: Language = 'en';
@@ -116,11 +117,40 @@ export class LanguageSwitcherComponent implements OnInit {
    * Handle click on alternative language button
    */
   async handleAlternativeLanguageClick(): Promise<void> {
+    if (this.isAlternativeLanguageDisabled()) {
+      return; // Do nothing if disabled
+    }
+
     if (this.hasAlternativeContent) {
       this.switchLanguage(this.alternativeLanguage);
     } else {
       await this.autoTranslateAndSwitch();
     }
+  }
+
+  /**
+   * Check if alternative language button should be disabled
+   */
+  isAlternativeLanguageDisabled(): boolean {
+    // Disable if there's no alternativeContent AND no primary content to translate from
+    return (
+      !this.hasAlternativeContent || !this.post?.alternativeContent?.trim()
+    );
+  }
+  /**
+   * Get tooltip text for alternative language button
+   */
+  getButtonTooltip(): string {
+    if (this.isTranslating) {
+      return 'Translating...';
+    }
+    if (this.isAlternativeLanguageDisabled()) {
+      return 'No content available to translate';
+    }
+    if (this.hasAlternativeContent) {
+      return `Switch to ${this.languageDetection.getLanguageDisplayName(this.alternativeLanguage)}`;
+    }
+    return `Translate to ${this.languageDetection.getLanguageDisplayName(this.alternativeLanguage)}`;
   }
 
   /**
@@ -149,6 +179,8 @@ export class LanguageSwitcherComponent implements OnInit {
       if (translatedContent) {
         this.post.alternativeContent = translatedContent;
         this.switchLanguage(this.alternativeLanguage);
+        // Emit the updated post data
+        this.contentUpdated.emit(this.post);
       }
     } catch (error) {
       console.error('Auto-translation failed:', error);

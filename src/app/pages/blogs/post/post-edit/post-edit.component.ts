@@ -91,6 +91,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
   alternativeLanguage: Language = 'vi';
   isTranslating = false;
   translationError: string | null = null;
+  private autoSaveTimeout: any;
 
   compareIdOnlyFunc = (a: any, b: any) => {
     return a._id === b._id;
@@ -149,6 +150,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clear auto-save timeout
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+
     const isChange = this.oldObject !== JSON.stringify(this.itemSelected);
     if (this.unSave && isChange) {
       const val = confirm(`Save change before leave?`);
@@ -565,7 +571,13 @@ export class PostEditComponent implements OnInit, OnDestroy {
   }
 
   onAlternativeContentChange(): void {
-    // Auto-save when alternative content changes
-    this.saveOnly();
+    // Debounced auto-save when alternative content changes
+    if (this.autoSaveTimeout) {
+      clearTimeout(this.autoSaveTimeout);
+    }
+
+    this.autoSaveTimeout = setTimeout(() => {
+      this.saveOnly();
+    }, 2000); // Auto-save after 2 seconds of no changes
   }
 }
