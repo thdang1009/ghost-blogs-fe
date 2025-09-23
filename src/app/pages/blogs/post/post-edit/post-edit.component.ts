@@ -1,9 +1,25 @@
-import { Component, ElementRef, inject, Inject, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  Inject,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { MyFile, Post, Series } from '@models/_index';
 import { EventEmitter } from '@angular/core';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
 import { DOCUMENT } from '@angular/common';
-import { TagService, CategoryService, FileService, AlertService, SeriesService } from '@services/_index';
+import {
+  TagService,
+  CategoryService,
+  FileService,
+  AlertService,
+  SeriesService,
+} from '@services/_index';
 import { compareWithFunc } from '@shared/common';
 import { Observable } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
@@ -12,6 +28,11 @@ import { map, startWith } from 'rxjs/operators';
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { FormControl } from '@angular/forms';
 import { Tag, Category } from '@models/_index';
+import {
+  LanguageDetectionService,
+  Language,
+} from '../../../../services/language-detection.service';
+import { TranslationService } from '../../../../services/translation.service';
 export interface PostSaveWrapper {
   item: Post;
   isBack: boolean;
@@ -20,18 +41,18 @@ export interface PostSaveWrapper {
 @Component({
   selector: 'post-edit',
   templateUrl: './post-edit.component.html',
-  styleUrls: ['../post-list/post-list.component.scss']
+  styleUrls: ['../post-list/post-list.component.scss'],
 })
 export class PostEditComponent implements OnInit, OnDestroy {
-
   compareBothIdAndObjectWithFunc = (a: any, b: any) => {
     const aId = a._id || a;
     const bId = b._id || b;
     return aId === bId;
-  }
+  };
 
   @Input() itemSelected = {} as any;
-  @Output() save: EventEmitter<PostSaveWrapper> = new EventEmitter<PostSaveWrapper>();
+  @Output() save: EventEmitter<PostSaveWrapper> =
+    new EventEmitter<PostSaveWrapper>();
 
   isLoadingResults = false;
   isSplitHorizontal = false;
@@ -40,12 +61,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
   POST_TYPE = POST_TYPE;
   listPostType = [
     // POST_TYPE.GHOST_EDITOR,
-    POST_TYPE.MARKDOWN
+    POST_TYPE.MARKDOWN,
   ];
-  listPermisson = [
-    POST_STATUS.PUBLIC,
-    POST_STATUS.PRIVATE
-  ];
+  listPermisson = [POST_STATUS.PUBLIC, POST_STATUS.PRIVATE];
   allCategory: Category[] = [];
   allSeriesPosts: Post[] = [];
   allTags: Tag[] = [];
@@ -68,9 +86,15 @@ export class PostEditComponent implements OnInit, OnDestroy {
   @ViewChild('categoryInput') categoryInput!: ElementRef<HTMLInputElement>;
   // end autocomplete
 
+  // Bilingual content properties
+  primaryLanguage: Language = 'en';
+  alternativeLanguage: Language = 'vi';
+  isTranslating = false;
+  translationError: string | null = null;
+
   compareIdOnlyFunc = (a: any, b: any) => {
     return a._id === b._id;
-  }
+  };
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -78,9 +102,10 @@ export class PostEditComponent implements OnInit, OnDestroy {
     private categoryService: CategoryService,
     private fileService: FileService,
     private seriesService: SeriesService,
-    private alertService: AlertService
-  ) {
-  }
+    private alertService: AlertService,
+    private languageDetection: LanguageDetectionService,
+    private translation: TranslationService
+  ) {}
 
   ngOnInit(): void {
     this.elem = document.getElementById('edit-post-container');
@@ -93,21 +118,34 @@ export class PostEditComponent implements OnInit, OnDestroy {
     this.getTags();
     this.getSeries();
     this.getSeriesPosts();
-    this.fileService.getMyFile({
-      type: 'Image'
-    }).subscribe((res: any) => {
-      this.listFileOnServer = res;
-    }, err => {
-      this.alertService.showNoti('Get list file error. ' + err, 'danger');
-    });
+    this.fileService
+      .getMyFile({
+        type: 'Image',
+      })
+      .subscribe(
+        (res: any) => {
+          this.listFileOnServer = res;
+        },
+        err => {
+          this.alertService.showNoti('Get list file error. ' + err, 'danger');
+        }
+      );
     this.oldObject = JSON.stringify(this.itemSelected);
     window.onbeforeunload = () => this.ngOnDestroy();
     this.unSave = true;
-    
+
     // Set initialization flag to false after a brief delay to allow all data to load
     setTimeout(() => {
       this.isInitializing = false;
     }, 1000);
+
+    // Detect primary language from existing content
+    this.detectPrimaryLanguage();
+
+    // Initialize alternativeContent if not present
+    if (!this.itemSelected.alternativeContent) {
+      this.itemSelected.alternativeContent = '';
+    }
   }
 
   ngOnDestroy(): void {
@@ -121,63 +159,70 @@ export class PostEditComponent implements OnInit, OnDestroy {
   }
 
   getCategories() {
-    this.categoryService.getCategorys()
-      .subscribe(listCategory => {
-        this.allCategory = listCategory;
+    this.categoryService.getCategorys().subscribe(listCategory => {
+      this.allCategory = listCategory;
 
-        this.filteredCategories = this.categoryCtrl.valueChanges.pipe(
-          startWith(null),
-          map<any, any>((category) => (category ? this._filterCategory(category) : this.allCategory.slice())),
-        );
+      this.filteredCategories = this.categoryCtrl.valueChanges.pipe(
+        startWith(null),
+        map<any, any>(category =>
+          category ? this._filterCategory(category) : this.allCategory.slice()
+        )
+      );
 
-        // Only initialize categories if not already set
-        if (!this.categories || this.categories.length === 0) {
-          this.categories = this.itemSelected.category || [];
-        }
-      })
+      // Only initialize categories if not already set
+      if (!this.categories || this.categories.length === 0) {
+        this.categories = this.itemSelected.category || [];
+      }
+    });
   }
 
   getTags() {
-    this.tagService.getTags()
-      .subscribe(allTags => {
-        this.allTags = allTags;
+    this.tagService.getTags().subscribe(allTags => {
+      this.allTags = allTags;
 
-        this.filteredTags = this.tagCtrl.valueChanges.pipe(
-          startWith(null),
-          map<any, any>((tag) => (tag ? this._filterTag(tag) : this.allTags.slice())),
-        );
+      this.filteredTags = this.tagCtrl.valueChanges.pipe(
+        startWith(null),
+        map<any, any>(tag =>
+          tag ? this._filterTag(tag) : this.allTags.slice()
+        )
+      );
 
-        // Only initialize tags if not already set
-        if (!this.tags || this.tags.length === 0) {
-          this.tags = this.itemSelected.tags || [];
-        }
-      });
+      // Only initialize tags if not already set
+      if (!this.tags || this.tags.length === 0) {
+        this.tags = this.itemSelected.tags || [];
+      }
+    });
   }
 
   getSeries() {
-    this.seriesService.getAllSeries()
-      .subscribe(allSeries => {
+    this.seriesService.getAllSeries().subscribe(
+      allSeries => {
         this.allSeries = allSeries;
-      }, error => {
+      },
+      error => {
         this.alertService.showNoti('Failed to load series: ' + error, 'danger');
-      });
+      }
+    );
   }
 
   getSeriesPosts() {
     if (this.itemSelected.series) {
       // Handle both object and string series types
-      const seriesId = typeof this.itemSelected.series === 'string' 
-        ? this.itemSelected.series 
-        : this.itemSelected.series._id;
-        
+      const seriesId =
+        typeof this.itemSelected.series === 'string'
+          ? this.itemSelected.series
+          : this.itemSelected.series._id;
+
       if (seriesId) {
-        this.seriesService.getSeriesPosts(seriesId)
-          .subscribe(seriesPosts => {
+        this.seriesService.getSeriesPosts(seriesId).subscribe(
+          seriesPosts => {
             this.allSeriesPosts = seriesPosts ? [...seriesPosts] : [];
-          }, error => {
+          },
+          error => {
             console.error('Error loading series posts:', error);
             this.allSeriesPosts = [];
-          });
+          }
+        );
       }
     } else {
       this.allSeriesPosts = [];
@@ -189,7 +234,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
     if (this.isInitializing) {
       return;
     }
-    
+
     if (!seriesId) {
       // Clear series posts if no series is selected
       this.allSeriesPosts = [];
@@ -198,7 +243,11 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
     // Find the selected series
     const selectedSeries = this.allSeries.find(s => s._id === seriesId);
-    if (selectedSeries && selectedSeries.baseTags && selectedSeries.baseTags.length > 0) {
+    if (
+      selectedSeries &&
+      selectedSeries.baseTags &&
+      selectedSeries.baseTags.length > 0
+    ) {
       // Add only missing tags from the series base tags
       const newTags: Tag[] = [...this.tags]; // Start with current tags
       let tagsAdded = 0;
@@ -206,9 +255,14 @@ export class PostEditComponent implements OnInit, OnDestroy {
       // Iterate through the series base tags
       selectedSeries.baseTags.forEach(baseTag => {
         // Check if this tag already exists in the current tags
-        const tagExists = this.tags.some(t =>
-          (t._id && baseTag._id && t._id.toString() === baseTag._id.toString()) ||
-          (t.name && baseTag.name && t.name.toString() === baseTag.name.toString())
+        const tagExists = this.tags.some(
+          t =>
+            (t._id &&
+              baseTag._id &&
+              t._id.toString() === baseTag._id.toString()) ||
+            (t.name &&
+              baseTag.name &&
+              t.name.toString() === baseTag.name.toString())
         );
 
         // If it doesn't exist, add it
@@ -226,10 +280,13 @@ export class PostEditComponent implements OnInit, OnDestroy {
 
       // Notify the user about tags added
       if (tagsAdded > 0) {
-        this.alertService.showNoti(`Added ${tagsAdded} tag(s) from the series "${selectedSeries.name}"`, 'success');
+        this.alertService.showNoti(
+          `Added ${tagsAdded} tag(s) from the series "${selectedSeries.name}"`,
+          'success'
+        );
       }
     }
-    
+
     // Only call getSeriesPosts if we're not initializing and series actually changed
     this.getSeriesPosts();
   }
@@ -292,7 +349,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
     const newTagName = event.value;
 
     // migrate from ngx-chips to mat-chip-grid:
-    const foundInList = this.allTags.filter(el => el?.name?.toLowerCase() === newTagName.toLowerCase());
+    const foundInList = this.allTags.filter(
+      el => el?.name?.toLowerCase() === newTagName.toLowerCase()
+    );
     const oldTag = (foundInList || [])[0];
     // chọn cái cũ thì có _id, tạo mới thì chỉ có mỗi name mà còn ko phải là object nữa
     const isOldTag = !!oldTag;
@@ -300,13 +359,15 @@ export class PostEditComponent implements OnInit, OnDestroy {
       this.tags.push(oldTag);
       return;
     }
-    this.tagService.createTagWithName(newTagName)
-      .subscribe(newTagFromServer => {
+    this.tagService.createTagWithName(newTagName).subscribe(
+      newTagFromServer => {
         this.tags.push(newTagFromServer);
         this.getTags();
-      }, error => {
+      },
+      error => {
         this.alertService.showNoti('Create tag fail ' + error, 'danger');
-      });
+      }
+    );
 
     // Clear the input value
     event.chipInput!.clear();
@@ -333,7 +394,9 @@ export class PostEditComponent implements OnInit, OnDestroy {
     const newName = event.value;
 
     // migrate from ngx-chips to mat-chip-grid:
-    const foundInList = this.allCategory.filter(el => el?.name?.toLowerCase() === newName.toLowerCase());
+    const foundInList = this.allCategory.filter(
+      el => el?.name?.toLowerCase() === newName.toLowerCase()
+    );
     const oldCategory = (foundInList || [])[0];
     // chọn cái cũ thì có _id, tạo mới thì chỉ có mỗi name mà còn ko phải là object nữa
     const isOldCategory = !!oldCategory;
@@ -341,13 +404,15 @@ export class PostEditComponent implements OnInit, OnDestroy {
       this.categories.push(oldCategory);
       return;
     }
-    this.categoryService.createCategoryWithName(newName)
-      .subscribe(newItemFromServer => {
+    this.categoryService.createCategoryWithName(newName).subscribe(
+      newItemFromServer => {
         this.categories.push(newItemFromServer);
         this.getCategories();
-      }, error => {
+      },
+      error => {
         this.alertService.showNoti('Create category fail ' + error, 'danger');
-      });
+      }
+    );
 
     // Clear the input value
     event.chipInput!.clear();
@@ -390,19 +455,23 @@ export class PostEditComponent implements OnInit, OnDestroy {
     if (this.itemSelected.series) {
       // If series is stored as an object ID string, convert it to the proper format
       // Many Angular Material selects return the value directly rather than the object
-      const seriesId = typeof this.itemSelected.series === 'string'
-        ? this.itemSelected.series
-        : this.itemSelected.series._id;
+      const seriesId =
+        typeof this.itemSelected.series === 'string'
+          ? this.itemSelected.series
+          : this.itemSelected.series._id;
 
       // Find the full series object if we only have the ID
-      if (typeof this.itemSelected.series === 'string' && this.allSeries && this.allSeries.length > 0) {
+      if (
+        typeof this.itemSelected.series === 'string' &&
+        this.allSeries &&
+        this.allSeries.length > 0
+      ) {
         const selectedSeries = this.allSeries.find(s => s._id === seriesId);
         if (selectedSeries) {
           // Use the full series object if found
           this.itemSelected.series = selectedSeries;
         }
       }
-
     }
 
     console.log('Data to be saved:', {
@@ -410,7 +479,93 @@ export class PostEditComponent implements OnInit, OnDestroy {
       categories: this.itemSelected.category,
       series: this.itemSelected.series,
       previousPostId: this.itemSelected.previousPostId,
-      nextPostId: this.itemSelected.nextPostId
+      nextPostId: this.itemSelected.nextPostId,
+      alternativeContent: this.itemSelected.alternativeContent,
     });
+  }
+
+  // Bilingual content methods
+  detectPrimaryLanguage(): void {
+    if (this.itemSelected.content) {
+      this.primaryLanguage = this.languageDetection.detectLanguage(
+        this.itemSelected.content
+      );
+      this.alternativeLanguage = this.languageDetection.getOppositeLanguage(
+        this.primaryLanguage
+      );
+    }
+  }
+
+  async autoTranslate(): Promise<void> {
+    if (!this.itemSelected.content?.trim()) {
+      this.alertService.showNoti('No content to translate', 'warning');
+      return;
+    }
+
+    if (!this.translation.canTranslate(this.itemSelected.content)) {
+      this.alertService.showNoti(
+        'Content is not suitable for auto-translation (too much code or too short)',
+        'warning'
+      );
+      return;
+    }
+
+    this.isTranslating = true;
+    this.translationError = null;
+
+    try {
+      const translatedContent = await this.translation
+        .translateContent(
+          this.itemSelected.content,
+          this.primaryLanguage,
+          this.alternativeLanguage
+        )
+        .toPromise();
+
+      this.itemSelected.alternativeContent = translatedContent || '';
+
+      this.alertService.showNoti(
+        `Content translated from ${this.languageDetection.getLanguageDisplayName(this.primaryLanguage)} to ${this.languageDetection.getLanguageDisplayName(this.alternativeLanguage)}`,
+        'success'
+      );
+    } catch (error: any) {
+      this.translationError = error.message || 'Translation failed';
+      this.alertService.showNoti(
+        'Translation failed: ' + this.translationError,
+        'danger'
+      );
+    } finally {
+      this.isTranslating = false;
+    }
+  }
+
+  getOppositeLanguageDisplayName(): string {
+    return this.languageDetection.getLanguageDisplayName(
+      this.alternativeLanguage
+    );
+  }
+
+  getPrimaryLanguageDisplayName(): string {
+    return this.languageDetection.getLanguageDisplayName(this.primaryLanguage);
+  }
+
+  clearAlternativeContent(): void {
+    const confirm = window.confirm(
+      'Are you sure you want to clear the alternative content?'
+    );
+    if (confirm) {
+      this.itemSelected.alternativeContent = '';
+      this.alertService.showNoti('Alternative content cleared', 'info');
+    }
+  }
+
+  onContentChange(): void {
+    // Re-detect language when primary content changes
+    this.detectPrimaryLanguage();
+  }
+
+  onAlternativeContentChange(): void {
+    // Auto-save when alternative content changes
+    this.saveOnly();
   }
 }

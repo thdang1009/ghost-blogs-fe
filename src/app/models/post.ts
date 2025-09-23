@@ -11,6 +11,7 @@ export class Post {
   permission?: String;
   description?: String;
   content?: string; // content
+  alternativeContent?: string; // alternative language content
   postReference?: String;
   postImgUrls?: String[];
   postBackgroundImg?: String;

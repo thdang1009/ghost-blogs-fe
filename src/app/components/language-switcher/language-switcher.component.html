@@ -1,0 +1,22 @@
+<div class="language-switcher" *ngIf="hasAlternativeContent">
+  <button
+    mat-stroked-button
+    [color]="isLanguageActive(primaryLanguage) ? 'primary' : 'basic'"
+    [class.active]="isLanguageActive(primaryLanguage)"
+    (click)="switchLanguage(primaryLanguage)"
+    class="lang-btn"
+  >
+    {{ getLanguageFlag(primaryLanguage) }}
+  </button>
+
+  <button
+    mat-stroked-button
+    [color]="isLanguageActive(alternativeLanguage) ? 'primary' : 'basic'"
+    [class.active]="isLanguageActive(alternativeLanguage)"
+    [disabled]="isLanguageDisabled(alternativeLanguage)"
+    (click)="switchLanguage(alternativeLanguage)"
+    class="lang-btn"
+  >
+    {{ getLanguageFlag(alternativeLanguage) }}
+  </button>
+</div>

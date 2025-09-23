@@ -31,7 +31,6 @@
   background-color: rgba(0, 0, 0, 0.05);
 
   &:hover {
-
     i {
       color: #e91e63;
     }
@@ -45,6 +44,28 @@
     font-size: 24px;
     color: #3c4858;
     transition: color 0.2s ease;
+  }
+}
+
+// Language switcher styles
+.language-switcher-container {
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.language-meta-info {
+  margin-top: 20px;
+  padding: 10px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #007bff;
+
+  .language-indicator {
+    color: #666;
+    font-style: italic;
+    font-size: 13px;
   }
 }
 
@@ -167,7 +188,6 @@
   }
 }
 
-
 /* Series Navigation Styles */
 .series-navigation {
   border-top: 1px solid #e6e6e6;
@@ -266,7 +286,7 @@
   .back-to-home-btn {
     padding: 10px 20px;
     font-size: 14px;
-    
+
     i {
       font-size: 18px;
     }

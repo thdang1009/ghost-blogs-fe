@@ -1,37 +1,48 @@
 <div class="clap-container">
   <div *ngIf="ready" class="clap-button-container">
-    <button class="clap-button" (click)="clapThisPost($event)" aria-label="Clap for this post">
+    <button
+      class="clap-button"
+      (click)="clapThisPost($event)"
+      aria-label="Clap for this post"
+    >
       <i class="material-icons">favorite</i>
-      <span class="clap-count">{{+count | number:'1.0-0'}}</span>
+      <span class="clap-count">{{ +count | number: '1.0-0' }}</span>
     </button>
   </div>
 </div>
 <div class="container post-container">
-
   <article class="container article-page">
     <div class="div__back-to-home">
-      <a (click)="backToHome()">
-        ← Back to the Blog Home
-      </a>
+      <a (click)="backToHome()"> ← Back to the Blog Home </a>
     </div>
     <figure *ngIf="ready" class="d-flex-col-mid-center">
-      <img loading="lazy" class="page-image" src="{{item.postBackgroundImg}}" alt="post's image">
+      <img
+        loading="lazy"
+        class="page-image"
+        src="{{ item.postBackgroundImg }}"
+        alt="post's image"
+      />
     </figure>
 
     <div *ngIf="ready" class="wrap-content">
       <header class="header-page d-flex-col-mid-center">
-        <h1 class="page-title">{{item.title}}</h1>
+        <h1 class="page-title">{{ item.title }}</h1>
         <div class="page-date">
-          {{item.author}}
+          {{ item.author }}
           wrote
-          {{item.createdAt | timeAgo }}
-          ({{item.createdAt | date }})
-          with {{+(item.viewCount ?? 0)| number:'1.0-0' }}👁️ | {{item.readTime || 5}} mins read
+          {{ item.createdAt | timeAgo }}
+          ({{ item.createdAt | date }}) with
+          {{ +(item.viewCount ?? 0) | number: '1.0-0' }}👁️ |
+          {{ item.readTime || 5 }} mins read
         </div>
-        <div style="margin-top: 1rem;">
+        <div style="margin-top: 1rem">
           <div *ngFor="let tag of item.tags" class="tagging">
-            <a [routerLink]="'/home'" [queryParams]="{ tag: tag.name }" class="tagging__item">
-              #{{tag.name}}
+            <a
+              [routerLink]="'/home'"
+              [queryParams]="{ tag: tag.name }"
+              class="tagging__item"
+            >
+              #{{ tag.name }}
             </a>
           </div>
         </div>
@@ -39,38 +50,75 @@
     </div>
     <div *ngIf="ready" class="post-description">
       <p>
-        {{item.description}}
+        {{ item.description }}
       </p>
     </div>
+
+    <!-- Language Switcher -->
+    <div *ngIf="ready" class="language-switcher-container">
+      <app-language-switcher
+        [post]="item"
+        [showCompactMode]="false"
+        (languageChanged)="onLanguageChanged($event)"
+      >
+      </app-language-switcher>
+    </div>
+
     <div class="post-body">
       <ng-container *ngIf="ready">
-        <markdown [data]="item.content"></markdown>
+        <markdown [data]="displayContent"></markdown>
       </ng-container>
 
       <!-- Series Navigation -->
       <div *ngIf="ready && item.series" class="series-navigation">
         <div class="series-navigation-links">
-          <a *ngIf="item.previousPostId && item.previousPostId.postReference && item.previousPostId.title" 
-             (click)="goToPost(item.previousPostId)" 
-             class="series-nav-link hover-pointer previous-post">
+          <a
+            *ngIf="
+              item.previousPostId &&
+              item.previousPostId.postReference &&
+              item.previousPostId.title
+            "
+            (click)="goToPost(item.previousPostId)"
+            class="series-nav-link hover-pointer previous-post"
+          >
             <i class="material-icons" aria-hidden="true">arrow_back</i>
-            <span class="series-nav-title">{{item.previousPostId.title}}</span>
+            <span class="series-nav-title">{{
+              item.previousPostId.title
+            }}</span>
           </a>
-          <a *ngIf="item.nextPostId && item.nextPostId.postReference && item.nextPostId.title" 
-             (click)="goToPost(item.nextPostId)" 
-             class="series-nav-link hover-pointer next-post">
-            <span class="series-nav-title">{{item.nextPostId.title}}</span>
+          <a
+            *ngIf="
+              item.nextPostId &&
+              item.nextPostId.postReference &&
+              item.nextPostId.title
+            "
+            (click)="goToPost(item.nextPostId)"
+            class="series-nav-link hover-pointer next-post"
+          >
+            <span class="series-nav-title">{{ item.nextPostId.title }}</span>
             <i class="material-icons" aria-hidden="true">arrow_forward</i>
           </a>
         </div>
+      </div>
+
+      <!-- Language Information for SEO -->
+      <div *ngIf="ready && hasAlternativeContent" class="language-meta-info">
+        <small class="language-indicator">
+          Currently viewing in {{ getLanguageDisplayName(currentLanguage) }}
+          <span *ngIf="currentLanguage !== primaryLanguage">(Translated)</span>
+        </small>
       </div>
 
       <!-- Facebook Social Plugins -->
       <ng-container *ngIf="ready">
         <div class="facebook-social-plugins">
           <div id="fb-root"></div>
-          <script async defer crossorigin="anonymous"
-            src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0&appId=598355823212592"></script>
+          <script
+            async
+            defer
+            crossorigin="anonymous"
+            src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0&appId=598355823212592"
+          ></script>
 
           <h3>Share your thoughts</h3>
           <div class="fb-like-share-container">
@@ -79,22 +127,40 @@
             <!-- <div #fbLike class="fb-like" data-width="450" data-layout="standard" data-action="like" data-size="small"
               data-share="true">
             </div> -->
-            <div #fbShareButton class="fb-share-button" data-layout="" data-size="">
-              <a #fbShareButtonLink target="_blank" class="fb-xfbml-parse-ignore">Share</a>
+            <div
+              #fbShareButton
+              class="fb-share-button"
+              data-layout=""
+              data-size=""
+            >
+              <a
+                #fbShareButtonLink
+                target="_blank"
+                class="fb-xfbml-parse-ignore"
+                >Share</a
+              >
             </div>
           </div>
 
           <!-- Comments Plugin -->
           <div class="fb-comments-container">
-            <div #fbComments class="fb-comments" data-width="450" data-numposts="5">
-            </div>
+            <div
+              #fbComments
+              class="fb-comments"
+              data-width="450"
+              data-numposts="5"
+            ></div>
           </div>
         </div>
       </ng-container>
 
       <!-- Back to Homepage Button at bottom -->
       <div *ngIf="ready" class="bottom-navigation">
-        <button class="back-to-home-btn" (click)="backToHome()" aria-label="Back to Homepage">
+        <button
+          class="back-to-home-btn"
+          (click)="backToHome()"
+          aria-label="Back to Homepage"
+        >
           <i class="material-icons">home</i>
           <span>Back to Homepage</span>
         </button>

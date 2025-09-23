@@ -21,6 +21,10 @@ import { DOCUMENT, isPlatformServer, PlatformLocation } from '@angular/common';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { environment } from '@environments/environment';
+import {
+  LanguageDetectionService,
+  Language,
+} from '../../../../services/language-detection.service';
 // Declare FB globally to access the Facebook SDK
 declare const FB: any;
 
@@ -44,6 +48,12 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   private maxScrollDepth: number = 0;
   private scrollTrackingActive: boolean = false;
 
+  // Bilingual content properties
+  currentLanguage: Language = 'en';
+  primaryLanguage: Language = 'en';
+  alternativeLanguage: Language = 'vi';
+  displayContent: string = '';
+
   // @ViewChild('fbLike') fbLike!: ElementRef;
   @ViewChild('fbComments') fbComments!: ElementRef;
   @ViewChild('fbShareButton') fbShareButton!: ElementRef;
@@ -59,7 +69,8 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document,
     @Inject(PLATFORM_ID) private platformId: Object,
     private platformLocation: PlatformLocation,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private languageDetection: LanguageDetectionService
   ) {
     addStructuredData(this.document);
     this.router.routeReuseStrategy.shouldReuseRoute = function () {
@@ -122,6 +133,10 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       this.meta.updateTag({ property: 'og:creator', content: creator });
       this.meta.updateTag({ property: 'og:image', content: img });
       this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+
+      // Initialize bilingual content
+      this.initializeBilingualContent();
+
       this.ready = true;
 
       // Start analytics tracking
@@ -413,5 +428,121 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .pipe(takeUntil(this.destroy$))
       .subscribe();
+  }
+
+  // Bilingual content methods
+  private initializeBilingualContent(): void {
+    if (this.item?.content) {
+      // Detect primary language from content
+      this.primaryLanguage = this.languageDetection.detectLanguage(
+        this.item.content
+      );
+      this.alternativeLanguage = this.languageDetection.getOppositeLanguage(
+        this.primaryLanguage
+      );
+
+      // Load user preference or default to primary language
+      const preferredLanguage = this.languageDetection.getPreferredLanguage();
+      if (
+        preferredLanguage &&
+        this.hasAlternativeContent &&
+        preferredLanguage === this.alternativeLanguage
+      ) {
+        this.currentLanguage = preferredLanguage;
+      } else {
+        this.currentLanguage = this.primaryLanguage;
+      }
+
+      // Set display content
+      this.updateDisplayContent();
+    }
+  }
+
+  private updateDisplayContent(): void {
+    if (this.currentLanguage === this.primaryLanguage) {
+      this.displayContent = this.item.content || '';
+    } else {
+      this.displayContent =
+        this.item.alternativeContent || this.item.content || '';
+    }
+  }
+
+  get hasAlternativeContent(): boolean {
+    return !!this.item?.alternativeContent?.trim()?.length;
+  }
+
+  onLanguageChanged(language: Language): void {
+    this.currentLanguage = language;
+    this.updateDisplayContent();
+
+    // Update meta tags for the selected language content
+    this.updateMetaTagsForLanguage(language);
+  }
+
+  private updateMetaTagsForLanguage(language: Language): void {
+    const content =
+      language === this.primaryLanguage
+        ? this.item.content
+        : this.item.alternativeContent;
+    const title = this.item.title || '';
+    const description = this.item.description || '';
+
+    // Update page title and meta tags
+    const languagePrefix =
+      language === this.alternativeLanguage
+        ? `[${this.languageDetection.getLanguageDisplayName(language)}] `
+        : '';
+    this.titleService.setTitle(languagePrefix + title);
+
+    // Update meta description if we have alternative content
+    if (language === this.alternativeLanguage && this.item.alternativeContent) {
+      // Extract description from alternative content (first 160 characters)
+      const altDescription = this.extractDescriptionFromContent(
+        this.item.alternativeContent
+      );
+      this.meta.updateTag({ name: 'description', content: altDescription });
+      this.meta.updateTag({
+        property: 'og:description',
+        content: altDescription,
+      });
+      this.meta.updateTag({
+        name: 'twitter:description',
+        content: altDescription,
+      });
+    } else {
+      // Restore original description
+      this.meta.updateTag({
+        name: 'description',
+        content: description as string,
+      });
+      this.meta.updateTag({
+        property: 'og:description',
+        content: description as string,
+      });
+      this.meta.updateTag({
+        name: 'twitter:description',
+        content: description as string,
+      });
+    }
+  }
+
+  private extractDescriptionFromContent(content: string): string {
+    // Remove markdown formatting and extract first 160 characters
+    const plainText = content
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic
+      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Remove links, keep text
+      .replace(/```[\s\S]*?```/g, '') // Remove code blocks
+      .replace(/`([^`]+)`/g, '$1') // Remove inline code
+      .trim();
+
+    return plainText.length > 160
+      ? plainText.substring(0, 157) + '...'
+      : plainText;
+  }
+
+  getLanguageDisplayName(language: Language): string {
+    return this.languageDetection.getLanguageDisplayName(language);
   }
 }

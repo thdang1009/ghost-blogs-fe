@@ -28,6 +28,8 @@ import { SeriesAddComponent } from './series/series-add/series-add.component';
 import { PostBySeriesComponent } from './post/post-by-series/post-by-series.component';
 import { PostByComponent } from './post/post-by/post-by.component';
 import { PostAnalyticsComponent } from './analytics/post-analytics.component';
+import { LanguageSwitcherComponent } from '../../components/language-switcher/language-switcher.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export function markedOptionsFactory(
   anchorService: AnchorService
@@ -61,6 +63,7 @@ export function markedOptionsFactory(
     PostBySeriesComponent,
     PostByComponent,
     PostAnalyticsComponent,
+    LanguageSwitcherComponent,
   ],
   imports: [
     CommonModule,
@@ -85,6 +88,7 @@ export function markedOptionsFactory(
       },
       sanitize: SecurityContext.NONE,
     }),
+    MatProgressSpinnerModule,
   ],
 })
 export class BlogManagementModule {}
