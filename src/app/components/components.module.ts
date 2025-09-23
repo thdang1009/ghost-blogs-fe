@@ -16,6 +16,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { PostCardComponent } from './post-card/post-card.component';
 import { SkeletonLoaderComponent } from './skeleton-loader/skeleton-loader.component';
 import { SharedModule } from '@shared/shared-module.module';
+import { LanguageSwitcherComponent } from './language-switcher/language-switcher.component';
 // third party
 
 @NgModule({
@@ -38,7 +39,8 @@ import { SharedModule } from '@shared/shared-module.module';
     GhostSiteBtnComponent,
     ListBadgeComponent,
     PostCardComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    LanguageSwitcherComponent,
   ],
   exports: [
     FooterComponent,
@@ -51,9 +53,9 @@ import { SharedModule } from '@shared/shared-module.module';
     GhostSiteBtnComponent,
     ListBadgeComponent,
     PostCardComponent,
-    SkeletonLoaderComponent
+    SkeletonLoaderComponent,
+    LanguageSwitcherComponent,
   ],
-  providers: [
-  ]
+  providers: [],
 })
-export class ComponentsModule { }
+export class ComponentsModule {}

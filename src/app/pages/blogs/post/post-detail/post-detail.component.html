@@ -58,7 +58,6 @@
     <div *ngIf="ready" class="language-switcher-container">
       <app-language-switcher
         [post]="item"
-        [showCompactMode]="false"
         (languageChanged)="onLanguageChanged($event)"
       >
       </app-language-switcher>

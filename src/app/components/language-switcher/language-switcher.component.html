@@ -1,4 +1,4 @@
-<div class="language-switcher" *ngIf="hasAlternativeContent">
+<div class="language-switcher">
   <button
     mat-stroked-button
     [color]="isLanguageActive(primaryLanguage) ? 'primary' : 'basic'"
@@ -13,10 +13,14 @@
     mat-stroked-button
     [color]="isLanguageActive(alternativeLanguage) ? 'primary' : 'basic'"
     [class.active]="isLanguageActive(alternativeLanguage)"
-    [disabled]="isLanguageDisabled(alternativeLanguage)"
-    (click)="switchLanguage(alternativeLanguage)"
+    [disabled]="isTranslating"
+    (click)="handleAlternativeLanguageClick()"
     class="lang-btn"
+    [class.translating]="isTranslating"
   >
-    {{ getLanguageFlag(alternativeLanguage) }}
+    <mat-spinner *ngIf="isTranslating" diameter="16"></mat-spinner>
+    <span *ngIf="!isTranslating">{{
+      getLanguageFlag(alternativeLanguage)
+    }}</span>
   </button>
 </div>

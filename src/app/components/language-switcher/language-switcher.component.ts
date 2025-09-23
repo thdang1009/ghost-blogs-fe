@@ -3,6 +3,7 @@ import {
   LanguageDetectionService,
   Language,
 } from '../../services/language-detection.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-language-switcher',
@@ -16,8 +17,12 @@ export class LanguageSwitcherComponent implements OnInit {
   currentLanguage: Language = 'en';
   primaryLanguage: Language = 'en';
   alternativeLanguage: Language = 'vi';
+  isTranslating = false;
 
-  constructor(private languageDetection: LanguageDetectionService) {}
+  constructor(
+    private languageDetection: LanguageDetectionService,
+    private translationService: TranslationService
+  ) {}
 
   ngOnInit(): void {
     this.initializeLanguages();
@@ -108,9 +113,47 @@ export class LanguageSwitcherComponent implements OnInit {
   }
 
   /**
-   * Check if a language option should be disabled
+   * Handle click on alternative language button
    */
-  isLanguageDisabled(language: Language): boolean {
-    return language === this.alternativeLanguage && !this.hasAlternativeContent;
+  async handleAlternativeLanguageClick(): Promise<void> {
+    if (this.hasAlternativeContent) {
+      this.switchLanguage(this.alternativeLanguage);
+    } else {
+      await this.autoTranslateAndSwitch();
+    }
+  }
+
+  /**
+   * Auto-translate content and switch to alternative language
+   */
+  private async autoTranslateAndSwitch(): Promise<void> {
+    if (!this.post?.content?.trim()) {
+      return;
+    }
+
+    if (!this.translationService.canTranslate(this.post.content)) {
+      return;
+    }
+
+    this.isTranslating = true;
+
+    try {
+      const translatedContent = await this.translationService
+        .translateContent(
+          this.post.content,
+          this.primaryLanguage,
+          this.alternativeLanguage
+        )
+        .toPromise();
+
+      if (translatedContent) {
+        this.post.alternativeContent = translatedContent;
+        this.switchLanguage(this.alternativeLanguage);
+      }
+    } catch (error) {
+      console.error('Auto-translation failed:', error);
+    } finally {
+      this.isTranslating = false;
+    }
   }
 }

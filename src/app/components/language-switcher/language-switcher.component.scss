@@ -22,8 +22,17 @@
   }
 
   &:disabled {
-    opacity: 0.5;
+    opacity: 0.7;
     cursor: not-allowed;
+  }
+
+  &.translating {
+    background-color: #fff3e0 !important;
+    border-color: #ff9800 !important;
+  }
+
+  mat-spinner {
+    margin: 0 auto;
   }
 }
 
