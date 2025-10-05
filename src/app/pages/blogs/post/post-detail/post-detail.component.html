@@ -49,9 +49,7 @@
       </header>
     </div>
     <div *ngIf="ready" class="post-description">
-      <p>
-        {{ item.description }}
-      </p>
+      <markdown [data]="item.description"></markdown>
     </div>
 
     <!-- Language Switcher -->

@@ -9,7 +9,7 @@ export class Post {
   author?: String;
   user?: number;
   permission?: String;
-  description?: String;
+  description?: string;
   content?: string; // content
   alternativeContent?: string; // alternative language content
   postReference?: String;

@@ -17,6 +17,7 @@ import { PostCardComponent } from './post-card/post-card.component';
 import { SkeletonLoaderComponent } from './skeleton-loader/skeleton-loader.component';
 import { SharedModule } from '@shared/shared-module.module';
 import { LanguageSwitcherComponent } from './language-switcher/language-switcher.component';
+import { MarkdownModule } from 'ngx-markdown';
 // third party
 
 @NgModule({
@@ -27,6 +28,7 @@ import { LanguageSwitcherComponent } from './language-switcher/language-switcher
     ReactiveFormsModule,
     DragDropModule,
     SharedModule,
+    MarkdownModule,
   ],
   declarations: [
     FooterComponent,

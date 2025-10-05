@@ -1,44 +1,62 @@
-<article [ngClass]="{'private-post': post.permission === 'PRIVATE', 'compact-card': compact}"
-  class="post-card hover-moved">
+<article
+  [ngClass]="{
+    'private-post': post.permission === 'PRIVATE',
+    'compact-card': compact,
+  }"
+  class="post-card hover-moved"
+>
   <a [routerLink]="'/blogs/' + post.postReference" class="post-thumbnail">
-    <img [src]="post.postBackgroundImg" 
-         [alt]="post.title" 
-         loading="lazy" 
-         width="300" 
-         height="200" 
-         style="aspect-ratio: 3/2; object-fit: cover;"
-         class="post-image">
+    <img
+      [src]="post.postBackgroundImg"
+      [alt]="post.title"
+      loading="lazy"
+      width="300"
+      height="200"
+      style="aspect-ratio: 3/2; object-fit: cover"
+      class="post-image"
+    />
   </a>
 
   <div class="post-content">
-    <h2 class="post-title" [ngClass]="{'compact-title': compact}">
-      <a [routerLink]="'/blogs/' + post.postReference">{{post.title}}</a>
+    <h2 class="post-title" [ngClass]="{ 'compact-title': compact }">
+      <a [routerLink]="'/blogs/' + post.postReference">{{ post.title }}</a>
     </h2>
 
     <div *ngIf="showSeries && post.series" class="series-info post-series">
-      <a [routerLink]="['/post-by-series', post.series.slug]" class="series-link">
-        Series: {{post.series.name}}
+      <a
+        [routerLink]="['/post-by-series', post.series.slug]"
+        class="series-link"
+      >
+        Series: {{ post.series.name }}
       </a>
     </div>
 
-    <p class="post-description" [ngClass]="{'compact-description': compact}">
-      {{post.description}}
-    </p>
+    <div
+      class="post-description"
+      [ngClass]="{ 'compact-description': compact }"
+    >
+      <markdown [data]="post.description"></markdown>
+    </div>
 
     <div class="post-meta">
       <span class="post-date">
-        {{post.author}} wrote
-        {{post.createdAt! | timeAgo }}
-        ({{post.createdAt! | date }})
-        with {{+(post.viewCount ?? 0)| number:'1.0-0' }}👁️ | {{post.readTime || 5}} mins read
+        {{ post.author }} wrote
+        {{ post.createdAt! | timeAgo }}
+        ({{ post.createdAt! | date }}) with
+        {{ +(post.viewCount ?? 0) | number: '1.0-0' }}👁️ |
+        {{ post.readTime || 5 }} mins read
       </span>
     </div>
 
     <ng-container *ngIf="showTags && post && post.tags && post.tags.length">
       <div class="tags-container">
         <div *ngFor="let tag of post.tags" class="tagging">
-          <a [routerLink]="'/home'" [queryParams]="{ tag: tag.name }" class="tagging__item">
-            #{{tag.name}}
+          <a
+            [routerLink]="'/home'"
+            [queryParams]="{ tag: tag.name }"
+            class="tagging__item"
+          >
+            #{{ tag.name }}
           </a>
         </div>
       </div>
