@@ -25,3 +25,6 @@ export * from './mood/mood.service';
 export * from './system/system.service';
 export * from './aws/aws.service';
 export * from './vibe-coding/vibe-coding.service';
+export * from './code-runner/code-runner.service';
+export * from './code-validator/code-validator.service';
+export * from './simple-code-runner/simple-code-runner.service';

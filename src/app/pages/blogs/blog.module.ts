@@ -1,6 +1,6 @@
 import { NgModule, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { BlogRoutingModule } from './blog-routing.module';
 import { PostDetailComponent } from './post/post-detail/post-detail.component';
@@ -66,6 +66,7 @@ export function markedOptionsFactory(
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     SharedModule,
     ReuseComponentModule,
     BlogRoutingModule,

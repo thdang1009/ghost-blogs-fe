@@ -25,6 +25,7 @@ import {
   LanguageDetectionService,
   Language,
 } from '../../../../services/language-detection.service';
+import { SimpleCodeRunnerService } from '../../../../services/simple-code-runner/simple-code-runner.service';
 // Declare FB globally to access the Facebook SDK
 declare const FB: any;
 
@@ -70,7 +71,8 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     @Inject(PLATFORM_ID) private platformId: Object,
     private platformLocation: PlatformLocation,
     private renderer: Renderer2,
-    private languageDetection: LanguageDetectionService
+    private languageDetection: LanguageDetectionService,
+    private codeRunner: SimpleCodeRunnerService
   ) {
     addStructuredData(this.document);
     this.router.routeReuseStrategy.shouldReuseRoute = function () {
@@ -141,6 +143,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Start analytics tracking
       this.startAnalyticsTracking();
+
+      // Initialize code run buttons after content is rendered
+      setTimeout(() => {
+        this.initializeCodeRunButtons();
+      }, 100);
     });
   }
 
@@ -189,6 +196,12 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Clean up code runner
+    const container = this.document.querySelector('.post-body');
+    if (container) {
+      this.codeRunner.cleanup(container as HTMLElement);
+    }
+
     // Stop analytics tracking and send final data
     this.stopAnalyticsTracking();
 
@@ -477,6 +490,11 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Update meta tags for the selected language content
     this.updateMetaTagsForLanguage(language);
+
+    // Re-initialize code run buttons after language change
+    setTimeout(() => {
+      this.initializeCodeRunButtons();
+    }, 100);
   }
 
   onContentUpdated(updatedPost: any): void {
@@ -559,5 +577,17 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getLanguageDisplayName(language: Language): string {
     return this.languageDetection.getLanguageDisplayName(language);
+  }
+
+  // Code runner methods
+  private initializeCodeRunButtons(): void {
+    if (isPlatformServer(this.platformId)) {
+      return; // Don't run on server side
+    }
+
+    const container = this.document.querySelector('.post-body');
+    if (container) {
+      this.codeRunner.initializeRunButtons(container as HTMLElement);
+    }
   }
 }
