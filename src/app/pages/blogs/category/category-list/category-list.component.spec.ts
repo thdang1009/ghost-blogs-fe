@@ -13,23 +13,28 @@ describe('CategoryListComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const categoryServiceSpy = jasmine.createSpyObj('CategoryService', ['getCategorys', 'deleteCategory']);
+    const categoryServiceSpy = jasmine.createSpyObj('CategoryService', [
+      'getCategorys',
+      'deleteCategory',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       declarations: [CategoryListComponent],
       providers: [
         { provide: CategoryService, useValue: categoryServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(CategoryListComponent);
     component = fixture.componentInstance;
-    categoryService = TestBed.inject(CategoryService) as jasmine.SpyObj<CategoryService>;
+    categoryService = TestBed.inject(
+      CategoryService
+    ) as jasmine.SpyObj<CategoryService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
     fixture.detectChanges();
   });
@@ -39,10 +44,13 @@ describe('CategoryListComponent', () => {
   });
 
   it('should retrieve categories on initialization', () => {
-    const mockCategories: Category[] = [{ _id: '1', name: 'Category 1' }, { _id: '2', name: 'Category 2' }];
-    categoryService.getCategorys.and.returnValue(of(mockCategories)); // Ensure this returns an observable
+    const mockCategories: Category[] = [
+      { _id: '1', name: 'Category 1' },
+      { _id: '2', name: 'Category 2' },
+    ];
+    categoryService.getCategorys.and.returnValue(of(mockCategories));
 
-    component.ngOnInit(); // Call ngOnInit to trigger the category retrieval
+    component.ngOnInit();
 
     expect(categoryService.getCategorys).toHaveBeenCalled();
     expect(component.categories).toEqual(mockCategories);
@@ -50,22 +58,28 @@ describe('CategoryListComponent', () => {
 
   it('should handle error when retrieving categories', () => {
     const consoleSpy = spyOn(console, 'log');
-    categoryService.getCategorys.and.returnValue(throwError('Error fetching categories')); // Mock error response
+    categoryService.getCategorys.and.returnValue(
+      throwError('Error fetching categories')
+    );
 
-    component.getCategorys(); // Call the method to test error handling
+    component.getCategories();
 
     expect(consoleSpy).toHaveBeenCalledWith('Error fetching categories');
   });
 
   it('should delete a category and refresh the list', () => {
     const mockCategory: Category = { _id: '1', name: 'Category 1' };
-    categoryService.deleteCategory.and.returnValue(of({ success: true } as any));
-    spyOn(component, 'getCategorys').and.callThrough(); // Spy on getCategorys to check if it's called
+    categoryService.deleteCategory.and.returnValue(
+      of({ success: true } as any)
+    );
+    spyOn(component, 'getCategories').and.callThrough();
 
     component.delete(mockCategory);
 
-    expect(categoryService.deleteCategory).toHaveBeenCalledWith(mockCategory._id);
-    expect(component.getCategorys).toHaveBeenCalled(); // Check if getCategorys is called after deletion
+    expect(categoryService.deleteCategory).toHaveBeenCalledWith(
+      mockCategory._id
+    );
+    expect(component.getCategories).toHaveBeenCalled();
   });
 
   it('should not delete a category if category is null', () => {
@@ -78,7 +92,7 @@ describe('CategoryListComponent', () => {
     component.edit(mockCategory);
 
     expect(router.navigate).toHaveBeenCalledWith(['admin/blog/category'], {
-      queryParams: { id: mockCategory._id }
+      queryParams: { id: mockCategory._id },
     });
   });
 
