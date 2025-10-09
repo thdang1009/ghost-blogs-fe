@@ -9,7 +9,6 @@ import { GoogleLoginRequest, GoogleLoginResponse } from './google-auth.model';
 
 declare const google: any;
 
-const apiUrl = environment.apiUrl + '/v1/auth';
 const apiUrlGoogle = environment.apiUrl + '/v1/auth/google';
 
 @Injectable({
