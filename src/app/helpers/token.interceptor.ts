@@ -33,6 +33,9 @@ export class TokenInterceptor implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
+    // Log every request to track when token expires
+    console.log('📤 [Request]', request.method, request.url);
+
     // For cookie-based authentication, we need to ensure credentials are included
     let modifiedRequest = request.clone({
       setHeaders: {
@@ -68,12 +71,25 @@ export class TokenInterceptor implements HttpInterceptor {
         if (error.status === 401) {
           // Check if this is a token expiration error or no token error
           const errorCode = error.error?.code;
+          console.log('🔐 [Auth Debug] 401 Error received:', {
+            url: request.url,
+            errorCode: errorCode,
+            errorMessage: error.error?.msg,
+            fullError: error.error,
+          });
 
           if (errorCode === 'TOKEN_EXPIRED' || errorCode === 'NO_TOKEN') {
+            console.log(
+              '🔄 [Auth Debug] Token expired/missing, attempting refresh...'
+            );
             return this.handle401Error(request, next);
           }
 
           // For other 401 errors (invalid token, user not found, etc.), logout immediately
+          console.log(
+            '⚠️ [Auth Debug] Non-recoverable 401 error, logging out:',
+            errorCode
+          );
           this.handleLogout();
         }
 
@@ -91,16 +107,23 @@ export class TokenInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
     if (!this.isRefreshing) {
+      console.log('🔄 [Auth Debug] Starting token refresh process...');
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
 
       return this.refreshToken().pipe(
         switchMap((response: any) => {
+          console.log('✅ [Auth Debug] Token refresh successful:', {
+            success: response.success,
+            hasData: !!response.data,
+            username: response.data?.username,
+          });
           this.isRefreshing = false;
           this.refreshTokenSubject.next(response);
 
           // Update user info if available in response
           if (response.data) {
+            console.log('💾 [Auth Debug] Updating user info in localStorage');
             this.storageService.setItem(
               CONSTANT.USER_INFO,
               JSON.stringify(response.data)
@@ -108,12 +131,21 @@ export class TokenInterceptor implements HttpInterceptor {
           }
 
           // Retry the original request with credentials
+          console.log(
+            '🔁 [Auth Debug] Retrying original request:',
+            request.url
+          );
           const retryRequest = request.clone({
             withCredentials: true,
           });
           return next.handle(retryRequest);
         }),
         catchError(err => {
+          console.error('❌ [Auth Debug] Token refresh failed:', {
+            status: err.status,
+            error: err.error,
+            message: err.message,
+          });
           this.isRefreshing = false;
           this.handleLogout();
           return throwError(err);
@@ -121,10 +153,15 @@ export class TokenInterceptor implements HttpInterceptor {
       );
     } else {
       // If refresh is in progress, wait for the new token
+      console.log('⏳ [Auth Debug] Refresh already in progress, waiting...');
       return this.refreshTokenSubject.pipe(
         filter(token => token != null),
         take(1),
         switchMap(() => {
+          console.log(
+            '🔁 [Auth Debug] Refresh completed, retrying request:',
+            request.url
+          );
           const retryRequest = request.clone({
             withCredentials: true,
           });
@@ -135,14 +172,15 @@ export class TokenInterceptor implements HttpInterceptor {
   }
 
   private refreshToken(): Observable<any> {
-    return this.http.post<any>(
-      this.apiConfigService.getApiUrl('/v1/auth/refresh'),
-      {},
-      { withCredentials: true }
-    );
+    const refreshUrl = this.apiConfigService.getApiUrl('/v1/auth/refresh');
+    console.log('🔄 [Auth Debug] Calling refresh endpoint:', refreshUrl);
+    console.log('🍪 [Auth Debug] Document cookies:', document.cookie);
+
+    return this.http.post<any>(refreshUrl, {}, { withCredentials: true });
   }
 
   private handleLogout(): void {
+    console.log('🚪 [Auth Debug] Logging out user...');
     // Store the current URL so user can return after re-login
     const currentUrl = this.router.url;
     const returnUrl =
@@ -150,6 +188,7 @@ export class TokenInterceptor implements HttpInterceptor {
         ? currentUrl
         : null;
 
+    console.log('🧹 [Auth Debug] Clearing user info and tokens');
     // Clear any stored user info and redirect to login
     this.storageService.removeItem(CONSTANT.USER_INFO);
     // for backward compatibility
@@ -157,8 +196,13 @@ export class TokenInterceptor implements HttpInterceptor {
 
     // Navigate to login with return URL if available
     if (returnUrl) {
+      console.log(
+        '🔙 [Auth Debug] Redirecting to login with returnUrl:',
+        returnUrl
+      );
       this.router.navigate(['/login'], { queryParams: { returnUrl } });
     } else {
+      console.log('🔙 [Auth Debug] Redirecting to login');
       this.router.navigate(['/login']);
     }
   }

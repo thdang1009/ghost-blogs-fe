@@ -56,6 +56,7 @@ export class AuthService {
   }
 
   handleLoginResponse(resp: LoginResponse) {
+    console.log('🔑 [Auth Debug] Login successful, tokens stored as cookies');
     this.loggedInStatus = true;
     this.userInfo = resp.data;
     this.isLoggedIn.emit(true);
