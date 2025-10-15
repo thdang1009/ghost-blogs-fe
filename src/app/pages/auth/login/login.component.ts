@@ -1,26 +1,38 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, FormGroupDirective, UntypedFormBuilder, UntypedFormGroup, NgForm, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  FormGroupDirective,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  NgForm,
+  Validators,
+} from '@angular/forms';
 import { AuthService, AlertService } from '@services/_index';
 import { Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { CONSTANT } from '@shared/constant';
 import { GoogleAuthService } from '@services/auth/google-auth.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(control: UntypedFormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+  isErrorState(
+    control: UntypedFormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
     const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
+    return !!(
+      control &&
+      control.invalid &&
+      (control.dirty || control.touched || isSubmitted)
+    );
   }
 }
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit {
-
   loginForm!: UntypedFormGroup;
   username = '';
   password = '';
@@ -36,12 +48,12 @@ export class LoginComponent implements OnInit {
     private authService: AuthService,
     private googleAuthService: GoogleAuthService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
       username: [null, Validators.required],
-      password: [null, Validators.required]
+      password: [null, Validators.required],
     });
 
     // Initialize Google Sign-In button after view is initialized
@@ -59,17 +71,17 @@ export class LoginComponent implements OnInit {
 
   onFormSubmit(form: NgForm) {
     this.isRunning = true;
-    this.authService.login(form)
-      .subscribe(res => {
+    this.authService.login(form).subscribe(
+      res => {
         this.isRunning = false;
-        if (res.token) {
-          localStorage.setItem(CONSTANT.TOKEN, res.token);
-          this.router.navigate(['/admin/dashboard']);
-          this.alertService.showNoti('Login success!', 'success');
-        }
-      }, (err) => {
+        // handleLoginResponse is already called inside authService.login()
+        // which handles the redirect to returnUrl or dashboard
+        this.alertService.showNoti('Login success!', 'success');
+      },
+      err => {
         this.isRunning = false;
-      });
+      }
+    );
   }
 
   register() {
@@ -91,5 +103,4 @@ export class LoginComponent implements OnInit {
   toggleShowPassword() {
     this.isShowPassword = !this.isShowPassword;
   }
-
 }

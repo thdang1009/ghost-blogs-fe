@@ -62,11 +62,27 @@ export class AuthService {
     this.saveUserLoginInfo(resp.data); // <- before check isAdminE
     this.isAdminE.emit(this.isAdmin());
 
-    // Use the stored redirect URL if available, otherwise use the returnUrl from query params
-    const returnUrl =
-      this.redirectUrl ||
-      this.route.snapshot.queryParams['returnUrl'] ||
-      '/admin/dashboard';
+    // Use the stored redirect URL if available, otherwise get returnUrl from current URL query params
+    let returnUrl = this.redirectUrl || '/admin/dashboard';
+
+    // If no stored redirectUrl, check the current URL for returnUrl query param
+    if (!this.redirectUrl) {
+      const urlTree = this.router.parseUrl(this.router.url);
+      const returnUrlParam = urlTree.queryParams['returnUrl'];
+      if (returnUrlParam) {
+        returnUrl = returnUrlParam;
+      }
+    }
+
+    console.log('🔄 Login redirect:', {
+      storedRedirectUrl: this.redirectUrl,
+      currentUrl: this.router.url,
+      queryParamReturnUrl: this.router.parseUrl(this.router.url).queryParams[
+        'returnUrl'
+      ],
+      finalReturnUrl: returnUrl,
+    });
+
     this.redirectUrl = null; // Clear the stored URL
     this.router.navigateByUrl(returnUrl);
   }

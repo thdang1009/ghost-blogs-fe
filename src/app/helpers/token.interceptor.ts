@@ -143,10 +143,23 @@ export class TokenInterceptor implements HttpInterceptor {
   }
 
   private handleLogout(): void {
+    // Store the current URL so user can return after re-login
+    const currentUrl = this.router.url;
+    const returnUrl =
+      currentUrl && currentUrl !== '/login' && !currentUrl.startsWith('/login')
+        ? currentUrl
+        : null;
+
     // Clear any stored user info and redirect to login
     this.storageService.removeItem(CONSTANT.USER_INFO);
     // for backward compatibility
     this.storageService.removeItem(CONSTANT.TOKEN);
-    this.router.navigate(['/login']);
+
+    // Navigate to login with return URL if available
+    if (returnUrl) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl } });
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }
