@@ -1,0 +1,22 @@
+<div class="download-cv-actions">
+  <button
+    [class]="buttonClass + ' download-cv-btn'"
+    (click)="downloadCV()"
+    type="button">
+    {{ buttonText }}
+  </button>
+
+  <button
+    class="btn btn-secondary hire-me-btn"
+    (click)="showPricing()"
+    type="button">
+    Hire Me
+  </button>
+</div>
+
+<!-- Pricing Popup -->
+<app-pricing-popup
+  *ngIf="showPricingPopup"
+  (close)="closePricing()"
+  (contactMe)="contactWithPricing($event)">
+</app-pricing-popup>

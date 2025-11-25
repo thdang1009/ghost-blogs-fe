@@ -17,6 +17,8 @@ import { PostCardComponent } from './post-card/post-card.component';
 import { SkeletonLoaderComponent } from './skeleton-loader/skeleton-loader.component';
 import { SharedModule } from '@shared/shared-module.module';
 import { LanguageSwitcherComponent } from './language-switcher/language-switcher.component';
+import { DownloadMyCvComponent } from './download-my-cv/download-my-cv.component';
+import { PricingPopupComponent } from './pricing-popup/pricing-popup.component';
 import { MarkdownModule } from 'ngx-markdown';
 // third party
 
@@ -43,6 +45,8 @@ import { MarkdownModule } from 'ngx-markdown';
     PostCardComponent,
     SkeletonLoaderComponent,
     LanguageSwitcherComponent,
+    DownloadMyCvComponent,
+    PricingPopupComponent,
   ],
   exports: [
     FooterComponent,
@@ -57,6 +61,8 @@ import { MarkdownModule } from 'ngx-markdown';
     PostCardComponent,
     SkeletonLoaderComponent,
     LanguageSwitcherComponent,
+    DownloadMyCvComponent,
+    PricingPopupComponent,
   ],
   providers: [],
 })

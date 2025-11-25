@@ -48,6 +48,16 @@ ul.list.list-with-divider li:last-child {
   border-bottom: none;
 }
 
+.action-buttons-container {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+
+  app-download-my-cv {
+    display: block;
+  }
+}
+
 ul.list li {
   padding: 16px 0;
 }

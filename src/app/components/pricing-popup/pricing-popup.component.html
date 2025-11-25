@@ -1,0 +1,58 @@
+<div class="pricing-overlay" (click)="closePopup()">
+  <div class="pricing-popup" (click)="$event.stopPropagation()">
+    <div class="popup-header">
+      <h2>Freelance Developer Rates</h2>
+      <button class="close-btn" (click)="closePopup()">
+        ×
+      </button>
+    </div>
+
+    <div class="intro-text">
+      <p>Let's work together! Choose the engagement model that works best for your project:</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div
+        *ngFor="let tier of pricingTiers"
+        class="pricing-card"
+        [class.popular]="tier.popular"
+        (click)="selectPlan(tier)">
+
+        <div class="card-header">
+          <div class="popular-badge" *ngIf="tier.popular">Most Popular</div>
+          <h3>{{ tier.duration }}</h3>
+          <div class="price-display">
+            <span class="currency">$</span>
+            <span class="amount">{{ tier.hourlyRate.toFixed(0) }}</span>
+            <span class="period">/hour</span>
+          </div>
+          <div class="discount" *ngIf="tier.discount > 0">
+            Save {{ tier.discount }}%
+          </div>
+        </div>
+
+        <div class="monthly-estimate" *ngIf="tier.months > 0">
+          <small>≈ ${{ getMonthlyEstimate(tier).toLocaleString() }}/month</small>
+          <span class="estimate-note">(~40h/week)</span>
+        </div>
+
+        <ul class="features-list">
+          <li *ngFor="let feature of tier.features">
+            {{ feature }}
+          </li>
+        </ul>
+
+        <button class="select-btn">
+          Get Started
+        </button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <p>
+        Rates are negotiable based on project complexity and requirements.
+        All prices are in USD and exclude applicable taxes.
+      </p>
+    </div>
+  </div>
+</div>
