@@ -12,6 +12,7 @@ export * from './file/file.service';
 export * from './note/note.service';
 export * from './todo-today/todo-today.service';
 export * from './user/user.service';
+export * from './user-settings/user-settings.service';
 export * from './file-download/file-download.service';
 export * from './book/book.service';
 export * from './coupon/coupon.service';

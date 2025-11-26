@@ -5,7 +5,25 @@
 				<div class="card">
 					<div class="card-header">
 						<h4 class="card-title">{{showTranscript}}</h4>
-						<div class="d-flex align-items-center">
+						<div class="d-flex align-items-center category-settings">
+							<input name="todayCount" type="number"
+							[(ngModel)]="settings.todayCount"
+							[ngModelOptions]="{standalone: true}"
+							(blur)="updateSettings()"
+							min="0" max="20">
+
+							<input name="weeklyCount" type="number"
+							[(ngModel)]="settings.weeklyCount"
+							[ngModelOptions]="{standalone: true}"
+							(blur)="updateSettings()"
+							min="0" max="50">
+
+							<input name="monthlyCount" type="number"
+							[(ngModel)]="settings.monthlyCount"
+							[ngModelOptions]="{standalone: true}"
+							(blur)="updateSettings()"
+							min="0" max="20">
+
 							<button (click)="addToDoToDay()"
 								matTooltip="Add new todo"
 								class="btn btn-primary btn-round">
@@ -21,6 +39,7 @@
 							</button>
 						</div>
 					</div>
+
 					<form (ngSubmit)="searchToDoToDay()"
 						class="form-under-table-header row">
 						<div class="col-md-4 control-and-btn-container">
@@ -45,7 +64,7 @@
 							</button>
 						</div>
 						<!-- search status, default all -->
-						<div class="col-md-4">
+						<!-- <div class="col-md-4">
 							<mat-form-field class="example-full-width"
 								appearance="fill">
 								<mat-label>Trạng thái</mat-label>
@@ -57,7 +76,7 @@
 									</mat-option>
 								</mat-select>
 							</mat-form-field>
-						</div>
+						</div> -->
 						<!-- button search -->
 						<div class="col-md-4">
 							<button [disabled]="isLoadingResults"
@@ -82,13 +101,14 @@
 									cdkDropList>
 									<ng-container *ngIf="data && data.length; else noDataBlock">
 										<tr *ngFor="let tdtd of data; let index = index"
+											[style.background-color]="getCategoryColor(getTaskCategory(tdtd))"
 											[ngClass]="{
                                         'warning': tdtd.status === TDTD_STATUS.NOT_YET,
                                         'success': tdtd.status === TDTD_STATUS.DONE,
                                         'primary': tdtd.status === TDTD_STATUS.NEW,
                                         'future': tdtd.status === TDTD_STATUS.TOMORROW,
                                         'past': tdtd.status === TDTD_STATUS.IN_PAST,
-                                        'is-important': index < 7
+                                        'is-important': index < this.settings.todayCount
                                     }"
 											(mouseenter)="hoveredIndex=index"
 											cdkDrag>
@@ -110,12 +130,12 @@
 												<div class="drag-to-reorder"
 													cdkDragHandle>
 													<img loading="lazy"
-														class="todo-label-icon"
+														class="drag-to-reorder-icon"
 														src="/assets/img/drag-up-and-down.svg"
 														alt="drag">
 												</div>
 											</td>
-											<td style="display: flex;">
+											<td style="display: flex; align-items: center;">
 												<span *ngFor="let icon of tdtd.todoLabel">{{icon}}</span>
 												<textarea [(ngModel)]="tdtd.content"
 													[minRows]="1"
@@ -146,7 +166,7 @@
 										</tr>
 									</ng-template>
 									<tr>
-										<td colspan="100%">
+										<td colspan="100%" style="padding: 0 0;">
 											<button [disabled]="isLoadingResults"
 												(click)="addToDoToDay()"
 												type="button"

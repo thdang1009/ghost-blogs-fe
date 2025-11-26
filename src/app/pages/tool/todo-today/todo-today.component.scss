@@ -1,5 +1,8 @@
 .form-under-table-header {
-    padding: 10px 0;
+    padding: 0 0;
+}
+.card .card-body {
+    padding: 0 15px;
 }
 
 .warning * {
@@ -105,5 +108,20 @@ textarea {
     100% {
         transform: scale(1);
         box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+    }
+}
+
+.category-settings input {
+    width: 60px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+
+    @media (max-width: 768px) {
+        width: 50px;
+        padding: 0.2rem 0.3rem;
+        font-size: 13px;
     }
 }

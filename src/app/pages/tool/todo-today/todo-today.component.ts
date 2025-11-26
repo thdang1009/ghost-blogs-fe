@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { TodoLabel, TodoToday } from '@models/_index';
 import * as dateFns from 'date-fns';
-import { AlertService, TodoLabelService, TodoTodayService } from '@services/_index';
+import { AlertService, TodoLabelService, TodoTodayService, UserSettingsService } from '@services/_index';
 import { isImportant, nextStatus, previousStatus, toggleStatus, calculateSimilarity } from '@shared/common';
 import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -11,6 +11,12 @@ const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold
 const FINISH_WORDS = ['done', 'xong', 'finish', 'completed', 'đã'];
 const INPUT_WORDS = ['add', 'new', 'thêm', 'mới', 'tạo'];
 const IN_PROGRESS_WORDS = ['progress', 'đang', 'chưa'];
+const ENUM_CATEGORY = {
+  TODAY: 'TODAY',
+  WEEKLY: 'WEEKLY',
+  MONTHLY: 'MONTHLY',
+  PARKING_LOT: 'PARKING_LOT'
+};
 @Component({
   selector: 'app-todo-today',
   templateUrl: './todo-today.component.html',
@@ -41,6 +47,13 @@ export class TodoTodayComponent implements OnInit {
   currentLanguage: 'en' | 'vi' = 'vi';
   statusKeywords = [...FINISH_WORDS, ...IN_PROGRESS_WORDS, ...INPUT_WORDS];
 
+  // Category settings
+  settings = {
+    todayCount: 3,
+    weeklyCount: 5,
+    monthlyCount: 2
+  };
+
   // Language-specific messages
   messages = {
     en: {
@@ -70,7 +83,8 @@ export class TodoTodayComponent implements OnInit {
   constructor(
     private todoTodayService: TodoTodayService,
     private todoLabelService: TodoLabelService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private userSettingsService: UserSettingsService
   ) {
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window) {
@@ -96,7 +110,50 @@ export class TodoTodayComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loadSettings();
     this.searchToDoToDay();
+  }
+
+  loadSettings() {
+    this.userSettingsService.getTodoSettings().subscribe((settings: any) => {
+      if (settings) {
+        this.settings = {
+          todayCount: settings.todayCount,
+          weeklyCount: settings.weeklyCount,
+          monthlyCount: settings.monthlyCount
+        };
+      }
+    });
+  }
+
+  updateSettings() {
+    this.userSettingsService.updateTodoSettings(this.settings).subscribe(() => {
+      this.alertService.showNoti('Settings updated', 'success');
+    });
+  }
+
+  getCategoryForIndex(index: number): string {
+    const { todayCount, weeklyCount, monthlyCount } = this.settings;
+
+    if (index < todayCount) return ENUM_CATEGORY.TODAY;
+    if (index < todayCount + weeklyCount) return ENUM_CATEGORY.WEEKLY;
+    if (index < todayCount + weeklyCount + monthlyCount) return ENUM_CATEGORY.MONTHLY;
+    return ENUM_CATEGORY.PARKING_LOT;
+  }
+
+  getCategoryColor(category: string): string {
+    const colors: { [key: string]: string } = {
+      [ENUM_CATEGORY.TODAY]: '#FAF5EE',
+      [ENUM_CATEGORY.WEEKLY]: '#E8DCC7',
+      [ENUM_CATEGORY.MONTHLY]: '#F3E4B6',
+      [ENUM_CATEGORY.PARKING_LOT]: '#D5DBDB'
+    };
+    return colors[category] || '#D5DBDB';
+  }
+
+  getTaskCategory(task: TodoToday): string {
+    const index = this.data.indexOf(task);
+    return this.getCategoryForIndex(index);
   }
 
   addToDoToDay() {
