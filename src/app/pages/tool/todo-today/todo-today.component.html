@@ -112,9 +112,9 @@
                                     }"
 											(mouseenter)="hoveredIndex=index"
 											cdkDrag>
-											<td class="text-center">
+											<td>
 												<div class="form-check"
-													style="padding-left: 1.25rem;">
+													style="padding-left: 1rem;">
 													<label class="form-check-label">
 														<input [ngModelOptions]="{standalone: true}"
 															[(ngModel)]="tdtd.checked"
@@ -129,10 +129,7 @@
 												</div>
 												<div class="drag-to-reorder"
 													cdkDragHandle>
-													<img loading="lazy"
-														class="drag-to-reorder-icon"
-														src="/assets/img/drag-up-and-down.svg"
-														alt="drag">
+													<mat-icon class="drag-to-reorder-icon">drag_indicator</mat-icon>
 												</div>
 											</td>
 											<td style="display: flex; align-items: center;">

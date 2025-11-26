@@ -143,12 +143,12 @@ export class TodoTodayComponent implements OnInit {
 
   getCategoryColor(category: string): string {
     const colors: { [key: string]: string } = {
-      [ENUM_CATEGORY.TODAY]: '#FAF5EE',
-      [ENUM_CATEGORY.WEEKLY]: '#E8DCC7',
-      [ENUM_CATEGORY.MONTHLY]: '#F3E4B6',
-      [ENUM_CATEGORY.PARKING_LOT]: '#D5DBDB'
+      [ENUM_CATEGORY.TODAY]: '#E7FAFD',// '#FAF5EE',
+      [ENUM_CATEGORY.WEEKLY]: '#f7fdff',// '#fff6e6',
+      [ENUM_CATEGORY.MONTHLY]: '#DFEAF2',//'#f7f1df',
+      [ENUM_CATEGORY.PARKING_LOT]: '#FFFFFF'
     };
-    return colors[category] || '#D5DBDB';
+    return colors[category] || '#FFFFFF';
   }
 
   getTaskCategory(task: TodoToday): string {
