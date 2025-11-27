@@ -2,8 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { TodoLabel, TodoToday } from '@models/_index';
 import * as dateFns from 'date-fns';
-import { AlertService, TodoLabelService, TodoTodayService, UserSettingsService } from '@services/_index';
-import { isImportant, nextStatus, previousStatus, toggleStatus, calculateSimilarity } from '@shared/common';
+import {
+  AlertService,
+  TodoLabelService,
+  TodoTodayService,
+  UserSettingsService,
+} from '@services/_index';
+import {
+  isImportant,
+  nextStatus,
+  previousStatus,
+  toggleStatus,
+  calculateSimilarity,
+} from '@shared/common';
 import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
@@ -15,15 +26,14 @@ const ENUM_CATEGORY = {
   TODAY: 'TODAY',
   WEEKLY: 'WEEKLY',
   MONTHLY: 'MONTHLY',
-  PARKING_LOT: 'PARKING_LOT'
+  PARKING_LOT: 'PARKING_LOT',
 };
 @Component({
   selector: 'app-todo-today',
   templateUrl: './todo-today.component.html',
-  styleUrls: ['./todo-today.component.scss']
+  styleUrls: ['./todo-today.component.scss'],
 })
 export class TodoTodayComponent implements OnInit {
-
   data: TodoToday[] = [];
   dataLabel: TodoLabel[] = [];
   isLoadingResults = true;
@@ -51,7 +61,7 @@ export class TodoTodayComponent implements OnInit {
   settings = {
     todayCount: 3,
     weeklyCount: 5,
-    monthlyCount: 2
+    monthlyCount: 2,
   };
 
   // Language-specific messages
@@ -65,7 +75,7 @@ export class TodoTodayComponent implements OnInit {
       addFailed: 'Failed to add new todo',
       languageChanged: 'Language changed to English',
       voiceError: 'Error with voice recognition: ',
-      browserNotSupported: 'Voice recognition is not supported in your browser'
+      browserNotSupported: 'Voice recognition is not supported in your browser',
     },
     vi: {
       noMatch: 'Không tìm thấy công việc phù hợp',
@@ -76,8 +86,9 @@ export class TodoTodayComponent implements OnInit {
       addFailed: 'Không thể thêm công việc mới',
       languageChanged: 'Đã chuyển sang tiếng Việt',
       voiceError: 'Lỗi nhận dạng giọng nói: ',
-      browserNotSupported: 'Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói'
-    }
+      browserNotSupported:
+        'Trình duyệt của bạn không hỗ trợ nhận dạng giọng nói',
+    },
   };
 
   constructor(
@@ -104,7 +115,10 @@ export class TodoTodayComponent implements OnInit {
 
       this.recognition.onerror = (event: any) => {
         this.isListening = false;
-        this.alertService.showNoti(this.messages[this.currentLanguage].voiceError + event.error, 'danger');
+        this.alertService.showNoti(
+          this.messages[this.currentLanguage].voiceError + event.error,
+          'danger'
+        );
       };
     }
   }
@@ -120,7 +134,7 @@ export class TodoTodayComponent implements OnInit {
         this.settings = {
           todayCount: settings.todayCount,
           weeklyCount: settings.weeklyCount,
-          monthlyCount: settings.monthlyCount
+          monthlyCount: settings.monthlyCount,
         };
       }
     });
@@ -137,16 +151,17 @@ export class TodoTodayComponent implements OnInit {
 
     if (index < todayCount) return ENUM_CATEGORY.TODAY;
     if (index < todayCount + weeklyCount) return ENUM_CATEGORY.WEEKLY;
-    if (index < todayCount + weeklyCount + monthlyCount) return ENUM_CATEGORY.MONTHLY;
+    if (index < todayCount + weeklyCount + monthlyCount)
+      return ENUM_CATEGORY.MONTHLY;
     return ENUM_CATEGORY.PARKING_LOT;
   }
 
   getCategoryColor(category: string): string {
     const colors: { [key: string]: string } = {
-      [ENUM_CATEGORY.TODAY]: '#E7FAFD',// '#FAF5EE',
-      [ENUM_CATEGORY.WEEKLY]: '#f7fdff',// '#fff6e6',
-      [ENUM_CATEGORY.MONTHLY]: '#DFEAF2',//'#f7f1df',
-      [ENUM_CATEGORY.PARKING_LOT]: '#FFFFFF'
+      [ENUM_CATEGORY.TODAY]: '#E7FAFD', // '#FAF5EE',
+      [ENUM_CATEGORY.WEEKLY]: '#f7fdff', // '#fff6e6',
+      [ENUM_CATEGORY.MONTHLY]: '#DFEAF2', //'#f7f1df',
+      [ENUM_CATEGORY.PARKING_LOT]: '#FFFFFF',
     };
     return colors[category] || '#FFFFFF';
   }
@@ -159,16 +174,18 @@ export class TodoTodayComponent implements OnInit {
   addToDoToDay() {
     const sample: TodoToday = {
       content: '',
-      date: this.searchDate.value || new Date()
-    }
+      date: this.searchDate.value || new Date(),
+    };
     this.isLoadingResults = true;
-    this.todoTodayService.addTodoToday(sample)
-      .subscribe((res: any) => {
+    this.todoTodayService.addTodoToday(sample).subscribe(
+      (res: any) => {
         this.data.push(res);
         this.isLoadingResults = false;
-      }, err => {
+      },
+      err => {
         this.isLoadingResults = false;
-      });
+      }
+    );
   }
 
   async searchToDoToDay() {
@@ -178,38 +195,51 @@ export class TodoTodayComponent implements OnInit {
 
   _getTodoLabel() {
     this.isLoadingResults = true;
-    this.todoLabelService.getTodoLabels().subscribe((res: any) => {
-      this.dataLabel = res;
-      this.isLoadingResults = false;
-    }, err => {
-      this.isLoadingResults = false;
-    });
+    this.todoLabelService.getTodoLabels().subscribe(
+      (res: any) => {
+        this.dataLabel = res;
+        this.isLoadingResults = false;
+      },
+      err => {
+        this.isLoadingResults = false;
+      }
+    );
   }
 
   _getMyToDoToDay(timeout = 0) {
-    const value = this.searchDate && this.searchDate.value || new Date();
+    const value = (this.searchDate && this.searchDate.value) || new Date();
     const fromDate = dateFns.startOfDay(value);
     const toDate = dateFns.endOfDay(value);
     const req = {
       from: fromDate || undefined,
       to: toDate || undefined,
-      status: this.searchStatus === 'NONE' ? undefined : this.searchStatus
-    }
+      status: this.searchStatus === 'NONE' ? undefined : this.searchStatus,
+    };
     this.isLoadingResults = true;
-    this.todoTodayService.getMyTodoToday(req)
-      .subscribe((res: any) => {
-        this.data = res.map((el: TodoToday) => {
-          return {
-            ...el,
-            checked: el.status === TDTD_STATUS.DONE,
-            todoLabel: el.todoLabel && el.todoLabel.length ? el.todoLabel : this.todoLabelService.extractTodoLabel(el.content!, this.dataLabel)
-          }
-        }).sort((el: TodoToday) => isImportant(el.content!) ? -1 : 1);
+    this.todoTodayService.getMyTodoToday(req).subscribe(
+      (res: any) => {
+        this.data = res
+          .map((el: TodoToday) => {
+            return {
+              ...el,
+              checked: el.status === TDTD_STATUS.DONE,
+              todoLabel:
+                el.todoLabel && el.todoLabel.length
+                  ? el.todoLabel
+                  : this.todoLabelService.extractTodoLabel(
+                      el.content!,
+                      this.dataLabel
+                    ),
+            };
+          })
+          .sort((el: TodoToday) => (isImportant(el.content!) ? -1 : 1));
         console.log('dangth, data', this.data);
         this.isLoadingResults = false;
-      }, err => {
+      },
+      err => {
         this.isLoadingResults = false;
-      });
+      }
+    );
   }
   setChangedLineOnly(res: TodoToday, index: number) {
     this.data[index] = { ...res, checked: res.status === TDTD_STATUS.DONE };
@@ -217,24 +247,27 @@ export class TodoTodayComponent implements OnInit {
   updateStatus(item: TodoToday, index: number) {
     const req = {
       ...item,
-      status: toggleStatus(item.status!)
+      status: toggleStatus(item.status!),
     };
     this.isLoadingResults = true;
-    this.todoTodayService.updateTodoToday(item.id, req)
-      .subscribe((res: any) => {
+    this.todoTodayService.updateTodoToday(item.id, req).subscribe(
+      (res: any) => {
         this.setChangedLineOnly(res, index);
         this.isLoadingResults = false;
-      }, err => {
+      },
+      err => {
         this.isLoadingResults = false;
-      });
+      }
+    );
   }
   saveItem(id: number, item: TodoToday, index: number) {
     item.content = item.content?.trim();
-    this.todoTodayService.updateTodoToday(id, item)
-      .subscribe((res: any) => {
+    this.todoTodayService.updateTodoToday(id, item).subscribe(
+      (res: any) => {
         this.setChangedLineOnly(res, index);
-      }, err => {
-      });
+      },
+      err => {}
+    );
   }
   delete(id: number) {
     if (!this.data || !this.data.length) {
@@ -242,13 +275,15 @@ export class TodoTodayComponent implements OnInit {
     }
     if (id) {
       this.isLoadingResults = true;
-      this.todoTodayService.deleteTodoToday(id)
-        .subscribe((_: any) => {
+      this.todoTodayService.deleteTodoToday(id).subscribe(
+        (_: any) => {
           this.data = this.data.filter(el => el.id !== id);
           this.isLoadingResults = false;
-        }, err => {
+        },
+        err => {
           this.isLoadingResults = false;
-        });
+        }
+      );
     }
   }
   increaseCount() {
@@ -276,24 +311,86 @@ export class TodoTodayComponent implements OnInit {
     moveItemInArray(this.data, event.previousIndex, event.currentIndex);
   }
 
+  /**
+   * Advanced ordering system using fractional positioning
+   * This allows unlimited reordering without order conflicts
+   */
   sort(preIndex: number, curIndex: number) {
     const item = this.data[preIndex];
-    const newOrder = Number(this.data[curIndex].order);
-    const delta = preIndex > curIndex ? -1 : 1;
+    let newOrder: number;
+
+    if (curIndex === 0) {
+      // Moving to first position
+      const firstOrder = this.data[0].order || 0;
+      newOrder = firstOrder - 1;
+    } else if (curIndex === this.data.length - 1) {
+      // Moving to last position
+      const lastOrder = this.data[this.data.length - 1].order || 0;
+      newOrder = lastOrder + 1;
+    } else {
+      // Moving between two items - use fractional positioning
+      const prevOrder = this.data[curIndex - 1].order || 0;
+      const nextOrder = this.data[curIndex].order || 0;
+
+      // Calculate midpoint between previous and next
+      newOrder = (Number(prevOrder) + Number(nextOrder)) / 2;
+
+      // If the difference is too small, we need to rebalance all orders
+      if (Math.abs(nextOrder - prevOrder) < 0.000001) {
+        return this.rebalanceOrders(preIndex, curIndex);
+      }
+    }
+
     return new Promise<any>((resolve, reject) => {
       const req = {
         ...item,
-        order: newOrder + delta
+        order: newOrder,
       };
-      this.todoTodayService.updateTodoToday(item.id, req)
-        .subscribe((_: any) => {
+      this.todoTodayService.updateTodoToday(item.id, req).subscribe(
+        (_: any) => {
           this.isLoadingResults = false;
           resolve('success');
-        }, err => {
+        },
+        err => {
           this.isLoadingResults = false;
           reject('fail');
-        });
+        }
+      );
     });
+  }
+
+  /**
+   * Rebalance all order values when fractional precision runs out
+   * This ensures we can always continue reordering
+   */
+  async rebalanceOrders(preIndex: number, curIndex: number): Promise<string> {
+    try {
+      // Create a copy and move the item
+      const tempData = [...this.data];
+      moveItemInArray(tempData, preIndex, curIndex);
+
+      // Assign new sequential orders with spacing
+      const updates = tempData.map((item, index) => ({
+        id: item.id,
+        order: index * 10,
+      }));
+
+      // Update all items on the server
+      for (const update of updates) {
+        await this.todoTodayService
+          .updateTodoToday(update.id, { order: update.order })
+          .toPromise();
+      }
+
+      // Update local data orders
+      tempData.forEach((item, index) => {
+        item.order = index * 10;
+      });
+
+      return 'success';
+    } catch (err) {
+      return 'fail';
+    }
   }
   increaseDate() {
     const val = dateFns.addDays(this.searchDate.value, 1);
@@ -325,7 +422,10 @@ export class TodoTodayComponent implements OnInit {
         this.setLanguage('en');
         this.alertService.showNoti(this.messages.en.languageChanged, 'success');
         return;
-      } else if (transcript.includes('vietnamese') || transcript.includes('vietnam')) {
+      } else if (
+        transcript.includes('vietnamese') ||
+        transcript.includes('vietnam')
+      ) {
         this.setLanguage('vi');
         this.alertService.showNoti(this.messages.vi.languageChanged, 'success');
         return;
@@ -368,25 +468,36 @@ export class TodoTodayComponent implements OnInit {
     });
 
     if (matchingTodos.length === 0) {
-      this.alertService.showNoti(this.messages[this.currentLanguage].noMatch, 'warning');
+      this.alertService.showNoti(
+        this.messages[this.currentLanguage].noMatch,
+        'warning'
+      );
     } else if (matchingTodos.length === 1) {
       const todo = matchingTodos[0];
       const index = this.data.findIndex(t => t.id === todo.id);
       if (index !== -1) {
         const updatedTodo = { ...todo, status: newStatus };
-        this.todoTodayService.updateTodoToday(todo.id!, updatedTodo)
-          .subscribe(
-            (res: any) => {
-              this.setChangedLineOnly(res, index);
-              this.alertService.showNoti(this.messages[this.currentLanguage].statusUpdated, 'success');
-            },
-            err => {
-              this.alertService.showNoti(this.messages[this.currentLanguage].updateFailed, 'danger');
-            }
-          );
+        this.todoTodayService.updateTodoToday(todo.id!, updatedTodo).subscribe(
+          (res: any) => {
+            this.setChangedLineOnly(res, index);
+            this.alertService.showNoti(
+              this.messages[this.currentLanguage].statusUpdated,
+              'success'
+            );
+          },
+          err => {
+            this.alertService.showNoti(
+              this.messages[this.currentLanguage].updateFailed,
+              'danger'
+            );
+          }
+        );
       }
     } else {
-      this.alertService.showNoti(this.messages[this.currentLanguage].multipleMatches, 'warning');
+      this.alertService.showNoti(
+        this.messages[this.currentLanguage].multipleMatches,
+        'warning'
+      );
     }
   }
 
@@ -394,24 +505,32 @@ export class TodoTodayComponent implements OnInit {
     const newTodo: TodoToday = {
       content: content,
       status: TDTD_STATUS.NEW,
-      date: this.searchDate.value || new Date()
+      date: this.searchDate.value || new Date(),
     };
 
-    this.todoTodayService.addTodoToday(newTodo)
-      .subscribe(
-        (res: any) => {
-          this.data.push(res);
-          this.alertService.showNoti(this.messages[this.currentLanguage].newTodoAdded, 'success');
-        },
-        err => {
-          this.alertService.showNoti(this.messages[this.currentLanguage].addFailed, 'danger');
-        }
-      );
+    this.todoTodayService.addTodoToday(newTodo).subscribe(
+      (res: any) => {
+        this.data.push(res);
+        this.alertService.showNoti(
+          this.messages[this.currentLanguage].newTodoAdded,
+          'success'
+        );
+      },
+      err => {
+        this.alertService.showNoti(
+          this.messages[this.currentLanguage].addFailed,
+          'danger'
+        );
+      }
+    );
   }
 
   toggleVoiceRecognition() {
     if (!this.recognition) {
-      this.alertService.showNoti(this.messages[this.currentLanguage].browserNotSupported, 'warning');
+      this.alertService.showNoti(
+        this.messages[this.currentLanguage].browserNotSupported,
+        'warning'
+      );
       return;
     }
 

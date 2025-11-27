@@ -1,192 +1,264 @@
 .form-under-table-header {
-    padding: 0 0;
+  padding: 0 0;
 }
 
 .card .card-body {
-    padding: 0 15px;
+  padding: 0 15px;
 }
 
 .warning * {
-    color: #ff9e0f;
+  color: #ff9e0f;
 }
 
 .success * {
-    color: #55b559;
+  color: #55b559;
 }
 
 .primary * {
-    color: #00cae3;
+  color: #00cae3;
 }
 
 .future * {
-    color: #a72abd;
+  color: #a72abd;
 }
 
 .past * {
-    color: #a2678a;
+  color: #a2678a;
 }
 
 .editable {
-    border: none;
-    outline: none;
-    background: transparent;
+  border: none;
+  outline: none;
+  background: transparent;
 }
 
 .wd100 {
-    width: 100%;
+  width: 100%;
 }
 
 .hover-pointer {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 textarea {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    height: auto !important;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: auto !important;
 }
 
 .show-on-hover {
-    display: block;
+  display: block;
 }
 
 .hide-on-leave {
-    display: none;
+  display: none;
 }
 
 .btn-show-on-hover {
-    display: block;
+  display: block;
 }
 
 .btn-float-in-row {
-    position: absolute !important;
-    padding: 4px !important;
-    margin: 0 !important;
-    top: 50%;
-    right: 0;
-    transform: translate(-50%, -50%);
-    border: none;
+  position: absolute !important;
+  padding: 4px !important;
+  margin: 0 !important;
+  top: 50%;
+  right: 0;
+  transform: translate(-50%, -50%);
+  border: none;
+  background-color: transparent;
+  color: #dc3545;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    background-color: rgba(220, 53, 69, 0.1);
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  }
+
+  &:active {
+    transform: translate(-50%, -50%) scale(0.95);
+    box-shadow: 0 1px 4px rgba(220, 53, 69, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
     background-color: transparent;
-    color: #dc3545;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  }
+
+  .mdc-icon-button__ripple {
     border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    opacity: 0.7;
-
-    &:hover {
-        opacity: 1;
-        background-color: rgba(220, 53, 69, 0.1);
-        transform: translate(-50%, -50%) scale(1.1);
-        box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-    }
-
-    &:active {
-        transform: translate(-50%, -50%) scale(0.95);
-        box-shadow: 0 1px 4px rgba(220, 53, 69, 0.4);
-    }
-
-    &:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-        background-color: transparent;
-    }
-
-    .mdc-icon-button__ripple {
-        border-radius: 50%;
-    }
+  }
 }
 
 .btn-move {
-    height: 52.75px;
-    padding: 0 10px;
-    margin: 0;
+  height: 52.75px;
+  padding: 0 10px;
+  margin: 0;
 }
 
 .control-and-btn-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .is-important * {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .form-check {
-    margin-top: 0;
-    margin-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .status-width {
-    max-width: 68px;
-    min-width: 68px;
-    width: 68px;
+  max-width: 48px;
+  min-width: 48px;
+  width: 48px;
+}
+
+.status-cell {
+  padding: 0 !important;
+  max-width: 60px;
+  min-width: 60px;
+
+  // Use a wrapper div inside to handle flex layout
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 8px;
+    height: 100%;
+  }
+}
+
+.drag-handle {
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  touch-action: none;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    color: #999;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover mat-icon {
+    color: #666;
+  }
+
+  @media (max-width: 768px) {
+    // Bigger touch target for mobile
+    padding: 4px;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+    }
+  }
+}
+
+.todo-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    // Bigger for easier tapping on mobile
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.content-wrapper {
+  display: flex;
+  align-items: center;
 }
 
 .btn-round {
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 8px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
 
-    &.listening {
-        animation: pulse 1.5s infinite;
-        background-color: #f44336;
-    }
+  &.listening {
+    animation: pulse 1.5s infinite;
+    background-color: #f44336;
+  }
 }
 
 @keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
-    }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
+  }
 
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
-    }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
+  }
 
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
-    }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+  }
 }
 
 .category-settings input {
-    width: 60px;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    text-align: center;
-    font-size: 14px;
+  width: 60px;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
 
-    @media (max-width: 768px) {
-        width: 50px;
-        padding: 0.2rem 0.3rem;
-        font-size: 13px;
-    }
+  @media (max-width: 768px) {
+    width: 50px;
+    padding: 0.2rem 0.3rem;
+    font-size: 13px;
+  }
 }
 
 .drag-to-reorder {
-    cursor: move;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    mat-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+  }
 }

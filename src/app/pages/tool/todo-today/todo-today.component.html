@@ -1,70 +1,89 @@
 <div class="main-content">
-	<div class="container-fluid">
-		<div class="row">
-			<div class="col-md-12">
-				<div class="card">
-					<div class="card-header">
-						<h4 class="card-title">{{showTranscript}}</h4>
-						<div class="d-flex align-items-center category-settings">
-							<input name="todayCount" type="number"
-							[(ngModel)]="settings.todayCount"
-							[ngModelOptions]="{standalone: true}"
-							(blur)="updateSettings()"
-							min="0" max="20">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header">
+            <h4 class="card-title">{{ showTranscript }}</h4>
+            <div class="d-flex align-items-center category-settings">
+              <input
+                name="todayCount"
+                type="number"
+                [(ngModel)]="settings.todayCount"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateSettings()"
+                min="0"
+                max="20"
+              />
 
-							<input name="weeklyCount" type="number"
-							[(ngModel)]="settings.weeklyCount"
-							[ngModelOptions]="{standalone: true}"
-							(blur)="updateSettings()"
-							min="0" max="50">
+              <input
+                name="weeklyCount"
+                type="number"
+                [(ngModel)]="settings.weeklyCount"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateSettings()"
+                min="0"
+                max="50"
+              />
 
-							<input name="monthlyCount" type="number"
-							[(ngModel)]="settings.monthlyCount"
-							[ngModelOptions]="{standalone: true}"
-							(blur)="updateSettings()"
-							min="0" max="20">
+              <input
+                name="monthlyCount"
+                type="number"
+                [(ngModel)]="settings.monthlyCount"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateSettings()"
+                min="0"
+                max="20"
+              />
 
-							<button (click)="addToDoToDay()"
-								matTooltip="Add new todo"
-								class="btn btn-primary btn-round">
-								<i class="material-icons">add</i>
-							</button>
-							<button [class.listening]="isListening"
-								(click)="toggleVoiceRecognition()"
-								matTooltip="Voice input"
-								class="btn btn-primary btn-round ml-2">
-								<i class="material-icons">
-									{{ isListening ? 'mic' : 'mic_none' }}
-								</i>
-							</button>
-						</div>
-					</div>
+              <button
+                (click)="addToDoToDay()"
+                matTooltip="Add new todo"
+                class="btn btn-primary btn-round"
+              >
+                <i class="material-icons">add</i>
+              </button>
+              <button
+                [class.listening]="isListening"
+                (click)="toggleVoiceRecognition()"
+                matTooltip="Voice input"
+                class="btn btn-primary btn-round ml-2"
+              >
+                <i class="material-icons">
+                  {{ isListening ? 'mic' : 'mic_none' }}
+                </i>
+              </button>
+            </div>
+          </div>
 
-					<form (ngSubmit)="searchToDoToDay()"
-						class="form-under-table-header row">
-						<div class="col-md-4 control-and-btn-container">
-							<button (click)="decreaseDate()"
-								class="btn btn-move">
-								<span class="material-icons">arrow_back_ios</span>
-							</button>
-							<mat-form-field class="example-full-width"
-								appearance="fill">
-								<mat-label>Date</mat-label>
-								<input [matDatepicker]="picker"
-									[formControl]="searchDate"
-									matInput
-									name="date">
-								<mat-datepicker-toggle [for]="picker"
-									matSuffix></mat-datepicker-toggle>
-								<mat-datepicker #picker></mat-datepicker>
-							</mat-form-field>
-							<button (click)="increaseDate()"
-								class="btn btn-move">
-								<span class="material-icons">arrow_forward_ios</span>
-							</button>
-						</div>
-						<!-- search status, default all -->
-						<!-- <div class="col-md-4">
+          <form
+            (ngSubmit)="searchToDoToDay()"
+            class="form-under-table-header row"
+          >
+            <div class="col-md-4 control-and-btn-container">
+              <button (click)="decreaseDate()" class="btn btn-move">
+                <span class="material-icons">arrow_back_ios</span>
+              </button>
+              <mat-form-field class="example-full-width" appearance="fill">
+                <mat-label>Date</mat-label>
+                <input
+                  [matDatepicker]="picker"
+                  [formControl]="searchDate"
+                  matInput
+                  name="date"
+                />
+                <mat-datepicker-toggle
+                  [for]="picker"
+                  matSuffix
+                ></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <button (click)="increaseDate()" class="btn btn-move">
+                <span class="material-icons">arrow_forward_ios</span>
+              </button>
+            </div>
+            <!-- search status, default all -->
+            <!-- <div class="col-md-4">
 							<mat-form-field class="example-full-width"
 								appearance="fill">
 								<mat-label>Trạng thái</mat-label>
@@ -77,108 +96,120 @@
 								</mat-select>
 							</mat-form-field>
 						</div> -->
-						<!-- button search -->
-						<div class="col-md-4">
-							<button [disabled]="isLoadingResults"
-								type="submit"
-								class="btn btn-info pull-right btn-w100">
-								<em class="material-icons">search</em>
-								Search
-							</button>
-						</div>
-					</form>
-					<div class="card-body">
-						<div class="table-responsive">
-							<table class="table">
-								<thead class=" text-primary">
-									<th class="status-width">Status</th>
-									<th>
-										<span (click)="increaseCount()">Content</span>
-									</th>
-								</thead>
-								<tbody (mouseleave)="hoveredIndex=undefined"
-									(cdkDropListDropped)="drop($event)"
-									cdkDropList>
-									<ng-container *ngIf="data && data.length; else noDataBlock">
-										<tr *ngFor="let tdtd of data; let index = index"
-											[style.background-color]="getCategoryColor(getTaskCategory(tdtd))"
-											[ngClass]="{
-                                        'warning': tdtd.status === TDTD_STATUS.NOT_YET,
-                                        'success': tdtd.status === TDTD_STATUS.DONE,
-                                        'primary': tdtd.status === TDTD_STATUS.NEW,
-                                        'future': tdtd.status === TDTD_STATUS.TOMORROW,
-                                        'past': tdtd.status === TDTD_STATUS.IN_PAST,
-                                        'is-important': index < this.settings.todayCount
-                                    }"
-											(mouseenter)="hoveredIndex=index"
-											cdkDrag>
-											<td>
-												<div class="form-check"
-													style="padding-left: 1rem;">
-													<label class="form-check-label">
-														<input [ngModelOptions]="{standalone: true}"
-															[(ngModel)]="tdtd.checked"
-															[checked]="tdtd.checked"
-															(change)="updateStatus(tdtd, index)"
-															class="form-check-input"
-															type="checkbox">
-														<span class="form-check-sign">
-															<span class="check"></span>
-														</span>
-													</label>
-												</div>
-												<div class="drag-to-reorder"
-													cdkDragHandle>
-													<mat-icon class="drag-to-reorder-icon">drag_indicator</mat-icon>
-												</div>
-											</td>
-											<td style="display: flex; align-items: center;">
-												<span *ngFor="let icon of tdtd.todoLabel">{{icon}}</span>
-												<textarea [(ngModel)]="tdtd.content"
-													[minRows]="1"
-													[maxRows]="3"
-													[useImportant]="true"
-													(blur)="saveItem(tdtd.id!, tdtd, index);false"
-													type="text"
-													class="editable wd100"
-													autosize></textarea>
-												<button [disabled]="isLoadingResults"
-													(click)="deleteTDTD(tdtd)"
-													type="button"
-													matTooltip="Delete"
-													class="btn-float-in-row pull-right mdc-icon-button material-icons red">
-													<div class="mdc-icon-button__ripple"></div>
-													delete
-												</button>
-											</td>
-										</tr>
-									</ng-container>
-									<ng-template #noDataBlock>
-										<tr class="text-center">
-											<td colspan="100%"
-												class="text-center">
-												<app-table-loading (size)="'sm'"></app-table-loading>
-												No data
-											</td>
-										</tr>
-									</ng-template>
-									<tr>
-										<td colspan="100%" style="padding: 0 0;">
-											<button [disabled]="isLoadingResults"
-												(click)="addToDoToDay()"
-												type="button"
-												matTooltip="Add Empty Row"
-												class="btn btn-info pull-right btn-w100">
-												<em class="material-icons">add</em>
-											</button>
-										</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+            <!-- button search -->
+            <div class="col-md-4">
+              <button
+                [disabled]="isLoadingResults"
+                type="submit"
+                class="btn btn-info pull-right btn-w100"
+              >
+                <em class="material-icons">search</em>
+                Search
+              </button>
+            </div>
+          </form>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="text-primary">
+                  <th class="status-width">Status</th>
+                  <th>
+                    <span (click)="increaseCount()">Content</span>
+                  </th>
+                </thead>
+                <tbody
+                  (mouseleave)="hoveredIndex = undefined"
+                  (cdkDropListDropped)="drop($event)"
+                  cdkDropList
+                >
+                  <ng-container *ngIf="data && data.length; else noDataBlock">
+                    <tr
+                      *ngFor="let tdtd of data; let index = index"
+                      [style.background-color]="
+                        getCategoryColor(getTaskCategory(tdtd))
+                      "
+                      [ngClass]="{
+                        warning: tdtd.status === TDTD_STATUS.NOT_YET,
+                        success: tdtd.status === TDTD_STATUS.DONE,
+                        primary: tdtd.status === TDTD_STATUS.NEW,
+                        future: tdtd.status === TDTD_STATUS.TOMORROW,
+                        past: tdtd.status === TDTD_STATUS.IN_PAST,
+                        'is-important': index < this.settings.todayCount,
+                      }"
+                      (mouseenter)="hoveredIndex = index"
+                      cdkDrag
+                    >
+                      <td class="status-cell">
+                        <div>
+                          <div class="drag-handle" cdkDragHandle>
+                            <mat-icon>drag_indicator</mat-icon>
+                          </div>
+                          <input
+                            type="checkbox"
+                            class="todo-checkbox"
+                            [ngModelOptions]="{ standalone: true }"
+                            [(ngModel)]="tdtd.checked"
+                            [checked]="tdtd.checked"
+                            (change)="updateStatus(tdtd, index)"
+                          />
+                        </div>
+                      </td>
+                      <td>
+                        <div class="content-wrapper">
+                          <span *ngFor="let icon of tdtd.todoLabel">{{
+                            icon
+                          }}</span>
+                          <textarea
+                            [(ngModel)]="tdtd.content"
+                            [minRows]="1"
+                            [maxRows]="3"
+                            [useImportant]="true"
+                            (blur)="saveItem(tdtd.id!, tdtd, index); (false)"
+                            type="text"
+                            class="editable wd100"
+                            autosize
+                          ></textarea>
+                          <button
+                            [disabled]="isLoadingResults"
+                            (click)="deleteTDTD(tdtd)"
+                            type="button"
+                            matTooltip="Delete"
+                            class="btn-float-in-row pull-right mdc-icon-button material-icons red"
+                          >
+                            <div class="mdc-icon-button__ripple"></div>
+                            delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </ng-container>
+                  <ng-template #noDataBlock>
+                    <tr class="text-center">
+                      <td colspan="100%" class="text-center">
+                        <app-table-loading (size)="('sm')"></app-table-loading>
+                        No data
+                      </td>
+                    </tr>
+                  </ng-template>
+                  <tr>
+                    <td colspan="100%" style="padding: 0 0">
+                      <button
+                        [disabled]="isLoadingResults"
+                        (click)="addToDoToDay()"
+                        type="button"
+                        matTooltip="Add Empty Row"
+                        class="btn btn-info pull-right btn-w100"
+                      >
+                        <em class="material-icons">add</em>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
