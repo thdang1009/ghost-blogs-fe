@@ -1,27 +1,30 @@
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, Inject, OnInit } from '@angular/core';
+import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Post, Tag, Category, Series } from '@models/_index';
-import { PostService, TagService, CategoryService, SeriesService } from '@services/_index';
+import {
+  PostService,
+  TagService,
+  CategoryService,
+  SeriesService,
+} from '@services/_index';
 import * as dateFns from 'date-fns';
 import { POST_STATUS, POST_TYPE } from '@shared/enum';
 import { PostSaveWrapper } from '../post-edit/post-edit.component';
 
-
 @Component({
   selector: 'app-post-list',
   templateUrl: './post-list.component.html',
-  styleUrls: ['./post-list.component.scss']
+  styleUrls: ['./post-list.component.scss'],
 })
 export class PostListComponent implements OnInit {
-
   data: Post[] = [];
   isLoadingResults = true;
   POST_TYPE = POST_TYPE;
   listPostType = [
     // POST_TYPE.GHOST_EDITOR,
-    POST_TYPE.MARKDOWN
+    POST_TYPE.MARKDOWN,
   ];
 
   today = dateFns.startOfToday();
@@ -29,7 +32,12 @@ export class PostListComponent implements OnInit {
   searchDateFrom = new UntypedFormControl(this.lastYearDay);
   searchDateTo = new UntypedFormControl(this.today);
   searchStatus = 'NONE';
-  statusList = [POST_STATUS.NONE, POST_STATUS.PRIVATE, POST_STATUS.PUBLIC, POST_STATUS.PROTECTED];
+  statusList = [
+    POST_STATUS.NONE,
+    POST_STATUS.PRIVATE,
+    POST_STATUS.PUBLIC,
+    POST_STATUS.PROTECTED,
+  ];
   searchTitle = '';
   searchTag = '';
   searchCategory = '';
@@ -47,9 +55,8 @@ export class PostListComponent implements OnInit {
     private ref: ChangeDetectorRef,
     private tagService: TagService,
     private categoryService: CategoryService,
-    private seriesService: SeriesService,
-  ) {
-  }
+    private seriesService: SeriesService
+  ) {}
 
   ngOnInit() {
     this.loadDropdownData();
@@ -68,31 +75,33 @@ export class PostListComponent implements OnInit {
 
   getPost(id: number, cb?: () => void) {
     this.isLoadingResults = true;
-    this.postService.getPostAsAdmin(id)
-      .subscribe(
-        res => {
-          this.itemSelected = res;
-          if (cb) {
-            cb();
-          }
-        },
-        _ => { },
-        () => {
-          this.isLoadingResults = false;
-        });
+    this.postService.getPostAsAdmin(id).subscribe(
+      res => {
+        this.itemSelected = res;
+        if (cb) {
+          cb();
+        }
+      },
+      _ => {},
+      () => {
+        this.isLoadingResults = false;
+      }
+    );
   }
 
   addPost() {
     const sample: Post = {
-      content: ''
-    }
-    this.postService.addPost(sample)
-      .subscribe((res: any) => {
+      content: '',
+    };
+    this.postService.addPost(sample).subscribe(
+      (res: any) => {
         this.data.unshift(res);
         this.isLoadingResults = false;
-      }, err => {
+      },
+      err => {
         this.isLoadingResults = false;
-      });
+      }
+    );
   }
 
   searchPost(id: number | undefined = undefined) {
@@ -100,30 +109,41 @@ export class PostListComponent implements OnInit {
   }
 
   chooseThisItem(id: number) {
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.activatedRoute,
-        queryParams: { id: id },
-        queryParamsHandling: 'merge'
-      });
+    this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { id: id },
+      queryParamsHandling: 'merge',
+    });
     this.editMode = true;
   }
 
   loadDropdownData() {
-    this.tagService.getTags().subscribe(tags => this.tags = tags);
-    this.categoryService.getCategorys().subscribe(categories => this.categories = categories);
-    this.seriesService.getAllSeries().subscribe(series => this.series = series);
+    this.tagService.getTags().subscribe(tags => (this.tags = tags));
+    this.categoryService
+      .getCategorys()
+      .subscribe(categories => (this.categories = categories));
+    this.seriesService
+      .getAllSeries()
+      .subscribe(series => (this.series = series));
   }
 
   funcGetAllPost(id: number | undefined) {
-    const hasNonDateFilters = this.searchTitle || this.searchTag || this.searchCategory || this.searchSeries || (this.searchStatus !== 'NONE');
-    
-    const from = hasNonDateFilters ? undefined : (this.searchDateFrom && this.searchDateFrom.value || new Date());
-    const to = hasNonDateFilters ? undefined : (this.searchDateTo && this.searchDateTo.value || new Date());
+    const hasNonDateFilters =
+      this.searchTitle ||
+      this.searchTag ||
+      this.searchCategory ||
+      this.searchSeries ||
+      this.searchStatus !== 'NONE';
+
+    const from = hasNonDateFilters
+      ? undefined
+      : (this.searchDateFrom && this.searchDateFrom.value) || new Date();
+    const to = hasNonDateFilters
+      ? undefined
+      : (this.searchDateTo && this.searchDateTo.value) || new Date();
     const fromDate = from ? dateFns.startOfDay(from) : undefined;
     const toDate = to ? dateFns.endOfDay(to) : undefined;
-    
+
     const req = {
       from: fromDate,
       to: toDate,
@@ -131,20 +151,23 @@ export class PostListComponent implements OnInit {
       title: this.searchTitle || undefined,
       tag: this.searchTag || undefined,
       category: this.searchCategory || undefined,
-      series: this.searchSeries || undefined
-    }
+      series: this.searchSeries || undefined,
+    };
     this.isLoadingResults = true;
-    this.postService.getAllPost(req)
-      .subscribe((res: any) => {
+    // Exclude heavy content fields for the list view (optimize loading)
+    this.postService.getAllPost(req, true).subscribe(
+      (res: any) => {
         this.data = res;
         if (id) {
           this.itemSelected = res.filter((el: Post) => el.id === id)[0];
           this.ref.markForCheck();
         }
         this.isLoadingResults = false;
-      }, err => {
+      },
+      err => {
         this.isLoadingResults = false;
-      });
+      }
+    );
   }
   deleteLast() {
     this.isLoadingResults = true;
@@ -164,17 +187,23 @@ export class PostListComponent implements OnInit {
   callDeletePost(id: number) {
     if (id) {
       this.isLoadingResults = true;
-      this.postService.deletePost(id)
-        .subscribe((_: any) => {
+      this.postService.deletePost(id).subscribe(
+        (_: any) => {
           this.data = this.data.filter(el => el.id !== id);
           this.isLoadingResults = false;
-        }, err => {
+        },
+        err => {
           this.isLoadingResults = false;
-        });
+        }
+      );
     }
   }
   drop(event: any) {
-    moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
+    moveItemInArray(
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex
+    );
   }
   sort(preIndex: number, curIndex: number) {
     const item = this.data[preIndex];
@@ -183,36 +212,37 @@ export class PostListComponent implements OnInit {
     return new Promise<any>((resolve, reject) => {
       const req = {
         ...item,
-        order: newOrder + delta
+        order: newOrder + delta,
       };
-      this.postService.updatePost(item.id, req)
-        .subscribe((_: any) => {
+      this.postService.updatePost(item.id, req).subscribe(
+        (_: any) => {
           this.isLoadingResults = false;
           resolve('success');
-        }, err => {
+        },
+        err => {
           this.isLoadingResults = false;
           reject('fail');
-        });
+        }
+      );
     });
   }
   saveItem({ item, isBack }: PostSaveWrapper) {
     const callback = () => {
       this.itemSelected = {};
-      this.router.navigate(
-        [],
-        {
-          relativeTo: this.activatedRoute,
-          queryParams: { id: null },
-          queryParamsHandling: 'merge'
-        });
-    }
+      this.router.navigate([], {
+        relativeTo: this.activatedRoute,
+        queryParams: { id: null },
+        queryParamsHandling: 'merge',
+      });
+    };
 
-    this.postService.updatePost(item.id, item)
-      .subscribe((res: any) => {
+    this.postService.updatePost(item.id, item).subscribe(
+      (res: any) => {
         if (isBack && callback) {
           callback();
         }
-      }, err => {
-      });
+      },
+      err => {}
+    );
   }
 }
