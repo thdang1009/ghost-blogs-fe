@@ -158,7 +158,11 @@
             class="recent-posts-grid"
           >
             <app-post-card
-              *ngFor="let post of recentPosts(); trackBy: trackByPostId"
+              *ngFor="
+                let post of recentPosts();
+                let i = index;
+                trackBy: trackByPostId
+              "
               [post]="post"
             >
             </app-post-card>
