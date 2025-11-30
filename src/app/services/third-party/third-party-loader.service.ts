@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { ScriptLoaderService } from '../script-loader/script-loader.service';
 import { environment } from '@environments/environment';
 
@@ -15,13 +16,23 @@ declare global {
   providedIn: 'root',
 })
 export class ThirdPartyLoaderService {
-  constructor(private scriptLoader: ScriptLoaderService) {}
+  private isBrowser: boolean;
+
+  constructor(
+    private scriptLoader: ScriptLoaderService,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   /**
    * Initialize all third-party scripts with lazy loading
    * This should be called from app initialization
    */
   initializeThirdPartyScripts(): void {
+    // Only run in browser
+    if (!this.isBrowser) return;
+
     // Load Google Analytics after 3 seconds
     this.loadGoogleAnalytics(3000);
 
@@ -36,7 +47,7 @@ export class ThirdPartyLoaderService {
    * Load Google Analytics (gtag.js)
    */
   private loadGoogleAnalytics(delayMs: number = 3000): void {
-    if (!environment.gaCode) return;
+    if (!this.isBrowser || !environment.gaCode) return;
 
     // Initialize dataLayer
     window.dataLayer = window.dataLayer || [];

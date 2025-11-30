@@ -9,7 +9,8 @@
     <img
       [src]="post.postBackgroundImg"
       [alt]="post.title"
-      loading="lazy"
+      [attr.loading]="priority ? 'eager' : 'lazy'"
+      [attr.fetchpriority]="priority ? 'high' : null"
       width="300"
       height="200"
       style="aspect-ratio: 3/2; object-fit: cover"
