@@ -2,7 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, PostService } from '@services/_index';
 import { Post } from '@models/_index';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
 interface Section {
@@ -17,10 +17,9 @@ interface Section {
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-
   // Signals for reactive state management
   isLogined = signal(false);
   isAdmin = signal(false);
@@ -40,10 +39,38 @@ export class HomeComponent implements OnInit {
 
   // Section states
   sections = signal<Record<string, Section>>({
-    mostRead: { id: 'mostRead', title: '🔥 Most Read Posts', icon: 'trending_up', loaded: false, loading: false, error: null },
-    series: { id: 'series', title: '📚 Browse Series', icon: 'library_books', loaded: false, loading: false, error: null },
-    recent: { id: 'recent', title: '🆕 Recent Posts', icon: 'schedule', loaded: false, loading: false, error: null },
-    tags: { id: 'tags', title: '🏷️ Explore by Tags', icon: 'label', loaded: false, loading: false, error: null }
+    mostRead: {
+      id: 'mostRead',
+      title: '🔥 Most Read Posts',
+      icon: 'trending_up',
+      loaded: false,
+      loading: false,
+      error: null,
+    },
+    series: {
+      id: 'series',
+      title: '📚 Browse Series',
+      icon: 'library_books',
+      loaded: false,
+      loading: false,
+      error: null,
+    },
+    recent: {
+      id: 'recent',
+      title: '🆕 Recent Posts',
+      icon: 'schedule',
+      loaded: false,
+      loading: false,
+      error: null,
+    },
+    tags: {
+      id: 'tags',
+      title: '🏷️ Explore by Tags',
+      icon: 'label',
+      loaded: false,
+      loading: false,
+      error: null,
+    },
   });
 
   // Computed values
@@ -97,13 +124,19 @@ export class HomeComponent implements OnInit {
   loadMostReadPosts() {
     this.updateSectionState('mostRead', { loading: true, error: null });
 
-    this.postService.getMostReadPosts(6, this.privateMode())
+    this.postService
+      .getMostReadPosts(6, this.privateMode())
       .pipe(
         catchError(error => {
-          this.updateSectionState('mostRead', { loading: false, error: 'Failed to load most read posts' });
+          this.updateSectionState('mostRead', {
+            loading: false,
+            error: 'Failed to load most read posts',
+          });
           return of({ posts: [] });
         }),
-        finalize(() => this.updateSectionState('mostRead', { loading: false, loaded: true }))
+        finalize(() =>
+          this.updateSectionState('mostRead', { loading: false, loaded: true })
+        )
       )
       .subscribe(response => {
         this.mostReadPosts.set(response.posts);
@@ -113,13 +146,19 @@ export class HomeComponent implements OnInit {
   loadRecentPosts(page: number = 1) {
     this.updateSectionState('recent', { loading: true, error: null });
 
-    this.postService.getRecentPosts(page, 9, this.privateMode())
+    this.postService
+      .getRecentPosts(page, 3, this.privateMode())
       .pipe(
         catchError(error => {
-          this.updateSectionState('recent', { loading: false, error: 'Failed to load recent posts' });
+          this.updateSectionState('recent', {
+            loading: false,
+            error: 'Failed to load recent posts',
+          });
           return of({ posts: [], pagination: null });
         }),
-        finalize(() => this.updateSectionState('recent', { loading: false, loaded: true }))
+        finalize(() =>
+          this.updateSectionState('recent', { loading: false, loaded: true })
+        )
       )
       .subscribe(response => {
         if (page === 1) {
@@ -135,13 +174,19 @@ export class HomeComponent implements OnInit {
   loadTagsSummary() {
     this.updateSectionState('tags', { loading: true, error: null });
 
-    this.postService.getTagsSummary(this.privateMode())
+    this.postService
+      .getTagsSummary(this.privateMode())
       .pipe(
         catchError(error => {
-          this.updateSectionState('tags', { loading: false, error: 'Failed to load tags' });
+          this.updateSectionState('tags', {
+            loading: false,
+            error: 'Failed to load tags',
+          });
           return of({ tags: [] });
         }),
-        finalize(() => this.updateSectionState('tags', { loading: false, loaded: true }))
+        finalize(() =>
+          this.updateSectionState('tags', { loading: false, loaded: true })
+        )
       )
       .subscribe(response => {
         this.tagsSummary.set(response.tags);
@@ -151,13 +196,19 @@ export class HomeComponent implements OnInit {
   loadSeriesSummary() {
     this.updateSectionState('series', { loading: true, error: null });
 
-    this.postService.getSeriesSummary(this.privateMode())
+    this.postService
+      .getSeriesSummary(this.privateMode())
       .pipe(
         catchError(error => {
-          this.updateSectionState('series', { loading: false, error: 'Failed to load series' });
+          this.updateSectionState('series', {
+            loading: false,
+            error: 'Failed to load series',
+          });
           return of({ series: [] });
         }),
-        finalize(() => this.updateSectionState('series', { loading: false, loaded: true }))
+        finalize(() =>
+          this.updateSectionState('series', { loading: false, loaded: true })
+        )
       )
       .subscribe(response => {
         this.seriesSummary.set(response.series);
@@ -168,7 +219,7 @@ export class HomeComponent implements OnInit {
     this.sections.update(sections => {
       return {
         ...sections,
-        [sectionId]: { ...sections[sectionId], ...updates }
+        [sectionId]: { ...sections[sectionId], ...updates },
       };
     });
   }
@@ -189,13 +240,19 @@ export class HomeComponent implements OnInit {
     this.currentTagFilter.set(tagName);
     this.updateSectionState('recent', { loading: true, error: null });
 
-    this.postService.getPublicPosts({ tag: tagName, limit: 20, page: 1 })
+    this.postService
+      .getPublicPosts({ tag: tagName, limit: 20, page: 1 })
       .pipe(
         catchError(error => {
-          this.updateSectionState('recent', { loading: false, error: `Failed to load posts for tag: ${tagName}` });
+          this.updateSectionState('recent', {
+            loading: false,
+            error: `Failed to load posts for tag: ${tagName}`,
+          });
           return of({ posts: [] });
         }),
-        finalize(() => this.updateSectionState('recent', { loading: false, loaded: true }))
+        finalize(() =>
+          this.updateSectionState('recent', { loading: false, loaded: true })
+        )
       )
       .subscribe(response => {
         // Extract posts array from response object

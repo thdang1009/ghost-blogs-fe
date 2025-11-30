@@ -1,51 +1,56 @@
-<nav style="display: contents;"
-	class="navbar navbar-expand-lg navbar-transparent  navbar-absolute fixed-top stick-top">
-	<div class="container-fluid">
-		<div class="navbar-wrapper">
-			<a [routerLink]="['/home']"
-				class="navbar-brand">
-				Ghost Site
-			</a>
-		</div>
-		<button (click)="sidebarToggle()"
-			class="navbar-toggler"
-			type="button">
-			<span class="sr-only">Toggle navigation</span>
-			<span class="navbar-toggler-icon icon-bar"></span>
-			<span class="navbar-toggler-icon icon-bar"></span>
-			<span class="navbar-toggler-icon icon-bar"></span>
-		</button>
-		<div class="collapse navbar-collapse justify-content-end"
-			id="navigation">
-			<form class="navbar-form search-form"
-				(ngSubmit)="search()">
-				<div class="input-group no-border search-input-container">
-					<input [(ngModel)]="stringToSearch"
-						[ngModelOptions]="{standalone: true}"
-						(input)="onSearchInput(stringToSearch)"
-						type="text"
-						class="form-control search-input"
-						placeholder="{{ _isInPDFView ? 'Search in PDF' : 'Search in all page...' }}">
-					<button type="submit"
-						class="btn btn-white btn-round btn-just-icon search-button">
-						<i class="material-icons">search</i>
-						<div class="ripple-container"></div>
-					</button>
+<nav
+  style="display: contents"
+  class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top stick-top"
+>
+  <div class="container-fluid">
+    <div class="navbar-wrapper">
+      <a [routerLink]="['/home']" class="navbar-brand"> Ghost Site </a>
+    </div>
+    <button (click)="sidebarToggle()" class="navbar-toggler" type="button">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+      <span class="navbar-toggler-icon icon-bar"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navigation">
+      <form class="navbar-form search-form" (ngSubmit)="search()">
+        <div class="input-group no-border search-input-container">
+          <input
+            [(ngModel)]="stringToSearch"
+            [ngModelOptions]="{ standalone: true }"
+            (input)="onSearchInput(stringToSearch)"
+            type="text"
+            class="form-control search-input"
+            placeholder="{{
+              _isInPDFView ? 'Search in PDF' : 'Search in all page...'
+            }}"
+          />
+          <button
+            type="submit"
+            class="btn btn-white btn-round btn-just-icon search-button"
+          >
+            <i class="material-icons">search</i>
+            <div class="ripple-container"></div>
+          </button>
 
-					<!-- Search Suggestions Dropdown -->
-					<div *ngIf="showSuggestions && searchSuggestions.length > 0"
-						class="search-suggestions">
-						<div *ngFor="let suggestion of searchSuggestions"
-							(click)="selectSuggestion(suggestion)"
-							class="search-suggestion-item">
-							<i class="material-icons">search</i>
-							<span>{{ suggestion }}</span>
-						</div>
-					</div>
-				</div>
-			</form>
-			<ul class="navbar-nav">
-				<!-- <li class="nav-item">
+          <!-- Search Suggestions Dropdown -->
+          <div
+            *ngIf="showSuggestions && searchSuggestions.length > 0"
+            class="search-suggestions"
+          >
+            <div
+              *ngFor="let suggestion of searchSuggestions"
+              (click)="selectSuggestion(suggestion)"
+              class="search-suggestion-item"
+            >
+              <i class="material-icons">search</i>
+              <span>{{ suggestion }}</span>
+            </div>
+          </div>
+        </div>
+      </form>
+      <ul class="navbar-nav">
+        <!-- <li class="nav-item">
 					<a [routerLink]="['apps/json-beautifier']"
 						class="nav-link">
 						<i class="fas fa-indent"></i>
@@ -59,22 +64,23 @@
 						JSON ⇋ EXCEL
 					</a>
 				</li> -->
-				<li class="nav-item hover-pointer">
-					<a *ngIf="isLogined(); else notLogined"
-						(click)="logout()"
-						class="nav-link hover-pointer">
-						<i class="fas fa-sign-out-alt"></i>
-						Logout
-					</a>
-					<ng-template #notLogined>
-						<a (click)="login()"
-							class="nav-link hover-pointer">
-							<i class="fas fa-sign-in-alt"></i>
-							Login
-						</a>
-					</ng-template>
-				</li>
-			</ul>
-		</div>
-	</div>
+        <li class="nav-item">
+          <a
+            *ngIf="isLogined(); else notLogined"
+            [routerLink]="['/logout']"
+            class="nav-link"
+          >
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+          <ng-template #notLogined>
+            <a [routerLink]="['/login']" class="nav-link">
+              <i class="fas fa-sign-in-alt"></i>
+              Login
+            </a>
+          </ng-template>
+        </li>
+      </ul>
+    </div>
+  </div>
 </nav>
