@@ -147,7 +147,7 @@ export class HomeComponent implements OnInit {
     this.updateSectionState('recent', { loading: true, error: null });
 
     this.postService
-      .getRecentPosts(page, 3, this.privateMode())
+      .getRecentPosts(page, 9, this.privateMode())
       .pipe(
         catchError(error => {
           this.updateSectionState('recent', {
