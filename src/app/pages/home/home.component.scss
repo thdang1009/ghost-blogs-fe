@@ -97,7 +97,7 @@ section {
   opacity: 0.5;
 }
 .private-post:after {
-  content: "Private";
+  content: 'Private';
   right: 0;
   font-weight: bold;
   position: absolute;
@@ -134,7 +134,7 @@ section {
 }
 
 .skeleton-card::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   right: 0;
@@ -230,11 +230,11 @@ section {
     border-radius: 25px;
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     &.active {
@@ -260,11 +260,11 @@ section {
     border-radius: 25px;
     font-weight: 500;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       text-decoration: none;
       color: white;
     }
@@ -280,12 +280,12 @@ section {
   margin-bottom: 3rem;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
   }
 }
 
@@ -314,8 +314,8 @@ section {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
     padding: 8px 16px;
     border-radius: 20px;
@@ -323,7 +323,7 @@ section {
     transition: all 0.3s ease;
 
     &:hover {
-      background: rgba(255,255,255,0.3);
+      background: rgba(255, 255, 255, 0.3);
       transform: translateY(-1px);
     }
 
@@ -406,11 +406,11 @@ section {
   transition: all 0.3s ease;
   font-size: 0.9rem;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     background: linear-gradient(45deg, #764ba2 0%, #667eea 100%);
   }
 
@@ -419,7 +419,7 @@ section {
   }
 
   .tag-count {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.8rem;
@@ -455,12 +455,12 @@ section {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
   border: 1px solid #f0f0f0;
 
   &:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   }
 
   .series-image {
@@ -545,11 +545,11 @@ section {
   font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   }
 
   &:disabled {
@@ -567,8 +567,12 @@ section {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // Responsive Design Enhancements
@@ -726,4 +730,62 @@ section {
     font-size: 1.1rem;
     margin: 0;
   }
+}
+
+/* ========================================
+   CLS FIXES - Reserve space for dynamic content
+   ======================================== */
+
+/* Reserve space for grids to prevent layout shifts */
+.recent-posts-grid {
+  min-height: 650px; /* ~3 rows of cards at 200px + gaps */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.series-grid {
+  min-height: 300px; /* ~2 rows of series cards */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.most-read-grid {
+  min-height: 650px; /* Compact cards */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.tags-grid {
+  min-height: 120px; /* Tag chips */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filtered-posts-grid {
+  min-height: 650px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+/* Ensure section has min-height even while loading */
+.section-content {
+  min-height: 300px; /* Prevents shift when content loads */
+  position: relative;
+}
+
+/* Material Icons - use block display to reserve space */
+.material-icons {
+  font-display: block !important;
+}
+
+/* Font loading optimization */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
 }

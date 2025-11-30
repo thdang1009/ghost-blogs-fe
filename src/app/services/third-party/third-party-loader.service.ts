@@ -49,6 +49,13 @@ export class ThirdPartyLoaderService {
   private loadGoogleAnalytics(delayMs: number = 3000): void {
     if (!this.isBrowser || !environment.gaCode) return;
 
+    // Prevent duplicate loads (BUG FIX: was loading 3x)
+    if ((window as any).__gaLoaded) {
+      console.log('[ThirdParty] Google Analytics already loaded, skipping...');
+      return;
+    }
+    (window as any).__gaLoaded = true;
+
     // Initialize dataLayer
     window.dataLayer = window.dataLayer || [];
     window.gtag = function () {
@@ -58,6 +65,12 @@ export class ThirdPartyLoaderService {
     window.gtag('config', environment.gaCode, {
       page_path: window.location.pathname,
     });
+
+    console.log(
+      '[ThirdParty] Loading Google Analytics after',
+      delayMs,
+      'ms...'
+    );
 
     // Load the script
     this.scriptLoader
