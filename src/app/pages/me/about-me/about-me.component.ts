@@ -55,6 +55,11 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
       title: 'Tarot free',
       allowFullscreen: true,
     },
+    {
+      src: 'https://diff-tool.netlify.app/',
+      title: 'Diff tool',
+      allowFullscreen: true,
+    },
   ];
   arrString = [
     "I'm Ghost - A Fullstack Dev",
