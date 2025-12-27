@@ -113,7 +113,7 @@
               <table class="table">
                 <thead class="text-primary">
                   <th class="status-width">Status</th>
-                  <th>
+                  <th class="content-width">
                     <span (click)="increaseCount()">Content</span>
                   </th>
                 </thead>
@@ -122,6 +122,19 @@
                   (cdkDropListDropped)="drop($event)"
                   cdkDropList
                 >
+                  <tr>
+                    <td colspan="100%" style="padding: 0 0">
+                      <button
+                        [disabled]="isLoadingResults"
+                        (click)="addToDoToDayAtTop()"
+                        type="button"
+                        matTooltip="Add to Top"
+                        class="btn btn-info pull-right btn-w100"
+                      >
+                        <em class="material-icons">add</em>
+                      </button>
+                    </td>
+                  </tr>
                   <ng-container *ngIf="data && data.length; else noDataBlock">
                     <tr
                       *ngFor="let tdtd of data; let index = index"

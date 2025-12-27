@@ -188,6 +188,28 @@ export class TodoTodayComponent implements OnInit {
     );
   }
 
+  addToDoToDayAtTop() {
+    // Calculate order to be lower than the first item
+    const firstItemOrder = this.data.length > 0 ? (this.data[0].order || 0) : 0;
+    const newOrder = firstItemOrder - 3;
+
+    const sample: TodoToday = {
+      content: '',
+      date: this.searchDate.value || new Date(),
+      order: newOrder,
+    };
+    this.isLoadingResults = true;
+    this.todoTodayService.addTodoToday(sample).subscribe(
+      (res: any) => {
+        this.data.unshift(res);
+        this.isLoadingResults = false;
+      },
+      err => {
+        this.isLoadingResults = false;
+      }
+    );
+  }
+
   async searchToDoToDay() {
     await this._getTodoLabel();
     await this._getMyToDoToDay();
@@ -232,7 +254,7 @@ export class TodoTodayComponent implements OnInit {
                     ),
             };
           })
-          .sort((el: TodoToday) => (isImportant(el.content!) ? -1 : 1));
+          .sort((a: TodoToday, b: TodoToday) => (a.order || 0) - (b.order || 0));
         console.log('dangth, data', this.data);
         this.isLoadingResults = false;
       },
