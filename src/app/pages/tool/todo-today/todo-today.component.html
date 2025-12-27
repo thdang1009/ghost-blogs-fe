@@ -5,6 +5,8 @@
         <div class="card">
           <div class="card-header">
             <h4 class="card-title">{{ showTranscript }}</h4>
+
+            <!-- Row 1: Task Category Settings & Voice -->
             <div class="d-flex align-items-center category-settings">
               <input
                 name="todayCount"
@@ -14,6 +16,8 @@
                 (blur)="updateSettings()"
                 min="0"
                 max="20"
+                placeholder="Today"
+                matTooltip="Today Count"
               />
 
               <input
@@ -24,6 +28,8 @@
                 (blur)="updateSettings()"
                 min="0"
                 max="50"
+                placeholder="Weekly"
+                matTooltip="Weekly Count"
               />
 
               <input
@@ -34,15 +40,10 @@
                 (blur)="updateSettings()"
                 min="0"
                 max="20"
+                placeholder="Monthly"
+                matTooltip="Monthly Count"
               />
 
-              <button
-                (click)="addToDoToDay()"
-                matTooltip="Add new todo"
-                class="btn btn-primary btn-round"
-              >
-                <i class="material-icons">add</i>
-              </button>
               <button
                 [class.listening]="isListening"
                 (click)="toggleVoiceRecognition()"
@@ -53,6 +54,118 @@
                   {{ isListening ? 'mic' : 'mic_none' }}
                 </i>
               </button>
+            </div>
+
+            <!-- Row 2: Reward Settings & Timer -->
+            <div class="d-flex align-items-center category-settings reward-row">
+              <input
+                name="rewardFrom"
+                type="number"
+                [(ngModel)]="rewardSettings.rewardFrom"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateRewardSettings()"
+                min="1"
+                max="1000"
+                placeholder="From"
+                matTooltip="Reward From"
+              />
+
+              <input
+                name="rewardTo"
+                type="number"
+                [(ngModel)]="rewardSettings.rewardTo"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateRewardSettings()"
+                min="1"
+                max="1000"
+                placeholder="To"
+                matTooltip="Reward To"
+              />
+
+              <input
+                name="rewardMultiplier"
+                type="number"
+                [(ngModel)]="rewardSettings.rewardMultiplier"
+                [ngModelOptions]="{ standalone: true }"
+                (blur)="updateRewardSettings()"
+                min="0.1"
+                max="100"
+                step="1"
+                placeholder="x"
+                matTooltip="Reward Multiplier"
+              />
+
+              <button
+                (click)="generateReward()"
+                matTooltip="Get Reward"
+                class="btn btn-success btn-round ml-2"
+              >
+                <i class="material-icons">card_giftcard</i>
+              </button>
+
+              <!-- Timer Badge (when minimized and active) -->
+              <div
+                *ngIf="isMinimized && savedRewardSeconds > 0"
+                class="timer-badge"
+                [class.running]="timerState === 'running' || timerState === 'minimized'"
+                [class.paused]="timerState === 'paused'"
+                (click)="expandTimer()"
+                matTooltip="Click to expand timer"
+              >
+                <i class="material-icons">timer</i>
+                <span>{{ getTimerDisplay() }}</span>
+              </div>
+
+              <!-- Saved Reward Badge (when timer NOT active) -->
+              <div
+                *ngIf="!isMinimized && savedRewardSeconds > 0"
+                class="saved-reward-badge clickable"
+                (click)="openTimerFromSavedReward()"
+                matTooltip="Click to use your reward time"
+              >
+                <i class="material-icons">account_balance_wallet</i>
+                <span>{{ getSavedRewardDisplay() }}m</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timer Display Overlay -->
+          <div *ngIf="showReward" class="reward-overlay" (click)="closeReward()">
+            <div class="reward-card" (click)="$event.stopPropagation()">
+
+              <!-- Running State: Show countdown with pause and minimize -->
+              <ng-container *ngIf="timerState === 'running'">
+                <div class="reward-icon timer-icon">⏱</div>
+                <div class="reward-label">Reward Time</div>
+                <div class="timer-display">{{ getTimerDisplay() }}</div>
+                <div class="reward-actions">
+                  <button class="btn btn-warning" (click)="pauseTimer()">
+                    <i class="material-icons">pause</i> Pause
+                  </button>
+                  <button class="btn btn-danger" (click)="stopTimer()">
+                    <i class="material-icons">stop</i> Stop
+                  </button>
+                  <button class="btn btn-secondary" (click)="minimizeTimer()">
+                    <i class="material-icons">minimize</i> Minimize
+                  </button>
+                </div>
+              </ng-container>
+
+              <!-- Paused State: Show countdown with resume -->
+              <ng-container *ngIf="timerState === 'paused'">
+                <div class="reward-icon timer-icon paused">💰</div>
+                <div class="reward-label">Your Reward Bank</div>
+                <div class="timer-display">{{ getTimerDisplay() }}</div>
+                <div class="reward-subtitle">Click Start to use this time</div>
+                <div class="reward-actions">
+                  <button class="btn btn-success btn-lg" (click)="resumeTimer()">
+                    <i class="material-icons">play_arrow</i> Start Timer
+                  </button>
+                  <button class="btn btn-secondary" (click)="closeReward()">Close</button>
+                </div>
+              </ng-container>
+
+              <button class="reward-close" (click)="closeReward()">×</button>
             </div>
           </div>
 

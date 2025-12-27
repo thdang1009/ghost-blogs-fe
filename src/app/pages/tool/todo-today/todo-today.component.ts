@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { TodoLabel, TodoToday } from '@models/_index';
 import * as dateFns from 'date-fns';
@@ -7,6 +7,7 @@ import {
   TodoLabelService,
   TodoTodayService,
   UserSettingsService,
+  UserRewardService,
 } from '@services/_index';
 import {
   isImportant,
@@ -33,7 +34,7 @@ const ENUM_CATEGORY = {
   templateUrl: './todo-today.component.html',
   styleUrls: ['./todo-today.component.scss'],
 })
-export class TodoTodayComponent implements OnInit {
+export class TodoTodayComponent implements OnInit, OnDestroy {
   data: TodoToday[] = [];
   dataLabel: TodoLabel[] = [];
   isLoadingResults = true;
@@ -67,6 +68,26 @@ export class TodoTodayComponent implements OnInit {
     monthlyCount: 2,
   };
 
+  // Reward settings (stored locally)
+  rewardSettings = {
+    rewardFrom: 15,
+    rewardTo: 30,
+    rewardMultiplier: 1,
+  };
+
+  // Reward display states
+  showReward = false;
+  timerState: 'running' | 'paused' | 'minimized' = 'paused';
+
+  // Timer properties
+  timerInterval: any = null;
+  savedRewardSeconds = 0;
+  isMinimized = false;
+
+  // Backend sync
+  syncInterval: any = null;
+  lastSyncTime = 0;
+
   // Language-specific messages
   messages = {
     en: {
@@ -98,7 +119,8 @@ export class TodoTodayComponent implements OnInit {
     private todoTodayService: TodoTodayService,
     private todoLabelService: TodoLabelService,
     private alertService: AlertService,
-    private userSettingsService: UserSettingsService
+    private userSettingsService: UserSettingsService,
+    private userRewardService: UserRewardService
   ) {
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window) {
@@ -128,7 +150,14 @@ export class TodoTodayComponent implements OnInit {
 
   ngOnInit() {
     this.loadSettings();
+    this.loadRewardSettings();
+    this.loadRewardState();
     this.searchToDoToDay();
+  }
+
+  ngOnDestroy() {
+    this.stopTimerInterval();
+    this.stopSyncInterval();
   }
 
   loadSettings() {
@@ -141,6 +170,21 @@ export class TodoTodayComponent implements OnInit {
         };
       }
     });
+  }
+
+  loadRewardSettings() {
+    const saved = localStorage.getItem('todoRewardSettings');
+    if (saved) {
+      try {
+        this.rewardSettings = JSON.parse(saved);
+      } catch (e) {
+        // If parsing fails, use defaults
+      }
+    }
+  }
+
+  updateRewardSettings() {
+    localStorage.setItem('todoRewardSettings', JSON.stringify(this.rewardSettings));
   }
 
   updateSettings() {
@@ -569,5 +613,233 @@ export class TodoTodayComponent implements OnInit {
 
   toggleSearchForm() {
     this.isSearchFormExpanded = !this.isSearchFormExpanded;
+  }
+
+  // ============== REWARD & TIMER METHODS ==============
+
+  generateReward() {
+    const { rewardFrom, rewardTo, rewardMultiplier } = this.rewardSettings;
+
+    // Validate inputs
+    if (rewardFrom > rewardTo) {
+      this.alertService.showNoti('Reward From must be less than or equal to Reward To', 'warning');
+      return;
+    }
+
+    // Generate random integer between from and to (inclusive)
+    const randomValue = Math.floor(Math.random() * (rewardTo - rewardFrom + 1)) + rewardFrom;
+
+    // Multiply by the multiplier (result in minutes, convert to seconds)
+    const rewardMinutes = randomValue * rewardMultiplier;
+    const rewardSeconds = Math.floor(rewardMinutes * 60);
+
+    // Add directly to saved bank
+    this.savedRewardSeconds += rewardSeconds;
+
+    // Sync to backend
+    this.syncToBackend();
+
+    // Show success notification
+    this.alertService.showNoti(
+      `🎁 Added ${rewardMinutes} minutes to your reward bank!`,
+      'success'
+    );
+  }
+
+  openTimerFromSavedReward() {
+    if (this.savedRewardSeconds <= 0) {
+      this.alertService.showNoti('No saved reward time available', 'warning');
+      return;
+    }
+
+    // Open timer overlay in paused state
+    this.showReward = true;
+    this.timerState = 'paused';
+    this.isMinimized = false;
+  }
+
+  startTimer() {
+    if (this.savedRewardSeconds <= 0) {
+      this.alertService.showNoti('No reward time available', 'warning');
+      return;
+    }
+
+    this.timerState = 'running';
+    this.startTimerInterval();
+    this.startSyncInterval();
+    this.syncToBackend();
+  }
+
+  pauseTimer() {
+    this.timerState = 'paused';
+    this.stopTimerInterval();
+    this.syncToBackend();
+  }
+
+  resumeTimer() {
+    this.timerState = 'running';
+    this.startTimerInterval();
+    this.syncToBackend();
+  }
+
+  stopTimer() {
+    // Stop the timer (time is already in savedRewardSeconds)
+    this.timerState = 'paused';
+    this.showReward = false;
+    this.isMinimized = false;
+
+    this.stopTimerInterval();
+    this.syncToBackend();
+
+    const remainingMinutes = Math.floor(this.savedRewardSeconds / 60);
+    this.alertService.showNoti(`Timer stopped. ${remainingMinutes} minutes remain in your bank.`, 'info');
+  }
+
+  minimizeTimer() {
+    this.isMinimized = true;
+    this.timerState = 'minimized';
+    this.showReward = false;
+  }
+
+  expandTimer() {
+    this.isMinimized = false;
+    if (this.savedRewardSeconds > 0) {
+      this.timerState = this.timerInterval ? 'running' : 'paused';
+      this.showReward = true;
+    }
+  }
+
+  closeReward() {
+    if (this.timerState === 'running' || this.timerState === 'paused') {
+      this.minimizeTimer();
+    } else {
+      this.showReward = false;
+    }
+  }
+
+  // ============== TIMER INTERVAL ==============
+
+  startTimerInterval() {
+    this.stopTimerInterval();
+    this.timerInterval = setInterval(() => {
+      if (this.savedRewardSeconds > 0) {
+        this.savedRewardSeconds--;
+
+        // Sync every 30 seconds
+        const now = Date.now();
+        if (now - this.lastSyncTime > 30000) {
+          this.syncToBackend();
+        }
+
+        // Timer completed
+        if (this.savedRewardSeconds === 0) {
+          this.onTimerComplete();
+        }
+      }
+    }, 1000);
+  }
+
+  stopTimerInterval() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+  }
+
+  onTimerComplete() {
+    this.stopTimerInterval();
+    this.timerState = 'paused';
+    this.showReward = false;
+    this.isMinimized = false;
+
+    this.syncToBackend();
+    this.alertService.showNoti('⏰ Timer complete! Time to get back to work! 🎉', 'success');
+  }
+
+  // ============== SYNC & STATE MANAGEMENT ==============
+
+  loadRewardState() {
+    this.userRewardService.getRewardState().subscribe((state: any) => {
+      if (state) {
+        // Load saved reward (the bank)
+        const savedReward = state.savedReward || 0;
+
+        // Check if timer was running
+        if (state.activeTimer && !state.activeTimer.isPaused && state.activeTimer.startTime) {
+          // Calculate time elapsed since last sync
+          const elapsed = Math.floor((Date.now() - new Date(state.activeTimer.startTime).getTime()) / 1000);
+          const timeUsed = Math.min(elapsed, savedReward);
+
+          // Update saved reward (deduct elapsed time)
+          this.savedRewardSeconds = Math.max(0, savedReward - timeUsed);
+
+          // Resume timer if there's time left
+          if (this.savedRewardSeconds > 0) {
+            this.timerState = 'running';
+            this.isMinimized = true;
+            this.startTimerInterval();
+            this.startSyncInterval();
+          }
+        } else {
+          // Timer was paused or not running
+          this.savedRewardSeconds = savedReward;
+
+          // Show minimized badge if there was an active timer
+          if (state.activeTimer && state.activeTimer.isPaused && savedReward > 0) {
+            this.timerState = 'paused';
+            this.isMinimized = true;
+          }
+        }
+      }
+    });
+  }
+
+  syncToBackend() {
+    this.lastSyncTime = Date.now();
+
+    const state = {
+      activeTimer: {
+        totalSeconds: this.savedRewardSeconds, // Total is same as remaining (from bank)
+        remainingSeconds: this.savedRewardSeconds,
+        isPaused: this.timerState === 'paused' || this.timerState === 'minimized',
+        startTime: this.timerState === 'running' ? new Date() : null,
+      },
+      savedReward: this.savedRewardSeconds,
+    };
+
+    this.userRewardService.updateRewardState(state).subscribe();
+
+    // Also backup to localStorage
+    localStorage.setItem('rewardState', JSON.stringify(state));
+  }
+
+  startSyncInterval() {
+    this.stopSyncInterval();
+    // Sync every 30 seconds when timer is running
+    this.syncInterval = setInterval(() => {
+      if (this.timerState === 'running') {
+        this.syncToBackend();
+      }
+    }, 30000);
+  }
+
+  stopSyncInterval() {
+    if (this.syncInterval) {
+      clearInterval(this.syncInterval);
+      this.syncInterval = null;
+    }
+  }
+
+  // ============== UTILITY METHODS ==============
+
+  getTimerDisplay(): string {
+    const minutes = Math.floor(this.savedRewardSeconds / 60);
+    const seconds = this.savedRewardSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  getSavedRewardDisplay(): string {
+    const minutes = Math.floor(this.savedRewardSeconds / 60);
+    return `${minutes}`;
   }
 }

@@ -168,9 +168,10 @@ textarea {
   padding-top: 0;
   padding-bottom: 0;
 }
+
 .content-width {
   font-size: 12px;
-  padding-top: 0; 
+  padding-top: 0;
   padding-bottom: 0;
 }
 
@@ -180,7 +181,7 @@ textarea {
   min-width: 60px;
 
   // Use a wrapper div inside to handle flex layout
-  > div {
+  >div {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -279,18 +280,32 @@ textarea {
   }
 }
 
-.category-settings input {
-  width: 60px;
-  padding: 0.25rem 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  text-align: center;
-  font-size: 14px;
-
-  @media (max-width: 768px) {
+.category-settings {
+  input {
     width: 50px;
-    padding: 0.2rem 0.3rem;
-    font-size: 13px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 14px;
+
+    @media (max-width: 768px) {
+      width: 50px;
+      padding: 0.2rem 0.3rem;
+      font-size: 13px;
+    }
+  }
+
+  &.reward-row {
+    @media (max-width: 768px) {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 }
 
@@ -304,5 +319,365 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+// Reward Settings Divider
+.reward-settings-divider {
+  width: 1px;
+  height: 30px;
+  background-color: #ddd;
+  margin: 0 12px;
+}
+
+// Reward Display Overlay
+.reward-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+.reward-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 60px 80px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  position: relative;
+  animation: slideUp 0.5s ease-out;
+  cursor: default;
+  transform-origin: center;
+
+  &:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+}
+
+.reward-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: bounceIn 0.8s ease-out;
+}
+
+.reward-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 24px;
+  font-weight: 300;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.reward-value {
+  color: #fff;
+  font-size: 72px;
+  font-weight: 700;
+  margin: 20px 0;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.6s ease-out;
+}
+
+.reward-unit {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+.reward-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  line-height: 1;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+// Timer-specific styles
+.timer-display {
+  color: #fff;
+  font-size: 64px;
+  font-weight: 700;
+  margin: 20px 0;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  font-family: 'Courier New', monospace;
+  letter-spacing: 4px;
+}
+
+.timer-icon {
+  filter: grayscale(0);
+
+  &.paused {
+    animation: none;
+  }
+}
+
+.timer-progress-container {
+  position: relative;
+  margin: 20px auto;
+  width: 200px;
+  height: 200px;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease;
+  stroke-linecap: round;
+}
+
+.reward-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    .material-icons {
+      font-size: 20px;
+    }
+
+    &.btn-success {
+      background: #4caf50;
+      color: white;
+
+      &:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+      }
+    }
+
+    &.btn-warning {
+      background: #ff9800;
+      color: white;
+
+      &:hover {
+        background: #fb8c00;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+      }
+    }
+
+    &.btn-danger {
+      background: #f44336;
+      color: white;
+
+      &:hover {
+        background: #e53935;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+      }
+    }
+
+    &.btn-secondary {
+      background: #607d8b;
+      color: white;
+
+      &:hover {
+        background: #546e7a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(96, 125, 139, 0.4);
+      }
+    }
+
+    &.btn-lg {
+      font-size: 18px;
+      padding: 14px 28px;
+    }
+  }
+}
+
+// Timer Badge (minimized state)
+.timer-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  margin-left: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  font-weight: 600;
+  font-size: 14px;
+
+  .material-icons {
+    font-size: 20px;
+  }
+
+  &.running {
+    animation: badgePulse 2s infinite;
+  }
+
+  &.paused {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    animation: none;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.5);
+  }
+}
+
+@keyframes badgePulse {
+
+  0%,
+  100% {
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.6);
+  }
+}
+
+// Saved Reward Badge
+.saved-reward-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  color: white;
+  border-radius: 20px;
+  margin-left: 12px;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  font-weight: 600;
+  font-size: 14px;
+
+  .material-icons {
+    font-size: 20px;
+  }
+
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 16px rgba(76, 175, 80, 0.5);
+      background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Larger overlay for timer states
+.reward-card {
+  max-width: 500px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reward-subtitle {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-weight: 300;
+}
+
+.card-header {
+  display: flex;
+  flex-direction: row;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
   }
 }
