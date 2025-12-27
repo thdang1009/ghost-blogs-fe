@@ -129,9 +129,33 @@
             </div>
           </div>
 
-          <!-- Timer Display Overlay -->
+          <!-- Reward/Timer Display Overlay -->
           <div *ngIf="showReward" class="reward-overlay" (click)="closeReward()">
             <div class="reward-card" (click)="$event.stopPropagation()">
+
+              <!-- Initial State: Beautiful reward generation -->
+              <ng-container *ngIf="timerState === 'initial'">
+                <div class="reward-icon">🎁</div>
+                <div class="reward-label">You Earned</div>
+                <div class="reward-value">{{ rewardResult }}</div>
+                <div class="reward-unit">minutes</div>
+                <div class="reward-info">
+                  <span *ngIf="savedRewardSeconds + (rewardResult! * 60) > MAX_REWARD_SECONDS" class="cap-warning">
+                    ⚠️ Bank at {{ MAX_REWARD_MINUTES }}m cap - overflow will be lost
+                  </span>
+                  <span *ngIf="savedRewardSeconds > 0" class="current-bank">
+                    Current bank: {{ getSavedRewardDisplay() }}m
+                  </span>
+                </div>
+                <div class="reward-actions">
+                  <button class="btn btn-success btn-lg" (click)="addRewardToBank()">
+                    <i class="material-icons">account_balance_wallet</i> Add to Bank
+                  </button>
+                  <button class="btn btn-secondary" (click)="cancelReward()">
+                    <i class="material-icons">close</i> Cancel
+                  </button>
+                </div>
+              </ng-container>
 
               <!-- Running State: Show countdown with pause and minimize -->
               <ng-container *ngIf="timerState === 'running'">

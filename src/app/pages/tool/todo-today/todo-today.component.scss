@@ -673,6 +673,29 @@ textarea {
   font-weight: 300;
 }
 
+.reward-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-size: 14px;
+
+  .cap-warning {
+    color: #ffeb3b;
+    font-weight: 600;
+    background: rgba(255, 152, 0, 0.2);
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: inline-block;
+  }
+
+  .current-bank {
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+  }
+}
+
 .card-header {
   display: flex;
   flex-direction: row;

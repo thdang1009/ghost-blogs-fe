@@ -77,12 +77,22 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
 
   // Reward display states
   showReward = false;
-  timerState: 'running' | 'paused' | 'minimized' = 'paused';
+  timerState: 'initial' | 'running' | 'paused' | 'minimized' = 'paused';
+  rewardResult: number | null = null; // Temporary reward value before adding to bank
 
   // Timer properties
   timerInterval: any = null;
   savedRewardSeconds = 0;
   isMinimized = false;
+
+  // Reward constraints
+  readonly MAX_REWARD_MINUTES = 180;
+  readonly MAX_REWARD_SECONDS = this.MAX_REWARD_MINUTES * 60;
+
+  // TODO: Implement minimum usage requirement
+  // Feature: Must use at least X minutes for dopamine release, otherwise system fails
+  // Need to decide: What happens if minimum not met? Lose balance? Can't start? etc.
+  readonly MIN_USAGE_MINUTES = 5; // Placeholder value
 
   // Backend sync
   syncInterval: any = null;
@@ -629,21 +639,51 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     // Generate random integer between from and to (inclusive)
     const randomValue = Math.floor(Math.random() * (rewardTo - rewardFrom + 1)) + rewardFrom;
 
-    // Multiply by the multiplier (result in minutes, convert to seconds)
+    // Multiply by the multiplier (result in minutes)
     const rewardMinutes = randomValue * rewardMultiplier;
-    const rewardSeconds = Math.floor(rewardMinutes * 60);
+    this.rewardResult = rewardMinutes;
 
-    // Add directly to saved bank
-    this.savedRewardSeconds += rewardSeconds;
+    // Show beautiful popup with reward
+    this.showReward = true;
+    this.timerState = 'initial';
+    this.isMinimized = false;
+  }
+
+  addRewardToBank() {
+    if (!this.rewardResult) return;
+
+    const rewardSeconds = Math.floor(this.rewardResult * 60);
+    const newTotal = this.savedRewardSeconds + rewardSeconds;
+
+    // Apply max cap (180 minutes)
+    if (newTotal > this.MAX_REWARD_SECONDS) {
+      const overflow = Math.floor((newTotal - this.MAX_REWARD_SECONDS) / 60);
+      this.savedRewardSeconds = this.MAX_REWARD_SECONDS;
+
+      this.alertService.showNoti(
+        `🎁 Added ${this.rewardResult} minutes! ⚠️ Cap reached (180m max). Lost ${overflow} minutes of overflow.`,
+        'warning'
+      );
+    } else {
+      this.savedRewardSeconds = newTotal;
+
+      this.alertService.showNoti(
+        `🎁 Added ${this.rewardResult} minutes to your reward bank!`,
+        'success'
+      );
+    }
 
     // Sync to backend
     this.syncToBackend();
 
-    // Show success notification
-    this.alertService.showNoti(
-      `🎁 Added ${rewardMinutes} minutes to your reward bank!`,
-      'success'
-    );
+    // Close popup
+    this.showReward = false;
+    this.rewardResult = null;
+  }
+
+  cancelReward() {
+    this.showReward = false;
+    this.rewardResult = null;
   }
 
   openTimerFromSavedReward() {
@@ -710,7 +750,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
 
   closeReward() {
-    if (this.timerState === 'running' || this.timerState === 'paused') {
+    if (this.timerState === 'initial') {
+      // Cancel adding reward
+      this.cancelReward();
+    } else if (this.timerState === 'running' || this.timerState === 'paused') {
       this.minimizeTimer();
     } else {
       this.showReward = false;
