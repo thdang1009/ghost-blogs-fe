@@ -1,3 +1,39 @@
+.search-toggle-container {
+  display: flex;
+  justify-content: left;
+  padding: 0 0 0 15px;
+  height: 40px;
+}
+
+.card-header {
+  padding-bottom: 0;
+}
+
+.search-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #666;
+  text-decoration: none;
+  padding: 4px 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #333;
+    text-decoration: none;
+    background-color: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+
+  .material-icons {
+    font-size: 20px;
+  }
+
+  span:not(.material-icons) {
+    font-size: 14px;
+  }
+}
+
 .form-under-table-header {
   padding: 0 0;
 }
@@ -129,9 +165,13 @@ textarea {
   min-width: 48px;
   width: 48px;
   font-size: 12px;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 .content-width {
   font-size: 12px;
+  padding-top: 0; 
+  padding-bottom: 0;
 }
 
 .status-cell {

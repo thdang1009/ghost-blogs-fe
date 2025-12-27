@@ -57,6 +57,9 @@ export class TodoTodayComponent implements OnInit {
   currentLanguage: 'en' | 'vi' = 'vi';
   statusKeywords = [...FINISH_WORDS, ...IN_PROGRESS_WORDS, ...INPUT_WORDS];
 
+  // Search form toggle
+  isSearchFormExpanded = false;
+
   // Category settings
   settings = {
     todayCount: 3,
@@ -562,5 +565,9 @@ export class TodoTodayComponent implements OnInit {
       this.isListening = true;
       this.recognition.start();
     }
+  }
+
+  toggleSearchForm() {
+    this.isSearchFormExpanded = !this.isSearchFormExpanded;
   }
 }

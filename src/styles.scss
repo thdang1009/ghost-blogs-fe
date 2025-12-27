@@ -1091,3 +1091,7 @@ a {
     cursor: pointer;
   }
 }
+
+.form-under-table-header .mat-mdc-form-field-subscript-wrapper.mat-mdc-form-field-bottom-align {
+  display: none !important;
+}

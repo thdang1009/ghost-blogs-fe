@@ -56,7 +56,22 @@
             </div>
           </div>
 
+          <div class="search-toggle-container">
+            <button
+              (click)="toggleSearchForm()"
+              matTooltip="{{ isSearchFormExpanded ? 'Hide more options' : 'Show more options' }}"
+              class="btn btn-sm btn-link search-toggle-btn"
+              type="button"
+            >
+              <span class="material-icons">
+                {{ isSearchFormExpanded ? 'expand_less' : 'expand_more' }}
+              </span>
+              <span>{{ isSearchFormExpanded ? 'Hide' : 'Show' }} More Options</span>
+            </button>
+          </div>
+
           <form
+            *ngIf="isSearchFormExpanded"
             (ngSubmit)="searchToDoToDay()"
             class="form-under-table-header row"
           >
