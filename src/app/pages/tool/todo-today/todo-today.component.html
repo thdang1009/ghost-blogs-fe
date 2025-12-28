@@ -107,7 +107,9 @@
               <div
                 *ngIf="isMinimized && savedRewardSeconds > 0"
                 class="timer-badge"
-                [class.running]="timerState === 'running' || timerState === 'minimized'"
+                [class.running]="
+                  timerState === 'running' || timerState === 'minimized'
+                "
                 [class.paused]="timerState === 'paused'"
                 (click)="expandTimer()"
                 matTooltip="Click to expand timer"
@@ -130,9 +132,12 @@
           </div>
 
           <!-- Reward/Timer Display Overlay -->
-          <div *ngIf="showReward" class="reward-overlay" (click)="closeReward()">
+          <div
+            *ngIf="showReward"
+            class="reward-overlay"
+            (click)="closeReward()"
+          >
             <div class="reward-card" (click)="$event.stopPropagation()">
-
               <!-- Initial State: Beautiful reward generation -->
               <ng-container *ngIf="timerState === 'initial'">
                 <div class="reward-icon">🎁</div>
@@ -140,16 +145,27 @@
                 <div class="reward-value">{{ rewardResult }}</div>
                 <div class="reward-unit">minutes</div>
                 <div class="reward-info">
-                  <span *ngIf="savedRewardSeconds + (rewardResult! * 60) > MAX_REWARD_SECONDS" class="cap-warning">
-                    ⚠️ Bank at {{ MAX_REWARD_MINUTES }}m cap - overflow will be lost
+                  <span
+                    *ngIf="
+                      savedRewardSeconds + rewardResult! * 60 >
+                      MAX_REWARD_SECONDS
+                    "
+                    class="cap-warning"
+                  >
+                    ⚠️ Bank at {{ MAX_REWARD_MINUTES }}m cap - overflow will be
+                    lost
                   </span>
                   <span *ngIf="savedRewardSeconds > 0" class="current-bank">
                     Current bank: {{ getSavedRewardDisplay() }}m
                   </span>
                 </div>
                 <div class="reward-actions">
-                  <button class="btn btn-success btn-lg" (click)="addRewardToBank()">
-                    <i class="material-icons">account_balance_wallet</i> Add to Bank
+                  <button
+                    class="btn btn-success btn-lg"
+                    (click)="addRewardToBank()"
+                  >
+                    <i class="material-icons">account_balance_wallet</i> Add to
+                    Bank
                   </button>
                   <button class="btn btn-secondary" (click)="cancelReward()">
                     <i class="material-icons">close</i> Cancel
@@ -182,10 +198,15 @@
                 <div class="timer-display">{{ getTimerDisplay() }}</div>
                 <div class="reward-subtitle">Click Start to use this time</div>
                 <div class="reward-actions">
-                  <button class="btn btn-success btn-lg" (click)="resumeTimer()">
+                  <button
+                    class="btn btn-success btn-lg"
+                    (click)="resumeTimer()"
+                  >
                     <i class="material-icons">play_arrow</i> Start Timer
                   </button>
-                  <button class="btn btn-secondary" (click)="closeReward()">Close</button>
+                  <button class="btn btn-secondary" (click)="closeReward()">
+                    Close
+                  </button>
                 </div>
               </ng-container>
 
@@ -196,14 +217,18 @@
           <div class="search-toggle-container">
             <button
               (click)="toggleSearchForm()"
-              matTooltip="{{ isSearchFormExpanded ? 'Hide more options' : 'Show more options' }}"
+              matTooltip="{{
+                isSearchFormExpanded ? 'Hide more options' : 'Show more options'
+              }}"
               class="btn btn-sm btn-link search-toggle-btn"
               type="button"
             >
               <span class="material-icons">
                 {{ isSearchFormExpanded ? 'expand_less' : 'expand_more' }}
               </span>
-              <span>{{ isSearchFormExpanded ? 'Hide' : 'Show' }} More Options</span>
+              <span
+                >{{ isSearchFormExpanded ? 'Hide' : 'Show' }} More Options</span
+              >
             </button>
           </div>
 
@@ -248,6 +273,27 @@
 								</mat-select>
 							</mat-form-field>
 						</div> -->
+            <!-- Manual minute addition button -->
+            <div class="col-md-4">
+              <button
+                (click)="addManualMinutes(); $event.preventDefault()"
+                type="button"
+                matTooltip="Add 10 minutes manually"
+                class="btn btn-info pull-right btn-w100"
+              >
+                +10 Minutes
+              </button>
+            </div>
+            <div class="col-md-4">
+              <button
+                (click)="minusManualMinutes(); $event.preventDefault()"
+                type="button"
+                matTooltip="Minus 10 minutes manually"
+                class="btn btn-info pull-right btn-w100"
+              >
+                -10 Minutes
+              </button>
+            </div>
             <!-- button search -->
             <div class="col-md-4">
               <button

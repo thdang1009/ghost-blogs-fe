@@ -10,7 +10,6 @@ import {
   UserRewardService,
 } from '@services/_index';
 import {
-  isImportant,
   nextStatus,
   previousStatus,
   toggleStatus,
@@ -84,10 +83,23 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   timerInterval: any = null;
   savedRewardSeconds = 0;
   isMinimized = false;
+  timerStartTimestamp: number | null = null; // Track when timer actually started
+  timerInitialSeconds = 0; // Track initial time when timer started
 
   // Reward constraints
-  readonly MAX_REWARD_MINUTES = 180;
+  readonly MAX_REWARD_MINUTES = this.getMaxRewardMinutes();
   readonly MAX_REWARD_SECONDS = this.MAX_REWARD_MINUTES * 60;
+
+  // Year-end bonus period: 8 hours max until January 3, 2025
+  private getMaxRewardMinutes(): number {
+    const now = new Date();
+    const yearEndDeadline = new Date('2025-01-03T00:00:00');
+
+    if (now < yearEndDeadline) {
+      return 480; // 8 hours during year-end period
+    }
+    return 180; // 3 hours normally
+  }
 
   // TODO: Implement minimum usage requirement
   // Feature: Must use at least X minutes for dopamine release, otherwise system fails
@@ -194,7 +206,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
 
   updateRewardSettings() {
-    localStorage.setItem('todoRewardSettings', JSON.stringify(this.rewardSettings));
+    localStorage.setItem(
+      'todoRewardSettings',
+      JSON.stringify(this.rewardSettings)
+    );
   }
 
   updateSettings() {
@@ -247,7 +262,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
 
   addToDoToDayAtTop() {
     // Calculate order to be lower than the first item
-    const firstItemOrder = this.data.length > 0 ? (this.data[0].order || 0) : 0;
+    const firstItemOrder = this.data.length > 0 ? this.data[0].order || 0 : 0;
     const newOrder = firstItemOrder - 3;
 
     const sample: TodoToday = {
@@ -311,7 +326,9 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
                     ),
             };
           })
-          .sort((a: TodoToday, b: TodoToday) => (a.order || 0) - (b.order || 0));
+          .sort(
+            (a: TodoToday, b: TodoToday) => (a.order || 0) - (b.order || 0)
+          );
         console.log('dangth, data', this.data);
         this.isLoadingResults = false;
       },
@@ -632,12 +649,16 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
 
     // Validate inputs
     if (rewardFrom > rewardTo) {
-      this.alertService.showNoti('Reward From must be less than or equal to Reward To', 'warning');
+      this.alertService.showNoti(
+        'Reward From must be less than or equal to Reward To',
+        'warning'
+      );
       return;
     }
 
     // Generate random integer between from and to (inclusive)
-    const randomValue = Math.floor(Math.random() * (rewardTo - rewardFrom + 1)) + rewardFrom;
+    const randomValue =
+      Math.floor(Math.random() * (rewardTo - rewardFrom + 1)) + rewardFrom;
 
     // Multiply by the multiplier (result in minutes)
     const rewardMinutes = randomValue * rewardMultiplier;
@@ -661,7 +682,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       this.savedRewardSeconds = this.MAX_REWARD_SECONDS;
 
       this.alertService.showNoti(
-        `🎁 Added ${this.rewardResult} minutes! ⚠️ Cap reached (180m max). Lost ${overflow} minutes of overflow.`,
+        `🎁 Added ${this.rewardResult} minutes! ⚠️ Cap reached (${this.MAX_REWARD_MINUTES}m max). Lost ${overflow} minutes of overflow.`,
         'warning'
       );
     } else {
@@ -679,6 +700,59 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     // Close popup
     this.showReward = false;
     this.rewardResult = null;
+  }
+
+  addManualMinutes() {
+    const MANUAL_MINUTES = 10;
+    const manualSeconds = MANUAL_MINUTES * 60;
+    const newTotal = this.savedRewardSeconds + manualSeconds;
+
+    // Apply max cap
+    if (newTotal > this.MAX_REWARD_SECONDS) {
+      const overflow = Math.floor((newTotal - this.MAX_REWARD_SECONDS) / 60);
+      this.savedRewardSeconds = this.MAX_REWARD_SECONDS;
+
+      this.alertService.showNoti(
+        `➕ Added ${MANUAL_MINUTES} minutes! ⚠️ Cap reached (${this.MAX_REWARD_MINUTES}m max). Lost ${overflow} minutes of overflow.`,
+        'warning'
+      );
+    } else {
+      this.savedRewardSeconds = newTotal;
+
+      this.alertService.showNoti(
+        `➕ Added ${MANUAL_MINUTES} minutes to your reward bank!`,
+        'success'
+      );
+    }
+
+    // Sync to backend
+    this.syncToBackend();
+  }
+
+  minusManualMinutes() {
+    const MANUAL_MINUTES = -10;
+    const manualSeconds = MANUAL_MINUTES * 60;
+    const newTotal = this.savedRewardSeconds + manualSeconds;
+
+    // Apply max cap
+    if (newTotal <= 0) {
+      this.savedRewardSeconds = 0;
+
+      this.alertService.showNoti(
+        `➖ Minused ${MANUAL_MINUTES} minutes! ⚠️ Cap reached (0m min)`,
+        'warning'
+      );
+    } else {
+      this.savedRewardSeconds = newTotal;
+
+      this.alertService.showNoti(
+        `➖ Minused ${MANUAL_MINUTES} minutes to your reward bank!`,
+        'success'
+      );
+    }
+
+    // Sync to backend
+    this.syncToBackend();
   }
 
   cancelReward() {
@@ -705,6 +779,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     }
 
     this.timerState = 'running';
+    this.timerStartTimestamp = Date.now();
+    this.timerInitialSeconds = this.savedRewardSeconds;
     this.startTimerInterval();
     this.startSyncInterval();
     this.syncToBackend();
@@ -712,12 +788,15 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
 
   pauseTimer() {
     this.timerState = 'paused';
+    this.timerStartTimestamp = null;
     this.stopTimerInterval();
     this.syncToBackend();
   }
 
   resumeTimer() {
     this.timerState = 'running';
+    this.timerStartTimestamp = Date.now();
+    this.timerInitialSeconds = this.savedRewardSeconds;
     this.startTimerInterval();
     this.syncToBackend();
   }
@@ -732,7 +811,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     this.syncToBackend();
 
     const remainingMinutes = Math.floor(this.savedRewardSeconds / 60);
-    this.alertService.showNoti(`Timer stopped. ${remainingMinutes} minutes remain in your bank.`, 'info');
+    this.alertService.showNoti(
+      `Timer stopped. ${remainingMinutes} minutes remain in your bank.`,
+      'info'
+    );
   }
 
   minimizeTimer() {
@@ -765,8 +847,19 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   startTimerInterval() {
     this.stopTimerInterval();
     this.timerInterval = setInterval(() => {
-      if (this.savedRewardSeconds > 0) {
-        this.savedRewardSeconds--;
+      if (this.timerStartTimestamp && this.savedRewardSeconds > 0) {
+        // Calculate actual elapsed time since timer started
+        const elapsedMs = Date.now() - this.timerStartTimestamp;
+        const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
+        // Calculate remaining time based on actual elapsed time
+        const newRemainingSeconds = Math.max(
+          0,
+          this.timerInitialSeconds - elapsedSeconds
+        );
+
+        // Update saved reward seconds
+        this.savedRewardSeconds = newRemainingSeconds;
 
         // Sync every 30 seconds
         const now = Date.now();
@@ -794,9 +887,13 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     this.timerState = 'paused';
     this.showReward = false;
     this.isMinimized = false;
+    this.timerStartTimestamp = null;
 
     this.syncToBackend();
-    this.alertService.showNoti('⏰ Timer complete! Time to get back to work! 🎉', 'success');
+    this.alertService.showNoti(
+      '⏰ Timer complete! Time to get back to work! 🎉',
+      'success'
+    );
   }
 
   // ============== SYNC & STATE MANAGEMENT ==============
@@ -808,9 +905,16 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         const savedReward = state.savedReward || 0;
 
         // Check if timer was running
-        if (state.activeTimer && !state.activeTimer.isPaused && state.activeTimer.startTime) {
+        if (
+          state.activeTimer &&
+          !state.activeTimer.isPaused &&
+          state.activeTimer.startTime
+        ) {
           // Calculate time elapsed since last sync
-          const elapsed = Math.floor((Date.now() - new Date(state.activeTimer.startTime).getTime()) / 1000);
+          const elapsed = Math.floor(
+            (Date.now() - new Date(state.activeTimer.startTime).getTime()) /
+              1000
+          );
           const timeUsed = Math.min(elapsed, savedReward);
 
           // Update saved reward (deduct elapsed time)
@@ -828,7 +932,11 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
           this.savedRewardSeconds = savedReward;
 
           // Show minimized badge if there was an active timer
-          if (state.activeTimer && state.activeTimer.isPaused && savedReward > 0) {
+          if (
+            state.activeTimer &&
+            state.activeTimer.isPaused &&
+            savedReward > 0
+          ) {
             this.timerState = 'paused';
             this.isMinimized = true;
           }
@@ -844,7 +952,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       activeTimer: {
         totalSeconds: this.savedRewardSeconds, // Total is same as remaining (from bank)
         remainingSeconds: this.savedRewardSeconds,
-        isPaused: this.timerState === 'paused' || this.timerState === 'minimized',
+        isPaused:
+          this.timerState === 'paused' || this.timerState === 'minimized',
         startTime: this.timerState === 'running' ? new Date() : null,
       },
       savedReward: this.savedRewardSeconds,
