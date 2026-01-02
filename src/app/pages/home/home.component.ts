@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, PostService } from '@services/_index';
 import { Post } from '@models/_index';
 import { of } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 
 interface Section {
   id: string;
@@ -270,8 +270,51 @@ export class HomeComponent implements OnInit {
   loadMoreRecentPosts() {
     const pagination = this.recentPostsPagination();
     if (pagination && pagination.hasNextPage) {
-      this.loadRecentPosts(pagination.currentPage + 1);
+      // Save current scroll position before loading more posts
+      const scrollY = window.scrollY || window.pageYOffset;
+
+      // Load more posts and restore position after they're loaded
+      this.loadRecentPostsWithScrollPreservation(
+        pagination.currentPage + 1,
+        scrollY
+      );
     }
+  }
+
+  private loadRecentPostsWithScrollPreservation(page: number, scrollY: number) {
+    this.updateSectionState('recent', { loading: true, error: null });
+
+    this.postService
+      .getRecentPosts(page, 6, this.privateMode())
+      .pipe(
+        tap(response => {
+          // Update data without triggering scroll
+          this.recentPosts.update(posts => [...posts, ...response.posts]);
+          this.recentPostsPagination.set(response.pagination);
+          this.recentPostsPage.set(page);
+        }),
+        catchError(error => {
+          this.updateSectionState('recent', {
+            loading: false,
+            error: 'Failed to load recent posts',
+          });
+          return of({ posts: [], pagination: null });
+        }),
+        finalize(() => {
+          this.updateSectionState('recent', { loading: false, loaded: true });
+
+          // Use multiple RAF calls to ensure DOM is fully rendered
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              window.scrollTo({
+                top: scrollY,
+                behavior: 'instant' as ScrollBehavior,
+              });
+            });
+          });
+        })
+      )
+      .subscribe();
   }
 
   navigateToTagFilter(tagName: string) {
