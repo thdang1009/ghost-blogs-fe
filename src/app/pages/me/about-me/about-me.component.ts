@@ -60,6 +60,11 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
       title: 'Diff tool',
       allowFullscreen: true,
     },
+    {
+      src: 'https://thdang1009.github.io/bio-hazard/',
+      title: 'Bio Hazard',
+      allowFullscreen: true,
+    },
   ];
   arrString = [
     "I'm Ghost - A Fullstack Dev",
