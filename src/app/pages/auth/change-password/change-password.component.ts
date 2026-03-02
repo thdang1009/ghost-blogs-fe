@@ -1,7 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { UntypedFormGroup, UntypedFormBuilder, Validators, NgForm, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
+import {
+  UntypedFormGroup,
+  UntypedFormBuilder,
+  Validators,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { AuthService, AlertService } from '@services/_index';
+import { ChangePasswordPayload } from '@models/_index';
 import { MyErrorStateMatcher } from '../login/login.component';
 
 @Component({
@@ -9,7 +17,6 @@ import { MyErrorStateMatcher } from '../login/login.component';
   templateUrl: './change-password.component.html',
 })
 export class ChangePasswordComponent implements OnInit {
-
   changePasswordForm!: UntypedFormGroup;
   username = '';
   password = '';
@@ -22,34 +29,39 @@ export class ChangePasswordComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
-    this.changePasswordForm = this.formBuilder.group({
-      oldPassword: [null, Validators.required],
-      password: [null, Validators.required],
-      confirmPassword: [null, Validators.required]
-    }, { validators: this.checkReasswords });
+    this.changePasswordForm = this.formBuilder.group(
+      {
+        oldPassword: [null, Validators.required],
+        password: [null, Validators.required],
+        confirmPassword: [null, Validators.required],
+      },
+      { validators: this.checkReasswords }
+    );
   }
 
-  checkReasswords: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+  checkReasswords: ValidatorFn = (
+    group: AbstractControl
+  ): ValidationErrors | null => {
     const pass = group.get('password')?.value;
     const confirmPass = group.get('confirmPassword')?.value;
-    return pass === confirmPass ? null : { notSame: true }
-  }
+    return pass === confirmPass ? null : { notSame: true };
+  };
 
-
-  onFormSubmit(form: NgForm) {
+  onFormSubmit(form: ChangePasswordPayload) {
     this.isRunning = true;
-    this.authService.changePassword(form)
-      .subscribe(res => {
+    this.authService.changePassword(form).subscribe(
+      res => {
         this.isRunning = false;
         this.router.navigate(['/admin/dashboard']);
         this.alertService.showNoti('Update Password success!', 'success');
-      }, (err) => {
+      },
+      err => {
         this.isRunning = false;
         this.alertService.showNoti('Update Password failed!', 'error');
-      });
+      }
+    );
   }
-
 }

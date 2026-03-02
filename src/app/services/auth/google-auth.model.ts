@@ -25,6 +25,7 @@ export interface GoogleLoginResponse {
   data: {
     id: string;
     username: string;
+    fullName: string;
     name: string;
     email: string;
     picture: string;

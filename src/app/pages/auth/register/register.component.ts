@@ -1,14 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, FormGroupDirective, UntypedFormBuilder, UntypedFormGroup, NgForm, Validators } from '@angular/forms';
+import {
+  UntypedFormControl,
+  FormGroupDirective,
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  NgForm,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { AlertService, AuthService } from '@services/_index';
+import { RegisterPayload } from '@models/_index';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
-  isErrorState(control: UntypedFormControl | null, form: FormGroupDirective | NgForm | null): boolean {
+  isErrorState(
+    control: UntypedFormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
     const isSubmitted = form && form.submitted;
-    return !!(control && control.invalid && (control.dirty || control.touched || isSubmitted));
+    return !!(
+      control &&
+      control.invalid &&
+      (control.dirty || control.touched || isSubmitted)
+    );
   }
 }
 
@@ -17,7 +32,6 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   templateUrl: './register.component.html',
 })
 export class RegisterComponent implements OnInit {
-
   registerForm!: UntypedFormGroup;
   fullName = '';
   username = '';
@@ -30,28 +44,29 @@ export class RegisterComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private alertService: AlertService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.registerForm = this.formBuilder.group({
       fullName: [null, Validators.required],
       username: [null, Validators.required],
-      password: [null, Validators.required]
+      password: [null, Validators.required],
     });
   }
 
-  onFormSubmit(form: NgForm) {
-    this.authService.register(form)
-      .subscribe(res => {
+  onFormSubmit(form: RegisterPayload) {
+    this.authService.register(form).subscribe(
+      res => {
         this.router.navigate(['login'], {
           queryParams: {
-            fromRegister: true
-          }
+            fromRegister: true,
+          },
         });
-      }, (err) => {
+      },
+      err => {
         console.log(err);
         this.alertService.error(err.error);
-      });
+      }
+    );
   }
-
 }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CategoryListComponent } from './category-list.component';
-import { CategoryService } from '@services/_index';
+import { AlertService, CategoryService } from '@services/_index';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -18,12 +18,14 @@ describe('CategoryListComponent', () => {
       'deleteCategory',
     ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const alertServiceSpy = jasmine.createSpyObj('AlertService', ['showNoti']);
 
     await TestBed.configureTestingModule({
       declarations: [CategoryListComponent],
       providers: [
         { provide: CategoryService, useValue: categoryServiceSpy },
         { provide: Router, useValue: routerSpy },
+        { provide: AlertService, useValue: alertServiceSpy },
       ],
       schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
@@ -36,6 +38,7 @@ describe('CategoryListComponent', () => {
       CategoryService
     ) as jasmine.SpyObj<CategoryService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    categoryService.getCategorys.and.returnValue(of([]));
     fixture.detectChanges();
   });
 
@@ -72,6 +75,7 @@ describe('CategoryListComponent', () => {
     categoryService.deleteCategory.and.returnValue(
       of({ success: true } as any)
     );
+    categoryService.getCategorys.and.returnValue(of([]));
     spyOn(component, 'getCategories').and.callThrough();
 
     component.delete(mockCategory);

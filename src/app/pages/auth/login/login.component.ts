@@ -11,6 +11,7 @@ import { AuthService, AlertService } from '@services/_index';
 import { Router } from '@angular/router';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { GoogleAuthService } from '@services/auth/google-auth.service';
+import { LoginCredentials } from '@models/_index';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -69,7 +70,7 @@ export class LoginComponent implements OnInit {
     this.googleAuthService.initGoogleSignIn('googleSignInButton');
   }
 
-  onFormSubmit(form: NgForm) {
+  onFormSubmit(form: LoginCredentials) {
     this.isRunning = true;
     this.authService.login(form).subscribe(
       res => {

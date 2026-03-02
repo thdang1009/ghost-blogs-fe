@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { HireMeComponent } from './hire-me.component';
 
 describe('HireMeComponent', () => {
@@ -8,9 +8,9 @@ describe('HireMeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HireMeComponent ]
-    })
-    .compileComponents();
+      declarations: [HireMeComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   });
 
   beforeEach(() => {

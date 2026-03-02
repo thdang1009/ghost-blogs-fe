@@ -53,4 +53,27 @@ describe('SimpleTimePipe', () => {
     // Should return dd-MM format
     expect(result).toMatch(/^\d{2}-\d{2}$/);
   });
+
+  // ── Edge cases ──────────────────────────────────────────────────────────────
+
+  it('should handle an ISO date string without a time component', () => {
+    const result = pipe.transform('2020-03-15T00:00:00.000Z');
+    expect(result).toMatch(/^\d{2}-\d{2}$/);
+  });
+
+  it('should return null for an empty string input', () => {
+    // new Date('') is an Invalid Date; DatePipe returns null for it
+    const result = pipe.transform('');
+    expect(result).toBeNull();
+  });
+
+  it('should return a dd-MM string for a very old date', () => {
+    const result = pipe.transform('2000-01-01T00:00:00.000Z');
+    expect(result).toMatch(/^\d{2}-\d{2}$/);
+  });
+
+  it('should return a dd-MM string for a far-future date', () => {
+    const result = pipe.transform('2099-12-31T00:00:00.000Z');
+    expect(result).toMatch(/^\d{2}-\d{2}$/);
+  });
 });

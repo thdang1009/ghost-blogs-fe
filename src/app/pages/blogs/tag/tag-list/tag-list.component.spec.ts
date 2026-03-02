@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TagListComponent } from './tag-list.component';
-import { TagService } from '@services/_index';
+import { AlertService, TagService } from '@services/_index';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -13,16 +13,21 @@ describe('TagListComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const tagServiceSpy = jasmine.createSpyObj('TagService', ['getTags', 'deleteTag']);
+    const tagServiceSpy = jasmine.createSpyObj('TagService', [
+      'getTags',
+      'deleteTag',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const alertServiceSpy = jasmine.createSpyObj('AlertService', ['showNoti']);
 
     await TestBed.configureTestingModule({
       declarations: [TagListComponent],
       providers: [
         { provide: TagService, useValue: tagServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: AlertService, useValue: alertServiceSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -31,6 +36,7 @@ describe('TagListComponent', () => {
     component = fixture.componentInstance;
     tagService = TestBed.inject(TagService) as jasmine.SpyObj<TagService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    tagService.getTags.and.returnValue(of([]));
     fixture.detectChanges();
   });
 
@@ -39,7 +45,10 @@ describe('TagListComponent', () => {
   });
 
   it('should retrieve tags on initialization', () => {
-    const mockTags: Tag[] = [{ _id: '1', name: 'Tag 1' }, { _id: '2', name: 'Tag 2' }];
+    const mockTags: Tag[] = [
+      { _id: '1', name: 'Tag 1' },
+      { _id: '2', name: 'Tag 2' },
+    ];
     tagService.getTags.and.returnValue(of(mockTags));
 
     component.ngOnInit();
@@ -60,6 +69,7 @@ describe('TagListComponent', () => {
   it('should delete a tag and refresh the list', () => {
     const mockTag: Tag = { _id: '1', name: 'Tag 1' };
     tagService.deleteTag.and.returnValue(of({ success: true } as Tag));
+    tagService.getTags.and.returnValue(of([]));
     spyOn(component, 'getTags').and.callThrough(); // Spy on getTags to check if it's called
 
     component.delete(mockTag);
@@ -78,7 +88,7 @@ describe('TagListComponent', () => {
     component.edit(mockTag);
 
     expect(router.navigate).toHaveBeenCalledWith(['admin/blog/tag'], {
-      queryParams: { id: mockTag._id }
+      queryParams: { id: mockTag._id },
     });
   });
 

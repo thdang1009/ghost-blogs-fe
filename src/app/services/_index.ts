@@ -3,6 +3,7 @@ export * from './auth/auth.service';
 export * from './auth/auth-state.service';
 export * from './auth/google-auth.service';
 export * from './post/post.service';
+export * from './post/post-pagination-state.service';
 export * from './tag/tag.service';
 export * from './category/category.service';
 export * from './guest-message/guest-message.service';

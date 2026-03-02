@@ -13,7 +13,10 @@ describe('ResetPasswordComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['resetPassword', 'setNewPassword']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'resetPassword',
+      'setNewPassword',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
@@ -21,9 +24,9 @@ describe('ResetPasswordComponent', () => {
       imports: [ReactiveFormsModule],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -64,7 +67,8 @@ describe('ResetPasswordComponent', () => {
   });
 
   it('should make the confirm password field required', () => {
-    const confirmPasswordControl = component.resetPasswordForm.get('confirmPassword');
+    const confirmPasswordControl =
+      component.resetPasswordForm.get('confirmPassword');
     confirmPasswordControl?.setValue('');
     expect(confirmPasswordControl?.valid).toBeFalsy();
   });
@@ -74,19 +78,21 @@ describe('ResetPasswordComponent', () => {
     component.resetPasswordForm.get('confirmPassword')?.setValue('password123');
     expect(component.resetPasswordForm.hasError('notSame')).toBeFalsy();
 
-    component.resetPasswordForm.get('confirmPassword')?.setValue('differentPassword');
+    component.resetPasswordForm
+      .get('confirmPassword')
+      ?.setValue('differentPassword');
     expect(component.resetPasswordForm.hasError('notSame')).toBeTruthy();
   });
 
   it('should call resetPassword and navigate on successful submission', () => {
-    authService.resetPassword.and.returnValue(of({})); // Mock successful response
-    authService.setNewPassword.and.returnValue(of({})); // Mock successful response
+    authService.resetPassword.and.returnValue(of({}) as any); // Mock successful response
+    authService.setNewPassword.and.returnValue(of({}) as any); // Mock successful response
     const fakeObj = {
       email: 'test@example.com',
       password: 'newPassword123',
       confirmPassword: 'newPassword123',
       otp: '123456',
-    }
+    };
     component.resetPasswordForm.setValue(fakeObj);
 
     component.callSentOTP(component.resetPasswordForm.value);
@@ -96,15 +102,19 @@ describe('ResetPasswordComponent', () => {
   });
 
   it('should show error notification on failed submission', () => {
-    authService.resetPassword.and.returnValue(throwError({ error: 'Reset failed' })); // Mock error response
-    authService.setNewPassword.and.returnValue(throwError({ error: 'Reset failed' })); // Mock error response
+    authService.resetPassword.and.returnValue(
+      throwError({ error: 'Reset failed' })
+    ); // Mock error response
+    authService.setNewPassword.and.returnValue(
+      throwError({ error: 'Reset failed' })
+    ); // Mock error response
 
     const fakeObj = {
       email: 'test@example.com',
       password: 'newPassword123',
       confirmPassword: 'newPassword123',
       otp: '123456',
-    }
+    };
     component.resetPasswordForm.setValue(fakeObj);
 
     component.callSentOTP(component.resetPasswordForm.value);

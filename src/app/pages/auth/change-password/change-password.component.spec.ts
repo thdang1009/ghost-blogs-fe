@@ -2,7 +2,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ChangePasswordComponent } from './change-password.component';
-import { AuthService } from '@services/_index';
+import { AuthService, AlertService } from '@services/_index';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -14,17 +14,21 @@ describe('ChangePasswordComponent', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(async () => {
-    const authServiceSpy = jasmine.createSpyObj('AuthService', ['changePassword']);
+    const authServiceSpy = jasmine.createSpyObj('AuthService', [
+      'changePassword',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const alertServiceSpy = jasmine.createSpyObj('AlertService', ['showNoti']);
 
     await TestBed.configureTestingModule({
       declarations: [ChangePasswordComponent],
       imports: [ReactiveFormsModule],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: AlertService, useValue: alertServiceSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -63,7 +67,8 @@ describe('ChangePasswordComponent', () => {
   });
 
   it('should make the confirm password field required', () => {
-    const confirmPasswordControl = component.changePasswordForm.get('confirmPassword');
+    const confirmPasswordControl =
+      component.changePasswordForm.get('confirmPassword');
     confirmPasswordControl?.setValue('');
     expect(confirmPasswordControl?.valid).toBeFalsy();
   });
@@ -71,15 +76,19 @@ describe('ChangePasswordComponent', () => {
   it('should validate that password and confirm password match', () => {
     component.changePasswordForm.get('oldPassword')?.setValue('password123');
     component.changePasswordForm.get('password')?.setValue('password123');
-    component.changePasswordForm.get('confirmPassword')?.setValue('password123');
+    component.changePasswordForm
+      .get('confirmPassword')
+      ?.setValue('password123');
     expect(component.changePasswordForm.valid).toBeTruthy();
 
-    component.changePasswordForm.get('confirmPassword')?.setValue('differentPassword');
+    component.changePasswordForm
+      .get('confirmPassword')
+      ?.setValue('differentPassword');
     expect(component.changePasswordForm.valid).toBeFalsy();
   });
 
   it('should call changePassword and navigate on successful submission', () => {
-    authService.changePassword.and.returnValue(of({})); // Mock successful response
+    authService.changePassword.and.returnValue(of({}) as any); // Mock successful response
     component.changePasswordForm.setValue({
       oldPassword: 'oldPassword123',
       password: 'newPassword123',
@@ -88,7 +97,9 @@ describe('ChangePasswordComponent', () => {
 
     component.onFormSubmit(component.changePasswordForm.value);
 
-    expect(authService.changePassword).toHaveBeenCalledWith(component.changePasswordForm.value);
+    expect(authService.changePassword).toHaveBeenCalledWith(
+      component.changePasswordForm.value
+    );
     expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
   });
 

@@ -45,7 +45,10 @@ describe('AuthService', () => {
     storageSpy.getItem.and.returnValue(null); // not logged in by default
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([{ path: '**', redirectTo: '' }]),
+      ],
       providers: [
         AuthService,
         AuthStateService,
@@ -190,7 +193,7 @@ describe('AuthService', () => {
   describe('changePassword()', () => {
     it('should POST to /v1/auth/change-password', () => {
       service
-        .changePassword({ oldPassword: 'old', newPassword: 'new' })
+        .changePassword({ oldPassword: 'old', password: 'new' })
         .subscribe();
 
       const req = httpMock.expectOne(`${BASE_URL}/change-password`);
@@ -201,7 +204,7 @@ describe('AuthService', () => {
     it('should return empty array on error', () => {
       let result: unknown;
       service
-        .changePassword({ oldPassword: 'old', newPassword: 'new' })
+        .changePassword({ oldPassword: 'old', password: 'new' })
         .subscribe(r => (result = r));
 
       const req = httpMock.expectOne(`${BASE_URL}/change-password`);

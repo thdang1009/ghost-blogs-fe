@@ -85,7 +85,7 @@ export class GoogleAuthService {
       })
       .pipe(
         tap(resp => {
-          this.authService.handleLoginResponse(resp);
+          this.authService.handleLoginResponse(resp as any);
         }),
         catchError(handleError<GoogleLoginResponse>('googleAuth'))
       );

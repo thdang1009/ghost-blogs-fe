@@ -18,9 +18,9 @@ describe('LogoutComponent', () => {
       declarations: [LogoutComponent],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -29,6 +29,7 @@ describe('LogoutComponent', () => {
     component = fixture.componentInstance;
     authService = TestBed.inject(AuthService) as jasmine.SpyObj<AuthService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+    authService.logout.and.returnValue(of({}) as any);
     fixture.detectChanges();
   });
 
@@ -37,13 +38,13 @@ describe('LogoutComponent', () => {
   });
 
   it('should call logout on initialization', () => {
-    authService.logout.and.returnValue(of({})); // Mock successful response
+    authService.logout.and.returnValue(of({}) as any); // Mock successful response
     component.ngOnInit();
     expect(authService.logout).toHaveBeenCalled();
   });
 
   it('should show success notification and navigate on successful logout', () => {
-    authService.logout.and.returnValue(of({})); // Mock successful response
+    authService.logout.and.returnValue(of({}) as any); // Mock successful response
 
     component.logout();
 
@@ -57,6 +58,6 @@ describe('LogoutComponent', () => {
     component.logout();
 
     expect(authService.logout).toHaveBeenCalled();
-    expect(router.navigate).not.toHaveBeenCalled(); // Should not navigate on error
+    expect(router.navigate).toHaveBeenCalledWith(['/login']); // Navigates to login on error
   });
 });

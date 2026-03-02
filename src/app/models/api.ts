@@ -46,7 +46,9 @@ export interface LoginCredentials {
 /** Credentials sent to change-password endpoint */
 export interface ChangePasswordPayload {
   oldPassword: string;
-  newPassword: string;
+  /** New password field — matches the `password` form control name */
+  password: string;
+  confirmPassword?: string;
 }
 
 /** Credentials sent to reset-password (request email) endpoint */

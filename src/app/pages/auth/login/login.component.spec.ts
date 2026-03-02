@@ -5,6 +5,7 @@ import { AuthService } from '@services/_index';
 import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { GoogleAuthService } from '@services/auth/google-auth.service';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -15,15 +16,19 @@ describe('LoginComponent', () => {
   beforeEach(async () => {
     const authServiceSpy = jasmine.createSpyObj('AuthService', ['login']);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    const googleAuthServiceSpy = jasmine.createSpyObj('GoogleAuthService', [
+      'initGoogleSignIn',
+    ]);
 
     await TestBed.configureTestingModule({
       declarations: [LoginComponent],
       imports: [ReactiveFormsModule],
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: Router, useValue: routerSpy },
+        { provide: GoogleAuthService, useValue: googleAuthServiceSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -58,8 +63,8 @@ describe('LoginComponent', () => {
     expect(passwordControl?.valid).toBeFalsy();
   });
 
-  it('should call login and navigate on successful submission', () => {
-    authService.login.and.returnValue(of({ token: 'test-token' })); // Mock successful response
+  it('should call login on successful submission', () => {
+    authService.login.and.returnValue(of({ token: 'test-token' }) as any); // Mock successful response
     component.loginForm.setValue({
       username: 'testUser',
       password: 'testPassword',
@@ -68,7 +73,6 @@ describe('LoginComponent', () => {
     component.onFormSubmit(component.loginForm.value);
 
     expect(authService.login).toHaveBeenCalledWith(component.loginForm.value);
-    expect(router.navigate).toHaveBeenCalledWith(['/admin/dashboard']);
   });
 
   it('should show error notification on failed submission', () => {

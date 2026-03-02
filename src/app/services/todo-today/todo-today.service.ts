@@ -8,57 +8,62 @@ import { buildQueryString, ghostLog, handleError } from '@shared/common';
 
 const apiUrl = environment.apiUrl + '/v1/todotoday';
 
+export interface TodoTodayQueryParams {
+  date?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TodoTodayService {
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getTodoTodays(): Observable<TodoToday[]> {
-    return this.http.get<TodoToday[]>(apiUrl)
-      .pipe(
-        tap(_ => ghostLog('fetched Todo Todays')),
-        catchError(handleError('getTodoTodays', []))
-      );
+    return this.http.get<TodoToday[]>(apiUrl).pipe(
+      tap(() => ghostLog('fetched Todo Todays')),
+      catchError(handleError<TodoToday[]>('getTodoTodays', []))
+    );
   }
 
-  getTodoToday(id: any): Observable<TodoToday> {
+  getTodoToday(id: string | number): Observable<TodoToday> {
     const url = `${apiUrl}/${id}`;
     return this.http.get<TodoToday>(url).pipe(
-      tap(_ => ghostLog(`fetched tdtd by id=${id}`)),
+      tap(() => ghostLog(`fetched tdtd by id=${id}`)),
       catchError(handleError<TodoToday>(`getTodoToday id=${id}`))
     );
   }
 
-  getMyTodoToday(req: any): Observable<TodoToday> {
+  getMyTodoToday(req: TodoTodayQueryParams): Observable<TodoToday> {
     const queryString = buildQueryString(req);
     const url = `${apiUrl}/my-tdtd?${queryString}`;
     return this.http.get<TodoToday>(url).pipe(
-      tap(_ => ghostLog(`fetched my tdtd`)),
+      tap(() => ghostLog(`fetched my tdtd`)),
       catchError(handleError<TodoToday>(`getMyTodoToday`))
     );
   }
 
   addTodoToday(tdtd: TodoToday): Observable<TodoToday> {
     return this.http.post<TodoToday>(apiUrl, tdtd).pipe(
-      tap((prod: TodoToday) => ghostLog(`added tdtd id=${tdtd.id}`)),
+      tap(() => ghostLog(`added tdtd id=${tdtd.id}`)),
       catchError(handleError<TodoToday>('addTodoToday'))
     );
   }
 
-  updateTodoToday(id: any, tdtd: TodoToday): Observable<any> {
+  updateTodoToday(id: string | number, tdtd: TodoToday): Observable<TodoToday> {
     const url = `${apiUrl}/${id}`;
-    return this.http.put(url, tdtd).pipe(
-      tap(_ => ghostLog(`updated tdtd id=${id}`)),
-      catchError(handleError<any>('updateTodoToday'))
+    return this.http.put<TodoToday>(url, tdtd).pipe(
+      tap(() => ghostLog(`updated tdtd id=${id}`)),
+      catchError(handleError<TodoToday>('updateTodoToday'))
     );
   }
 
-  deleteTodoToday(id: any): Observable<TodoToday> {
+  deleteTodoToday(id: string | number): Observable<TodoToday> {
     const url = `${apiUrl}/${id}`;
     return this.http.delete<TodoToday>(url).pipe(
-      tap(_ => ghostLog(`deleted tdtd id=${id}`)),
+      tap(() => ghostLog(`deleted tdtd id=${id}`)),
       catchError(handleError<TodoToday>('deleteTodoToday'))
     );
   }

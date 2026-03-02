@@ -21,7 +21,7 @@ export class LogoutComponent implements OnInit {
   async logout() {
     this.authService.logout().subscribe(
       res => {
-        if (res && res.success) {
+        if (res && res.status === 'success') {
           this.alertService.showNoti('Logout successful!', 'success');
           // State is updated via signals in AuthService; navigation handled there
         } else {

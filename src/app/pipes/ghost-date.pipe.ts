@@ -12,6 +12,9 @@ export class SimpleTimePipe implements PipeTransform {
   constructor(private datePipe: DatePipe) {}
   transform(value: string) {
     const date = new Date(value);
+    if (isNaN(date.getTime())) {
+      return null;
+    }
     const isToDay = dateFns.isToday(date);
     const isTomorrow = dateFns.isTomorrow(date);
     const isYesterday = dateFns.isYesterday(date);

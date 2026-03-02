@@ -1,5 +1,8 @@
 import { TestBed, waitForAsync } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { Post } from '@models/_index';
 import { environment } from '@environments/environment';
 import { PostService } from '@services/_index';
@@ -12,7 +15,7 @@ describe('PostService', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [PostService]
+      providers: [PostService],
     });
     service = TestBed.inject(PostService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -28,29 +31,32 @@ describe('PostService', () => {
 
   describe('getPublicPosts', () => {
     it('should return public posts', () => {
-      const mockPosts: Post[] = [
-        { id: 1, title: 'Post 1', content: 'Content 1' },
-        { id: 2, title: 'Post 2', content: 'Content 2' }
-      ] as Post[];
+      const mockResponse = {
+        posts: [
+          { id: 1, title: 'Post 1', content: 'Content 1' },
+          { id: 2, title: 'Post 2', content: 'Content 2' },
+        ] as Post[],
+        pagination: null,
+      };
 
-      service.getPublicPosts({}).subscribe(posts => {
-        expect(posts).toEqual(mockPosts);
+      service.getPublicPosts({}).subscribe(result => {
+        expect(result).toEqual(mockResponse);
       });
 
       const req = httpMock.expectOne(`${apiUrl}/public`);
       expect(req.request.method).toBe('GET');
-      req.flush(mockPosts);
+      req.flush(mockResponse);
     });
 
     it('should handle query parameters', () => {
-      const mockPosts: Post[] = [] as Post[];
+      const mockResponse = { posts: [] as Post[], pagination: null };
       const queryParams = { page: 1, limit: 10 };
 
       service.getPublicPosts(queryParams).subscribe();
 
       const req = httpMock.expectOne(`${apiUrl}/public?page=1&limit=10`);
       expect(req.request.method).toBe('GET');
-      req.flush(mockPosts);
+      req.flush(mockResponse);
     });
   });
 

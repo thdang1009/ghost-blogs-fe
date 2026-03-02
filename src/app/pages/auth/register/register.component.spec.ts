@@ -26,9 +26,9 @@ describe('RegisterComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: AlertService, useValue: alertServiceSpy }
+        { provide: AlertService, useValue: alertServiceSpy },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA], // Ignore unknown elements
     }).compileComponents();
   });
 
@@ -72,24 +72,26 @@ describe('RegisterComponent', () => {
   });
 
   it('should call register and navigate on successful submission', () => {
-    authService.register.and.returnValue(of({ token: 'test-token' })); // Mock successful response
+    authService.register.and.returnValue(of({ token: 'test-token' }) as any); // Mock successful response
     const fakeObj = {
       fullName: 'Test User',
       username: 'testuser',
       password: 'password123',
-    }
+    };
     component.registerForm.setValue(fakeObj);
 
     component.onFormSubmit(component.registerForm.value);
 
     expect(authService.register).toHaveBeenCalledWith(fakeObj);
     expect(router.navigate).toHaveBeenCalledWith(['login'], {
-      queryParams: { fromRegister: true }
+      queryParams: { fromRegister: true },
     });
   });
 
   it('should show error notification on failed submission', () => {
-    authService.register.and.returnValue(throwError({ error: 'Registration failed' })); // Mock error response
+    authService.register.and.returnValue(
+      throwError({ error: 'Registration failed' })
+    ); // Mock error response
     spyOn(console, 'log'); // Mock console.log
 
     component.registerForm.setValue({

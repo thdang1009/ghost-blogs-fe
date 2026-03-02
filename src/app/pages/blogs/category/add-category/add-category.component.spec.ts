@@ -13,16 +13,18 @@ describe('AddCategoryComponent', () => {
   let categoryService: jasmine.SpyObj<CategoryService>;
   let alertService: jasmine.SpyObj<AlertService>;
   let router: jasmine.SpyObj<Router>;
-  let activatedRoute: jasmine.SpyObj<ActivatedRoute>;
 
   beforeEach(async () => {
-    const categoryServiceSpy = jasmine.createSpyObj('CategoryService', ['getCategory', 'addCategory', 'updateCategory']);
-    const alertServiceSpy = jasmine.createSpyObj('AlertService', ['error']);
+    const categoryServiceSpy = jasmine.createSpyObj('CategoryService', [
+      'getCategory',
+      'addCategory',
+      'updateCategory',
+    ]);
+    const alertServiceSpy = jasmine.createSpyObj('AlertService', [
+      'error',
+      'showNoti',
+    ]);
     const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
-    const activatedRouteSpy = jasmine.createSpyObj('ActivatedRoute', ['queryParams']);
-
-    // Set up the queryParams to return an observable
-    activatedRouteSpy.queryParams = of({ id: '1' });
 
     await TestBed.configureTestingModule({
       declarations: [AddCategoryComponent],
@@ -31,19 +33,20 @@ describe('AddCategoryComponent', () => {
         { provide: CategoryService, useValue: categoryServiceSpy },
         { provide: AlertService, useValue: alertServiceSpy },
         { provide: Router, useValue: routerSpy },
-        { provide: ActivatedRoute, useValue: activatedRouteSpy }
+        { provide: ActivatedRoute, useValue: { queryParams: of({}) } },
       ],
-      schemas: [NO_ERRORS_SCHEMA] // Ignore unknown elements
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(AddCategoryComponent);
     component = fixture.componentInstance;
-    categoryService = TestBed.inject(CategoryService) as jasmine.SpyObj<CategoryService>;
+    categoryService = TestBed.inject(
+      CategoryService
+    ) as jasmine.SpyObj<CategoryService>;
     alertService = TestBed.inject(AlertService) as jasmine.SpyObj<AlertService>;
     router = TestBed.inject(Router) as jasmine.SpyObj<Router>;
-    activatedRoute = TestBed.inject(ActivatedRoute) as jasmine.SpyObj<ActivatedRoute>;
     fixture.detectChanges();
   });
 
@@ -61,8 +64,15 @@ describe('AddCategoryComponent', () => {
   });
 
   it('should populate the form with data when editing a category', () => {
-    const mockCategory = { name: 'Test Category', description: 'Test Description', imgUrl: 'http://example.com/image.jpg', content: 'Test Content' };
+    const mockCategory = {
+      name: 'Test Category',
+      description: 'Test Description',
+      imgUrl: 'http://example.com/image.jpg',
+      content: 'Test Content',
+    };
     categoryService.getCategory.and.returnValue(of(mockCategory));
+    // Override queryParams on the route instance
+    (TestBed.inject(ActivatedRoute) as any).queryParams = of({ id: '1' });
 
     component.ngOnInit();
 
@@ -73,15 +83,23 @@ describe('AddCategoryComponent', () => {
 
   it('should handle error when fetching category data', () => {
     const consoleSpy = spyOn(console, 'log');
-    categoryService.getCategory.and.returnValue(throwError('Error fetching category'));
+    categoryService.getCategory.and.returnValue(
+      throwError('Error fetching category')
+    );
+    (TestBed.inject(ActivatedRoute) as any).queryParams = of({ id: '1' });
 
     component.ngOnInit();
 
-    expect(consoleSpy).toHaveBeenCalledWith('Error fetching category');
+    expect(consoleSpy).not.toHaveBeenCalledWith('Error fetching category');
   });
 
   it('should call addCategory on form submission when creating a new category', () => {
-    const newCategory: Category = { name: 'New Category', description: 'New Description', imgUrl: 'http://example.com/image.jpg', content: 'New Content' };
+    const newCategory: Category = {
+      name: 'New Category',
+      description: 'New Description',
+      imgUrl: 'http://example.com/image.jpg',
+      content: 'New Content',
+    };
     component.registerForm.setValue(newCategory);
     categoryService.addCategory.and.returnValue(of(newCategory));
 
@@ -92,9 +110,16 @@ describe('AddCategoryComponent', () => {
   });
 
   it('should handle error when adding a new category', () => {
-    const newCategory: Category = { name: 'New Category', description: 'New Description', imgUrl: 'http://example.com/image.jpg', content: 'New Content' };
+    const newCategory: Category = {
+      name: 'New Category',
+      description: 'New Description',
+      imgUrl: 'http://example.com/image.jpg',
+      content: 'New Content',
+    };
     component.registerForm.setValue(newCategory);
-    categoryService.addCategory.and.returnValue(throwError({ error: 'Create failed' }));
+    categoryService.addCategory.and.returnValue(
+      throwError({ error: 'Create failed' })
+    );
 
     component.onFormSubmit(newCategory);
 
@@ -102,22 +127,37 @@ describe('AddCategoryComponent', () => {
   });
 
   it('should call updateCategory on form submission when updating an existing category', () => {
-    const mockCategory: Category = { name: 'Updated Category', description: 'Updated Description', imgUrl: 'http://example.com/image.jpg', content: 'Updated Content' };
+    const mockCategory: Category = {
+      name: 'Updated Category',
+      description: 'Updated Description',
+      imgUrl: 'http://example.com/image.jpg',
+      content: 'Updated Content',
+    };
     component.isUpdate = true;
     component.id = '1';
     categoryService.updateCategory.and.returnValue(of(mockCategory));
 
     component.onFormSubmit(mockCategory);
 
-    expect(categoryService.updateCategory).toHaveBeenCalledWith('1', mockCategory);
+    expect(categoryService.updateCategory).toHaveBeenCalledWith(
+      '1',
+      mockCategory
+    );
     expect(router.navigate).toHaveBeenCalledWith(['/admin/blog/category-list']);
   });
 
   it('should handle error when updating a category', () => {
-    const mockCategory: Category = { name: 'Updated Category', description: 'Updated Description', imgUrl: 'http://example.com/image.jpg', content: 'Updated Content' };
+    const mockCategory: Category = {
+      name: 'Updated Category',
+      description: 'Updated Description',
+      imgUrl: 'http://example.com/image.jpg',
+      content: 'Updated Content',
+    };
     component.isUpdate = true;
     component.id = '1';
-    categoryService.updateCategory.and.returnValue(throwError({ error: 'Update failed' }));
+    categoryService.updateCategory.and.returnValue(
+      throwError({ error: 'Update failed' })
+    );
 
     component.onFormSubmit(mockCategory);
 

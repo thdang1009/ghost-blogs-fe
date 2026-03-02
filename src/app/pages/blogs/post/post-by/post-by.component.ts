@@ -6,23 +6,22 @@ import { PostService } from '@services/_index';
 @Component({
   selector: 'app-post-by',
   templateUrl: './post-by.component.html',
-  styleUrls: ['./post-by.component.scss']
+  styleUrls: ['./post-by.component.scss'],
 })
 export class PostByComponent implements OnInit {
   posts: Post[] = [];
   constructor(
     private postService: PostService,
     private activeRoute: ActivatedRoute,
-    private router: Router) { }
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.activeRoute.queryParams
-      .subscribe(params => {
-        this.postService.getPublicPosts(params)
-          .subscribe(posts => {
-            this.posts = posts || [];
-          });
+    this.activeRoute.queryParams.subscribe(params => {
+      this.postService.getPublicPosts(params).subscribe(posts => {
+        this.posts = posts.posts || [];
       });
+    });
   }
 
   openPost(post: Post): void {
