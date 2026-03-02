@@ -1,5 +1,6 @@
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule, SecurityContext } from '@angular/core';
+import { NgModule, SecurityContext, ErrorHandler } from '@angular/core';
+import { GlobalErrorHandlerService } from './services/error-handler/global-error-handler.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   HttpClient,
@@ -78,6 +79,7 @@ import { AlertModule } from '@components/alert/alert.module';
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
+    { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
     DatePipe,
     AuthService,
     provideClientHydration(),

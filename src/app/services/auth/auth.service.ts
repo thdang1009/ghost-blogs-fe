@@ -1,31 +1,40 @@
-import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
-import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CONSTANT } from '@shared/constant';
-import { LoginResponse, ghostLog, handleError } from '@shared/common';
+import { ghostLog, handleError } from '@shared/common';
 import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
 import { StorageService } from '@services/storage/storage.service';
 import { ApiConfigService } from '@services/api-config/api-config.service';
+import { AuthStateService } from './auth-state.service';
+import {
+  AuthUserData,
+  LoginCredentials,
+  ChangePasswordPayload,
+  ResetPasswordPayload,
+  SetNewPasswordPayload,
+  RegisterPayload,
+  LoginApiResponse,
+  ApiResponse,
+} from '@models/_index';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly _isLoggedIn = signal(false);
-  private readonly _isAdminSignal = signal(false);
+  private readonly authState = inject(AuthStateService);
 
-  /** Read-only signal: true when a user session is active */
-  readonly isLoggedIn = this._isLoggedIn.asReadonly();
-  /** Read-only signal: true when the current user has admin or grand-admin role */
-  readonly isAdminSignal = this._isAdminSignal.asReadonly();
-
-  userInfo: any = {};
+  /** @deprecated Use authState.isLoggedIn signal instead */
+  userInfo: AuthUserData = {} as AuthUserData;
   loggedInStatus = false;
   redirectUrl: string | null = null;
+
+  // Re-expose signals for backward-compat with existing template bindings
+  readonly isLoggedIn = this.authState.isLoggedIn;
+  readonly isAdminSignal = this.authState.isAdmin;
 
   private get apiUrl(): string {
     return this.apiConfigService.getApiUrl('/v1/auth');
@@ -44,38 +53,38 @@ export class AuthService {
       this.userInfo = JSON.parse(
         localStorage.getItem(CONSTANT.USER_INFO) || '{}'
       );
-      this._isLoggedIn.set(true);
-      this._isAdminSignal.set(this.isAdmin());
+      this.authState.setUser(this.userInfo);
     }
   }
 
-  isLogin() {
+  isLogin(): boolean {
     return !!this.storageService.getItem(CONSTANT.USER_INFO);
   }
 
-  login(data: any): Observable<any> {
+  login(
+    data: LoginCredentials
+  ): Observable<LoginApiResponse | LoginCredentials[]> {
     return this.http
-      .post<any>(this.apiUrl + '/login', data, { withCredentials: true })
+      .post<LoginApiResponse>(this.apiUrl + '/login', data, {
+        withCredentials: true,
+      })
       .pipe(
-        tap((resp: LoginResponse) => {
+        tap((resp: LoginApiResponse) => {
           this.handleLoginResponse(resp);
         }),
-        catchError(handleError('login', []))
+        catchError(handleError<LoginCredentials[]>('login', []))
       );
   }
 
-  handleLoginResponse(resp: LoginResponse) {
+  handleLoginResponse(resp: LoginApiResponse): void {
     console.log('🔑 [Auth Debug] Login successful, tokens stored as cookies');
     this.loggedInStatus = true;
     this.userInfo = resp.data;
-    this.saveUserLoginInfo(resp.data); // <- before isAdmin() check
-    this._isLoggedIn.set(true);
-    this._isAdminSignal.set(this.isAdmin());
+    this.saveUserLoginInfo(resp.data);
+    this.authState.setUser(resp.data);
 
-    // Use the stored redirect URL if available, otherwise get returnUrl from current URL query params
     let returnUrl = this.redirectUrl || '/admin/dashboard';
 
-    // If no stored redirectUrl, check the current URL for returnUrl query param
     if (!this.redirectUrl) {
       const urlTree = this.router.parseUrl(this.router.url);
       const returnUrlParam = urlTree.queryParams['returnUrl'];
@@ -93,131 +102,144 @@ export class AuthService {
       finalReturnUrl: returnUrl,
     });
 
-    this.redirectUrl = null; // Clear the stored URL
-    // Defer navigation by one macrotask so the browser has time to store the
-    // HttpOnly cookie before the next page's components fire their API calls.
+    this.redirectUrl = null;
     setTimeout(() => this.router.navigateByUrl(returnUrl), 50);
   }
 
-  logout(): Observable<any> {
+  logout(): Observable<ApiResponse<unknown>> {
     return this.http
-      .post<any>(this.apiUrl + '/logout', {}, { withCredentials: true })
+      .post<
+        ApiResponse<unknown>
+      >(this.apiUrl + '/logout', {}, { withCredentials: true })
       .pipe(
-        tap(_ => {
+        tap(() => {
           this.clearLocalSession();
           setTimeout(() => this.router.navigate(['/login']), 1000);
         }),
         catchError((error: HttpErrorResponse) => {
-          // A 401 on logout means the session is already gone on the server.
-          // Treat it as a successful logout from the client's perspective.
           if (error.status === 401) {
             this.clearLocalSession();
             setTimeout(() => this.router.navigate(['/login']), 500);
-            return of({ success: true });
+            return of({ status: 'success', data: { success: true } });
           }
           console.error('logout failed', error);
-          return of({ success: false, msg: error.message });
+          return of({
+            status: 'error',
+            data: { success: false, msg: error.message },
+          });
         })
       );
   }
 
   private clearLocalSession(): void {
     this.loggedInStatus = false;
-    this.userInfo = {};
+    this.userInfo = {} as AuthUserData;
     this.clearUserInfo();
-    this._isLoggedIn.set(false);
-    this._isAdminSignal.set(false);
+    this.authState.clearUser();
   }
 
-  changePassword(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + '/change-password', data).pipe(
-      tap(_ => ghostLog('change password')),
-      catchError(handleError('change password', []))
-    );
+  changePassword(
+    data: ChangePasswordPayload
+  ): Observable<ApiResponse<unknown> | unknown[]> {
+    return this.http
+      .post<ApiResponse<unknown>>(this.apiUrl + '/change-password', data)
+      .pipe(
+        tap(() => ghostLog('change password')),
+        catchError(handleError<unknown[]>('change password', []))
+      );
   }
 
-  register(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + '/register', data).pipe(
-      tap(_ => ghostLog('login')),
-      catchError(handleError('login', []))
-    );
+  register(
+    data: RegisterPayload
+  ): Observable<ApiResponse<AuthUserData> | unknown[]> {
+    return this.http
+      .post<ApiResponse<AuthUserData>>(this.apiUrl + '/register', data)
+      .pipe(
+        tap(() => ghostLog('register')),
+        catchError(handleError<unknown[]>('register', []))
+      );
   }
 
-  confirmEmail(code: string) {
-    return this.http.get<any>(this.apiUrl + `/confirm/${code}`).pipe(
-      tap(_ => ghostLog('confirm email')),
-      catchError(handleError('confirm email', []))
-    );
+  confirmEmail(code: string): Observable<ApiResponse<unknown> | unknown[]> {
+    return this.http
+      .get<ApiResponse<unknown>>(this.apiUrl + `/confirm/${code}`)
+      .pipe(
+        tap(() => ghostLog('confirm email')),
+        catchError(handleError<unknown[]>('confirm email', []))
+      );
   }
 
-  // call reset
-  resetPassword(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + '/reset-password', data).pipe(
-      tap(_ => ghostLog('reset password')),
-      catchError(handleError('reset password', []))
-    );
+  resetPassword(
+    data: ResetPasswordPayload
+  ): Observable<ApiResponse<unknown> | unknown[]> {
+    return this.http
+      .post<ApiResponse<unknown>>(this.apiUrl + '/reset-password', data)
+      .pipe(
+        tap(() => ghostLog('reset password')),
+        catchError(handleError<unknown[]>('reset password', []))
+      );
   }
 
-  // after receive redirect from email, call this to set new password
-  setNewPassword(data: any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + '/set-new-password', data).pipe(
-      tap(_ => {
-        tap(_ => ghostLog('set new password'));
-      }),
-      catchError(handleError('set new password', []))
-    );
+  setNewPassword(
+    data: SetNewPasswordPayload
+  ): Observable<ApiResponse<unknown> | unknown[]> {
+    return this.http
+      .post<ApiResponse<unknown>>(this.apiUrl + '/set-new-password', data)
+      .pipe(
+        tap(() => ghostLog('set new password')),
+        catchError(handleError<unknown[]>('set new password', []))
+      );
   }
 
-  getUserInfo() {
+  getUserInfo(): AuthUserData {
     return this.userInfo;
   }
 
-  isGrandAdmin() {
+  isGrandAdmin(): boolean {
     const arr = [CONSTANT.PERMISSION.GRAND_ADMIN];
-    return this.userInfo && arr.includes(this.userInfo.permission);
+    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
   }
 
-  isAdmin() {
+  isAdmin(): boolean {
     const arr = [CONSTANT.PERMISSION.GRAND_ADMIN, CONSTANT.PERMISSION.ADMIN];
-    return this.userInfo && arr.includes(this.userInfo.permission);
+    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
   }
 
-  isMember() {
+  isMember(): boolean {
     const arr = [
       CONSTANT.PERMISSION.GRAND_ADMIN,
       CONSTANT.PERMISSION.ADMIN,
       CONSTANT.PERMISSION.MEMBER,
     ];
-    return this.userInfo && arr.includes(this.userInfo.permission);
+    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
   }
 
-  isGuest() {
+  isGuest(): boolean {
     return true;
   }
 
-  private saveUserLoginInfo(userInfo: any) {
+  private saveUserLoginInfo(userInfo: AuthUserData): void {
     this.storageService.setItem(CONSTANT.USER_INFO, JSON.stringify(userInfo));
   }
 
-  private clearUserInfo() {
+  private clearUserInfo(): void {
     this.storageService.removeItem(CONSTANT.USER_INFO);
   }
 
-  /**
-   * Refresh the access token using the refresh token
-   */
-  refreshToken(): Observable<any> {
+  refreshToken(): Observable<ApiResponse<AuthUserData> | unknown[]> {
     return this.http
-      .post<any>(this.apiUrl + '/refresh', {}, { withCredentials: true })
+      .post<
+        ApiResponse<AuthUserData>
+      >(this.apiUrl + '/refresh', {}, { withCredentials: true })
       .pipe(
-        tap((resp: any) => {
-          if (resp.success && resp.data) {
-            // Update stored user info with fresh data
+        tap((resp: ApiResponse<AuthUserData>) => {
+          if (resp.status === 'success' && resp.data) {
             this.userInfo = resp.data;
             this.saveUserLoginInfo(resp.data);
+            this.authState.setUser(resp.data);
           }
         }),
-        catchError(handleError('refresh token', []))
+        catchError(handleError<unknown[]>('refresh token', []))
       );
   }
 }

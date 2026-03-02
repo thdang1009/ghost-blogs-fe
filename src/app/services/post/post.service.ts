@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Post } from '@models/_index';
+import { PostListResponse, PostQueryParams } from '@models/api';
 import { buildQueryString, handleError, ghostLog } from '@shared/common';
 import { ApiConfigService } from '@services/api-config/api-config.service';
 
@@ -19,20 +20,21 @@ export class PostService {
     private apiConfigService: ApiConfigService
   ) {}
 
-  // lấy hết list post cho khách, nếu là admin thì thấy bài viết ẩn của bản thân
-  getPublicPosts(req?: any): Observable<any> {
+  getPublicPosts(req: PostQueryParams = {}): Observable<PostListResponse> {
     const hasKeys = !!Object.keys(req).length;
     const queryString = (hasKeys && '?' + buildQueryString(req)) || '';
-    const url = `${this.apiUrl}/public${(req && queryString) || ''}`;
-    return this.http.get<any>(url).pipe(
-      tap(_ => ghostLog(`fetched public post`)),
+    const url = `${this.apiUrl}/public${queryString}`;
+    return this.http.get<PostListResponse>(url).pipe(
+      tap(() => ghostLog(`fetched public post`)),
       catchError(
-        handleError<any>(`getPublicPost`, { posts: [], pagination: null })
+        handleError<PostListResponse>(`getPublicPost`, {
+          posts: [],
+          pagination: null,
+        })
       )
     );
   }
 
-  // Get most read posts
   getMostReadPosts(
     limit: number = 6,
     includePrivate: boolean = false
@@ -44,19 +46,18 @@ export class PostService {
     }
     const url = `${this.apiUrl}/most-read?${params.toString()}`;
     return this.http.get<{ posts: Post[] }>(url).pipe(
-      tap(_ => ghostLog(`fetched most read posts`)),
+      tap(() => ghostLog(`fetched most read posts`)),
       catchError(
         handleError<{ posts: Post[] }>(`getMostReadPosts`, { posts: [] })
       )
     );
   }
 
-  // Get recent posts with pagination
   getRecentPosts(
     page: number = 1,
     limit: number = 10,
     includePrivate: boolean = false
-  ): Observable<any> {
+  ): Observable<PostListResponse> {
     const params = new URLSearchParams();
     params.set('page', page.toString());
     params.set('limit', limit.toString());
@@ -64,72 +65,90 @@ export class PostService {
       params.set('private', 'true');
     }
     const url = `${this.apiUrl}/recent?${params.toString()}`;
-    return this.http.get<any>(url).pipe(
-      tap(_ => ghostLog(`fetched recent posts`)),
+    return this.http.get<PostListResponse>(url).pipe(
+      tap(() => ghostLog(`fetched recent posts`)),
       catchError(
-        handleError<any>(`getRecentPosts`, { posts: [], pagination: null })
+        handleError<PostListResponse>(`getRecentPosts`, {
+          posts: [],
+          pagination: null,
+        })
       )
     );
   }
 
-  // Get tags summary with post counts
-  getTagsSummary(includePrivate: boolean = false): Observable<{ tags: any[] }> {
+  getTagsSummary(
+    includePrivate: boolean = false
+  ): Observable<{ tags: { name: string; count: number; _id?: string }[] }> {
     const params = new URLSearchParams();
     if (includePrivate) {
       params.set('private', 'true');
     }
     const url = `${this.apiUrl}/tags-summary?${params.toString()}`;
-    return this.http.get<{ tags: any[] }>(url).pipe(
-      tap(_ => ghostLog(`fetched tags summary`)),
-      catchError(handleError<{ tags: any[] }>(`getTagsSummary`, { tags: [] }))
-    );
+    return this.http
+      .get<{ tags: { name: string; count: number; _id?: string }[] }>(url)
+      .pipe(
+        tap(() => ghostLog(`fetched tags summary`)),
+        catchError(
+          handleError<{
+            tags: { name: string; count: number; _id?: string }[];
+          }>(`getTagsSummary`, { tags: [] })
+        )
+      );
   }
 
-  // Get series summary with post counts
   getSeriesSummary(
     includePrivate: boolean = false
-  ): Observable<{ series: any[] }> {
+  ): Observable<{ series: { name: string; count: number; _id?: string }[] }> {
     const params = new URLSearchParams();
     if (includePrivate) {
       params.set('private', 'true');
     }
     const url = `${this.apiUrl}/series-summary?${params.toString()}`;
-    return this.http.get<{ series: any[] }>(url).pipe(
-      tap(_ => ghostLog(`fetched series summary`)),
-      catchError(
-        handleError<{ series: any[] }>(`getSeriesSummary`, { series: [] })
-      )
-    );
+    return this.http
+      .get<{ series: { name: string; count: number; _id?: string }[] }>(url)
+      .pipe(
+        tap(() => ghostLog(`fetched series summary`)),
+        catchError(
+          handleError<{
+            series: { name: string; count: number; _id?: string }[];
+          }>(`getSeriesSummary`, { series: [] })
+        )
+      );
   }
 
-  // khách xem post
-  getPost(ref: String): Observable<Post> {
+  getPost(ref: string): Observable<Post> {
     const url = `${this.apiUrl}/ref/${ref}`;
     return this.http.get<Post>(url).pipe(
-      tap(_ => ghostLog(`fetched post by ref=${ref}`)),
+      tap(() => ghostLog(`fetched post by ref=${ref}`)),
       catchError(handleError<Post>(`getPost ref=${ref}`))
     );
   }
 
-  // admin xem và edit post
-  getPostAsAdmin(id: any): Observable<Post> {
+  getPostAsAdmin(id: string | number): Observable<Post> {
     const url = `${this.apiUrl}/get-as-member/${id}`;
     return this.http.get<Post>(url).pipe(
-      tap(_ => ghostLog(`fetched post by id=${id}`)),
+      tap(() => ghostLog(`fetched post by id=${id}`)),
       catchError(handleError<Post>(`getPost id=${id}`))
     );
   }
 
-  // lấy danh sách tất cả post
-  getAllPost(req: any, excludeContent: boolean = false): Observable<Post> {
+  getAllPost(
+    req: PostQueryParams,
+    excludeContent: boolean = false
+  ): Observable<PostListResponse> {
     const requestParams = excludeContent
       ? { ...req, excludeContent: true }
       : req;
     const queryString = buildQueryString(requestParams);
     const url = `${this.apiUrl}?${queryString}`;
-    return this.http.get<Post>(url).pipe(
-      tap(_ => ghostLog(`fetched my post`)),
-      catchError(handleError<Post>(`getAllPost`))
+    return this.http.get<PostListResponse>(url).pipe(
+      tap(() => ghostLog(`fetched my post`)),
+      catchError(
+        handleError<PostListResponse>(`getAllPost`, {
+          posts: [],
+          pagination: null,
+        })
+      )
     );
   }
 
@@ -149,31 +168,30 @@ export class PostService {
       );
   }
 
-  updatePost(id: any, post: Post): Observable<any> {
+  updatePost(id: string | number, post: Post): Observable<Post> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.put(url, post).pipe(
-      tap(_ => ghostLog(`updated post id=${id}`)),
-      catchError(handleError<any>('updatePost'))
+    return this.http.put<Post>(url, post).pipe(
+      tap(() => ghostLog(`updated post id=${id}`)),
+      catchError(handleError<Post>('updatePost'))
     );
   }
 
-  deletePost(id: any): Observable<Post> {
+  deletePost(id: string | number): Observable<Post> {
     const url = `${this.apiUrl}/${id}`;
     return this.http.delete<Post>(url).pipe(
-      tap(_ => ghostLog(`deleted post id=${id}`)),
+      tap(() => ghostLog(`deleted post id=${id}`)),
       catchError(handleError<Post>('deletePost'))
     );
   }
 
-  // Get posts from a specific series for selection as previous/next posts
   getSeriesPosts(seriesId: string, currentPostId?: number): Observable<Post[]> {
     let url = `${this.apiUrl}/series-posts/${seriesId}`;
     if (currentPostId) {
       url += `?currentPostId=${currentPostId}`;
     }
     return this.http.get<Post[]>(url).pipe(
-      tap(_ => ghostLog(`fetched posts for series=${seriesId}`)),
-      catchError(handleError<Post[]>(`getSeriesPosts seriesId=${seriesId}`))
+      tap(() => ghostLog(`fetched posts for series=${seriesId}`)),
+      catchError(handleError<Post[]>(`getSeriesPosts seriesId=${seriesId}`, []))
     );
   }
 }

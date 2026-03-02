@@ -1,3 +1,4 @@
+export * from './api';
 export * from './post';
 export * from './tag';
 export * from './category';
