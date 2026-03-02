@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -153,8 +154,13 @@ export interface AdvancedAnalytics {
 export class PostAnalyticsService {
   private apiUrl = environment.apiUrl + '/v1/post-analytics';
   private sessionId: string;
+  private isBrowser: boolean;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
     this.sessionId = this.generateSessionId();
   }
 
@@ -163,6 +169,10 @@ export class PostAnalyticsService {
   }
 
   trackPostView(data: PostViewTrackingData): Observable<any> {
+    if (!this.isBrowser) {
+      return of({ success: false });
+    }
+
     const trackingData = {
       ...data,
       sessionId: this.sessionId,

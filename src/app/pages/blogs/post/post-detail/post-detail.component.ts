@@ -144,14 +144,19 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       // Start analytics tracking
       this.startAnalyticsTracking();
 
-      // Initialize code run buttons after content is rendered
-      setTimeout(() => {
-        this.initializeCodeRunButtons();
-      }, 100);
+      // Initialize code run buttons after content is rendered (browser only)
+      if (!isPlatformServer(this.platformId)) {
+        setTimeout(() => {
+          this.initializeCodeRunButtons();
+        }, 100);
+      }
     });
   }
 
   ngAfterViewInit() {
+    if (isPlatformServer(this.platformId)) {
+      return;
+    }
     const intervalId = setInterval(() => {
       if (this.ready) {
         this.setCurrentPageUrlToFacebookPlugins();

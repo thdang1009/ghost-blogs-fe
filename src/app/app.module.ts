@@ -64,7 +64,7 @@ import { AlertModule } from '@components/alert/alert.module';
           buttonComponent: ClipboardButtonComponent,
         },
       },
-      sanitize: SecurityContext.NONE,
+      sanitize: SecurityContext.HTML,
     }),
   ],
   declarations: [DonationComponent],
