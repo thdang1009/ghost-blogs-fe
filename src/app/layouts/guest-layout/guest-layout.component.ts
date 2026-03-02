@@ -1,15 +1,27 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { Location, PopStateEvent } from '@angular/common';
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import {
+  Location,
+  PopStateEvent,
+  CommonModule,
+  isPlatformBrowser,
+  DOCUMENT,
+} from '@angular/common';
+import {
+  Router,
+  NavigationEnd,
+  NavigationStart,
+  RouterOutlet,
+} from '@angular/router';
 import { filter, Subscription } from 'rxjs';
-import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, Inject } from '@angular/core';
-import { DOCUMENT } from '@angular/common';
+import { ComponentsModule } from '../../components/components.module';
 
 @Component({
   selector: 'app-guest-layout',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, ComponentsModule],
   templateUrl: './guest-layout.component.html',
-  styleUrls: ['./guest-layout.component.scss']
+  styleUrls: ['./guest-layout.component.scss'],
 })
 export class GuestLayoutComponent implements OnInit, AfterViewInit {
   private _router: Subscription | undefined;
@@ -21,7 +33,7 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
     private router: Router,
     @Inject(PLATFORM_ID) private platformId: Object,
     @Inject(DOCUMENT) private document: Document
-  ) { }
+  ) {}
 
   ngOnInit() {
     if (!isPlatformBrowser(this.platformId)) {
@@ -38,7 +50,9 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
     }
 
     const elemMainPanel = this.document.querySelector('.main-panel');
-    const elemSidebar = this.document.querySelector('.sidebar .sidebar-wrapper');
+    const elemSidebar = this.document.querySelector(
+      '.sidebar .sidebar-wrapper'
+    );
 
     this.location.subscribe((ev: PopStateEvent) => {
       this.lastPoppedUrl = ev.url;
@@ -57,12 +71,14 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
         }
       }
     });
-    this._router = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
-      if (elemMainPanel && elemSidebar) {
-        elemMainPanel.scrollTop = 0;
-        elemSidebar.scrollTop = 0;
-      }
-    });
+    this._router = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (elemMainPanel && elemSidebar) {
+          elemMainPanel.scrollTop = 0;
+          elemSidebar.scrollTop = 0;
+        }
+      });
 
     if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
       // TODO document why this block is empty
@@ -70,28 +86,39 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
 
     const windowWidth = window.innerWidth;
     const sidebar = this.document.querySelector('.sidebar');
-    const sidebarResponsive = this.document.querySelector('body > .navbar-collapse');
+    const sidebarResponsive = this.document.querySelector(
+      'body > .navbar-collapse'
+    );
     const sidebarImgContainer = sidebar?.querySelector('.sidebar-background');
 
     if (windowWidth > 767) {
-      const fixedPluginDropdown = this.document.querySelector('.fixed-plugin .dropdown');
+      const fixedPluginDropdown = this.document.querySelector(
+        '.fixed-plugin .dropdown'
+      );
       if (fixedPluginDropdown?.classList.contains('show-dropdown')) {
         fixedPluginDropdown.classList.add('open');
       }
     }
 
-    const switchTriggers = this.document.querySelectorAll('.fixed-plugin a.switch-trigger');
+    const switchTriggers = this.document.querySelectorAll(
+      '.fixed-plugin a.switch-trigger'
+    );
     switchTriggers.forEach(trigger => {
-      trigger.addEventListener('click', function (this: HTMLElement, event: Event) {
-        event.stopPropagation();
-      });
+      trigger.addEventListener(
+        'click',
+        function (this: HTMLElement, event: Event) {
+          event.stopPropagation();
+        }
+      );
     });
 
     const badges = this.document.querySelectorAll('.fixed-plugin .badge');
     badges.forEach(badge => {
       badge.addEventListener('click', function (this: HTMLElement) {
         const siblings = Array.from(this.parentElement?.children || []);
-        siblings.forEach(sibling => (sibling as HTMLElement).classList.remove('active'));
+        siblings.forEach(sibling =>
+          (sibling as HTMLElement).classList.remove('active')
+        );
         this.classList.add('active');
 
         const newColor = (this as HTMLElement).dataset['color'];
@@ -106,11 +133,15 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
       });
     });
 
-    const imgHolders = this.document.querySelectorAll('.fixed-plugin .img-holder');
+    const imgHolders = this.document.querySelectorAll(
+      '.fixed-plugin .img-holder'
+    );
     const that = this;
     imgHolders.forEach(holder => {
       holder.addEventListener('click', function (this: HTMLElement) {
-        const fullPageBackground = that.document.querySelector('.full-page-background');
+        const fullPageBackground = that.document.querySelector(
+          '.full-page-background'
+        );
 
         const parentLi = this.parentElement;
         if (parentLi?.parentElement) {
@@ -125,7 +156,8 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
           if (element) {
             (element as HTMLElement).style.opacity = '0';
             setTimeout(() => {
-              (element as HTMLElement).style.backgroundImage = `url("${newImage}")`;
+              (element as HTMLElement).style.backgroundImage =
+                `url("${newImage}")`;
               (element as HTMLElement).style.opacity = '1';
             }, 50);
           }
@@ -135,7 +167,8 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
         updateBackground(fullPageBackground as HTMLElement);
 
         if (sidebarResponsive) {
-          (sidebarResponsive as HTMLElement).style.backgroundImage = `url("${newImage}")`;
+          (sidebarResponsive as HTMLElement).style.backgroundImage =
+            `url("${newImage}")`;
         }
       });
     });
@@ -152,7 +185,11 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
   }
 
   runOnRouteChange(): void {
-    if (isPlatformBrowser(this.platformId) && window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
+    if (
+      isPlatformBrowser(this.platformId) &&
+      window.matchMedia(`(min-width: 960px)`).matches &&
+      !this.isMac()
+    ) {
       const elemMainPanel = this.document.querySelector('.main-panel');
       if (elemMainPanel) {
         elemMainPanel.scrollTop = 0;
@@ -161,8 +198,10 @@ export class GuestLayoutComponent implements OnInit, AfterViewInit {
   }
 
   isMac(): boolean {
-    return navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
-      navigator.platform.toUpperCase().indexOf('IPAD') >= 0;
+    return (
+      navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
+      navigator.platform.toUpperCase().indexOf('IPAD') >= 0
+    );
   }
 
   isMobileMenu(): boolean {

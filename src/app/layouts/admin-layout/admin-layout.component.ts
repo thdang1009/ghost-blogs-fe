@@ -1,10 +1,18 @@
 import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { Location, PopStateEvent } from '@angular/common';
-import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import { Location, PopStateEvent, CommonModule } from '@angular/common';
+import {
+  Router,
+  NavigationEnd,
+  NavigationStart,
+  RouterOutlet,
+} from '@angular/router';
 import { filter, Subscription } from 'rxjs';
+import { ComponentsModule } from '../../components/components.module';
 
 @Component({
   selector: 'app-admin-layout',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, ComponentsModule],
   templateUrl: './admin-layout.component.html',
 })
 export class AdminLayoutComponent implements OnInit, AfterViewInit {
@@ -12,16 +20,28 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
   private lastPoppedUrl: string | undefined;
   private yScrollStack: number[] = [];
 
-  constructor(public location: Location, private router: Router) { }
+  constructor(
+    public location: Location,
+    private router: Router
+  ) {}
 
   ngOnInit() {
     const isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
 
-    if (isWindows && !document.getElementsByTagName('body')[0].classList.contains('sidebar-mini')) {
+    if (
+      isWindows &&
+      !document
+        .getElementsByTagName('body')[0]
+        .classList.contains('sidebar-mini')
+    ) {
       // Use native scrolling instead of perfect-scrollbar
-      document.getElementsByTagName('body')[0].classList.add('native-scrollbar-on');
+      document
+        .getElementsByTagName('body')[0]
+        .classList.add('native-scrollbar-on');
     } else {
-      document.getElementsByTagName('body')[0].classList.remove('native-scrollbar-off');
+      document
+        .getElementsByTagName('body')[0]
+        .classList.remove('native-scrollbar-off');
     }
     const elemMainPanel = document.querySelector('.main-panel');
     const elemSidebar = document.querySelector('.sidebar .sidebar-wrapper');
@@ -43,24 +63,31 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         }
       }
     });
-    this._router = this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe((event: NavigationEnd) => {
-      if (elemMainPanel && elemSidebar) {
-        elemMainPanel.scrollTop = 0;
-        elemSidebar.scrollTop = 0;
-      }
-    });
+    this._router = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        if (elemMainPanel && elemSidebar) {
+          elemMainPanel.scrollTop = 0;
+          elemSidebar.scrollTop = 0;
+        }
+      });
     if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
       // TODO document why this block is empty
-
     }
 
     const windowWidth = window.innerWidth;
     const sidebar = document.querySelector('.sidebar') as HTMLElement;
-    const sidebarResponsive = document.querySelector('body > .navbar-collapse') as HTMLElement;
-    const sidebarImgContainer = sidebar?.querySelector('.sidebar-background') as HTMLElement;
+    const sidebarResponsive = document.querySelector(
+      'body > .navbar-collapse'
+    ) as HTMLElement;
+    const sidebarImgContainer = sidebar?.querySelector(
+      '.sidebar-background'
+    ) as HTMLElement;
 
     if (windowWidth > 767) {
-      const fixedPluginDropdown = document.querySelector('.fixed-plugin .dropdown');
+      const fixedPluginDropdown = document.querySelector(
+        '.fixed-plugin .dropdown'
+      );
       if (fixedPluginDropdown?.classList.contains('show-dropdown')) {
         fixedPluginDropdown.classList.add('open');
       }
@@ -69,7 +96,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     // Setup click handlers
     const fixedPluginLinks = document.querySelectorAll('.fixed-plugin a');
     fixedPluginLinks.forEach(link => {
-      link.addEventListener('click', (event) => {
+      link.addEventListener('click', event => {
         if ((link as HTMLElement).classList.contains('switch-trigger')) {
           event.stopPropagation();
         }
@@ -80,7 +107,9 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     badges.forEach(badge => {
       badge.addEventListener('click', function (this: HTMLElement) {
         const siblings = Array.from(this.parentElement?.children || []);
-        siblings.forEach(sibling => (sibling as HTMLElement).classList.remove('active'));
+        siblings.forEach(sibling =>
+          (sibling as HTMLElement).classList.remove('active')
+        );
         this.classList.add('active');
 
         const newColor = (this as HTMLElement).dataset['color'];
@@ -98,7 +127,9 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     const imgHolders = document.querySelectorAll('.fixed-plugin .img-holder');
     imgHolders.forEach(holder => {
       holder.addEventListener('click', function (this: HTMLElement) {
-        const fullPageBackground = document.querySelector('.full-page-background');
+        const fullPageBackground = document.querySelector(
+          '.full-page-background'
+        );
 
         const parentLi = this.parentElement;
         if (parentLi?.parentElement) {
@@ -113,7 +144,8 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
           if (element) {
             (element as HTMLElement).style.opacity = '0';
             setTimeout(() => {
-              (element as HTMLElement).style.backgroundImage = `url("${newImage}")`;
+              (element as HTMLElement).style.backgroundImage =
+                `url("${newImage}")`;
               (element as HTMLElement).style.opacity = '1';
             }, 50);
           }
@@ -123,7 +155,8 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
         updateBackground(fullPageBackground as HTMLElement);
 
         if (sidebarResponsive) {
-          (sidebarResponsive as HTMLElement).style.backgroundImage = `url("${newImage}")`;
+          (sidebarResponsive as HTMLElement).style.backgroundImage =
+            `url("${newImage}")`;
         }
       });
     });
@@ -151,10 +184,12 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
   }
   isMac(): boolean {
     let bool = false;
-    if (navigator.platform.toUpperCase().indexOf('MAC') >= 0 || navigator.platform.toUpperCase().indexOf('IPAD') >= 0) {
+    if (
+      navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
+      navigator.platform.toUpperCase().indexOf('IPAD') >= 0
+    ) {
       bool = true;
     }
     return bool;
   }
-
 }

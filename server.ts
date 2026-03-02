@@ -3,7 +3,7 @@ import { CommonEngine } from '@angular/ssr';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
-import AppServerModule from './src/main.server';
+import bootstrap from './src/main.server';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -20,7 +20,10 @@ export function app(): express.Express {
   // Bot detection middleware
   server.use((req: any, res, next) => {
     const userAgent = req.get('user-agent') || '';
-    req.isBot = /bot|crawler|spider|facebook|twitter|linkedin|slack|discord/i.test(userAgent);
+    req.isBot =
+      /bot|crawler|spider|facebook|twitter|linkedin|slack|discord/i.test(
+        userAgent
+      );
     next();
   });
 
@@ -40,14 +43,12 @@ export function app(): express.Express {
       }
 
       const html = await commonEngine.render({
-        bootstrap: AppServerModule,
+        bootstrap,
         documentFilePath: indexHtml,
         url,
         publicPath: browserDistFolder,
-        providers: [
-          { provide: APP_BASE_HREF, useValue: baseUrl },
-        ],
-        inlineCriticalCss: false
+        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+        inlineCriticalCss: false,
       });
 
       res.send(html);
@@ -57,9 +58,12 @@ export function app(): express.Express {
   });
 
   // Static files after
-  server.get('*.*', express.static(browserDistFolder, {
-    maxAge: '1y'
-  }));
+  server.get(
+    '*.*',
+    express.static(browserDistFolder, {
+      maxAge: '1y',
+    })
+  );
 
   return server;
 }

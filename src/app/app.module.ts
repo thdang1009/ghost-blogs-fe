@@ -16,9 +16,6 @@ import {
 } from '@angular/platform-browser';
 
 // my codes
-import { AppComponent } from './app.component';
-import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
-import { GuestLayoutComponent } from './layouts/guest-layout/guest-layout.component';
 import { TokenInterceptor } from './helpers/_index';
 import { CommonModule, DatePipe } from '@angular/common';
 import { AuthService } from './services/_index';
@@ -71,12 +68,7 @@ import { AlertModule } from '@components/alert/alert.module';
       sanitize: SecurityContext.HTML,
     }),
   ],
-  declarations: [
-    AppComponent,
-    AdminLayoutComponent,
-    GuestLayoutComponent,
-    DonationComponent,
-  ],
+  declarations: [DonationComponent],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
     { provide: ErrorHandler, useClass: GlobalErrorHandlerService },
@@ -84,7 +76,6 @@ import { AlertModule } from '@components/alert/alert.module';
     AuthService,
     provideClientHydration(),
   ],
-  bootstrap: [AppComponent],
   exports: [
     AnchorModule,
     BrowserAnimationsModule,
