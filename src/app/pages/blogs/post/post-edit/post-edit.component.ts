@@ -20,7 +20,7 @@ import {
   AlertService,
   SeriesService,
 } from '@services/_index';
-import { compareWithFunc } from '@shared/common';
+import { looseEqualCompareWithFunc } from '@shared/common';
 import { Observable } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
@@ -70,7 +70,7 @@ export class PostEditComponent implements OnInit, OnDestroy {
   allSeries: Series[] = [];
   POST_STATUS = POST_STATUS;
   listFileOnServer: MyFile[] = [];
-  compareWithFunc = compareWithFunc;
+  looseEqualCompareWithFunc = looseEqualCompareWithFunc;
   unSave = true;
   oldObject: any;
   // autocomplete

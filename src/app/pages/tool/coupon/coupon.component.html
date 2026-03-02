@@ -72,7 +72,9 @@
                                   <!-- Edit button - only the reward creator can edit -->
                                   <button
                                     *ngIf="
-                                      (reward.partner === 'B' && isPartnerB) && reward.status === 'pending'
+                                      reward.partner === 'B' &&
+                                      isPartnerB &&
+                                      reward.status === 'pending'
                                     "
                                     mat-icon-button
                                     class="btn btn-primary btn-link btn-sm"
@@ -102,7 +104,12 @@
 
                         <!-- Reward Edit Form for Pé Huế -->
                         <div
-                          *ngIf="editingRewardId && currentActiveTab === 'A' && editingRewardPartner === 'B' && isPartnerB"
+                          *ngIf="
+                            editingRewardId &&
+                            currentActiveTab === 'A' &&
+                            editingRewardPartner === 'B' &&
+                            isPartnerB
+                          "
                           class="mt-4"
                         >
                           <form
@@ -327,7 +334,7 @@
                               <div class="col-md-4">
                                 <mat-form-field class="full-width">
                                   <mat-select
-                                    [compareWith]="compareWithFunc"
+                                    [compareWith]="looseEqualCompareWithFunc"
                                     formControlName="status"
                                   >
                                     <mat-option
@@ -542,7 +549,9 @@
                                   <!-- Edit button - only the reward creator can edit -->
                                   <button
                                     *ngIf="
-                                      (reward.partner === 'A' && isPartnerA) && reward.status === 'pending'
+                                      reward.partner === 'A' &&
+                                      isPartnerA &&
+                                      reward.status === 'pending'
                                     "
                                     mat-icon-button
                                     class="btn btn-primary btn-link btn-sm"
@@ -572,7 +581,12 @@
 
                         <!-- Reward Edit Form for Anh Đăng -->
                         <div
-                          *ngIf="editingRewardId && currentActiveTab === 'B' && editingRewardPartner === 'A' && isPartnerA"
+                          *ngIf="
+                            editingRewardId &&
+                            currentActiveTab === 'B' &&
+                            editingRewardPartner === 'A' &&
+                            isPartnerA
+                          "
                           class="mt-4"
                         >
                           <form
@@ -790,7 +804,7 @@
                               <div class="col-md-4">
                                 <mat-form-field class="full-width">
                                   <mat-select
-                                    [compareWith]="compareWithFunc"
+                                    [compareWith]="looseEqualCompareWithFunc"
                                     formControlName="status"
                                   >
                                     <mat-option

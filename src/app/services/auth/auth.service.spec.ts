@@ -268,25 +268,25 @@ describe('AuthService', () => {
 
   describe('role checks', () => {
     it('isAdmin() returns true for ADMIN permission', () => {
-      service.userInfo = { ...mockUserData, permission: 'ADMIN' };
+      authState.setUser({ ...mockUserData, permission: 'ADMIN' });
       expect(service.isAdmin()).toBeTrue();
     });
 
     it('isAdmin() returns true for GRAND_ADMIN permission', () => {
-      service.userInfo = { ...mockUserData, permission: 'GRAND_ADMIN' };
+      authState.setUser({ ...mockUserData, permission: 'GRAND_ADMIN' });
       expect(service.isAdmin()).toBeTrue();
     });
 
     it('isAdmin() returns false for MEMBER permission', () => {
-      service.userInfo = { ...mockUserData, permission: 'MEMBER' };
+      authState.setUser({ ...mockUserData, permission: 'MEMBER' });
       expect(service.isAdmin()).toBeFalse();
     });
 
     it('isGrandAdmin() returns true only for GRAND_ADMIN', () => {
-      service.userInfo = { ...mockUserData, permission: 'GRAND_ADMIN' };
+      authState.setUser({ ...mockUserData, permission: 'GRAND_ADMIN' });
       expect(service.isGrandAdmin()).toBeTrue();
 
-      service.userInfo = { ...mockUserData, permission: 'ADMIN' };
+      authState.setUser({ ...mockUserData, permission: 'ADMIN' });
       expect(service.isGrandAdmin()).toBeFalse();
     });
 

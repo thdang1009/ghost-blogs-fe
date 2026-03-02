@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {
+  UntypedFormBuilder,
+  UntypedFormGroup,
+  Validators,
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FileDownloadService } from '@services/_index';
 import { FILE_PERMISSION } from '@shared/enum';
 import { MyFile } from '@models/_index';
 import { FileService, AlertService } from '@services/_index';
-import { compareWithFunc, openExternalLink } from '@shared/common';
-
+import { looseEqualCompareWithFunc, openExternalLink } from '@shared/common';
 
 @Component({
   selector: 'app-add-file',
@@ -21,7 +24,12 @@ export class AddFileComponent implements OnInit {
   isLoadingResults = false;
   isUpdate = false;
   id = '';
-  filePermissionList = [FILE_PERMISSION.PRIVATE, FILE_PERMISSION.PUBLIC, FILE_PERMISSION.PROTECTED, FILE_PERMISSION.SHARE_LINK_TO_ACCESS];
+  filePermissionList = [
+    FILE_PERMISSION.PRIVATE,
+    FILE_PERMISSION.PUBLIC,
+    FILE_PERMISSION.PROTECTED,
+    FILE_PERMISSION.SHARE_LINK_TO_ACCESS,
+  ];
 
   constructor(
     private formBuilder: UntypedFormBuilder,
@@ -29,23 +37,23 @@ export class AddFileComponent implements OnInit {
     private route: ActivatedRoute,
     private fileService: FileService,
     private alertService: AlertService,
-    private fileDownloadService: FileDownloadService,
-  ) { }
+    private fileDownloadService: FileDownloadService
+  ) {}
 
   public onDownloadFile() {
     const name = this.registerForm.get('originName')?.value;
     const url = this.registerForm.get('urlGet')?.value;
     console.info('dagnth', name, url);
-    this.fileDownloadService.downloadFile(url, name).subscribe((progress) => {
+    this.fileDownloadService.downloadFile(url, name).subscribe(progress => {
       console.log(progress);
     });
     return false;
   }
 
-  compareWithFunc = compareWithFunc;
+  looseEqualCompareWithFunc = looseEqualCompareWithFunc;
   openExternalLink = openExternalLink;
 
-  copyLinkToClipboard(file: { urlGet: string, permission: string }) {
+  copyLinkToClipboard(file: { urlGet: string; permission: string }) {
     if (file.permission !== FILE_PERMISSION.SHARE_LINK_TO_ACCESS) {
       return;
     }
@@ -65,13 +73,11 @@ export class AddFileComponent implements OnInit {
   }
 
   reloadWithID(item: any) {
-    this.router.navigate(
-      [],
-      {
-        relativeTo: this.route,
-        queryParams: { id: item.id },
-        queryParamsHandling: 'merge'
-      });
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { id: item.id },
+      queryParamsHandling: 'merge',
+    });
   }
 
   ngOnInit() {
@@ -87,12 +93,11 @@ export class AddFileComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       const id = params['id'];
       if (id) {
-        this.fileService.getFile(id)
-          .subscribe(res => {
-            this.initFormWithData(res);
-            this.isUpdate = true;
-            this.id = id;
-          });
+        this.fileService.getFile(id).subscribe(res => {
+          this.initFormWithData(res);
+          this.isUpdate = true;
+          this.id = id;
+        });
       }
     });
   }
@@ -110,35 +115,41 @@ export class AddFileComponent implements OnInit {
       pathOnDisk: data.pathOnDisk,
       permission: data.permission,
       ext: data.ext,
-      type: data.type
-    }
-    this.isUpdate ? this.callUpdate(this.id, newFile) : this.callCreate(newFile)
+      type: data.type,
+    };
+    this.isUpdate
+      ? this.callUpdate(this.id, newFile)
+      : this.callCreate(newFile);
   }
   callUpdate(id: string, newFile: MyFile) {
-    this.fileService.updateFile(id, newFile)
-      .subscribe(file => {
+    this.fileService.updateFile(id, newFile).subscribe(
+      file => {
         if (file) {
           this.alertService.showNoti(`Update success`, 'success');
           this.copyLinkToClipboard(file);
           this.router.navigate(['/admin/file/file-list']);
         }
-      }, (err) => {
+      },
+      err => {
         console.log(err);
         this.alertService.error(err.error);
-      });
+      }
+    );
   }
 
   callCreate(newFile: MyFile) {
-    this.fileService.addFile(newFile)
-      .subscribe(file => {
+    this.fileService.addFile(newFile).subscribe(
+      file => {
         if (file) {
           this.alertService.showNoti(`Create success`, 'success');
           this.router.navigate(['/admin/file/file-list']);
         }
-      }, (err) => {
+      },
+      err => {
         console.log(err);
         this.alertService.error(err.error);
-      });
+      }
+    );
   }
   back() {
     this.router.navigate(['/admin/file/file-list']);

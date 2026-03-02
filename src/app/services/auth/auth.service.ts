@@ -27,8 +27,6 @@ import {
 export class AuthService {
   private readonly authState = inject(AuthStateService);
 
-  /** @deprecated Use authState.isLoggedIn signal instead */
-  userInfo: AuthUserData = {} as AuthUserData;
   loggedInStatus = false;
   redirectUrl: string | null = null;
 
@@ -50,10 +48,10 @@ export class AuthService {
   ) {
     this.loggedInStatus = this.isLogin();
     if (this.loggedInStatus && isPlatformBrowser(this.platformId)) {
-      this.userInfo = JSON.parse(
+      const stored = JSON.parse(
         localStorage.getItem(CONSTANT.USER_INFO) || '{}'
       );
-      this.authState.setUser(this.userInfo);
+      this.authState.setUser(stored);
     }
   }
 
@@ -77,33 +75,23 @@ export class AuthService {
   }
 
   handleLoginResponse(resp: LoginApiResponse): void {
-    console.log('🔑 [Auth Debug] Login successful, tokens stored as cookies');
     this.loggedInStatus = true;
-    this.userInfo = resp.data;
     this.saveUserLoginInfo(resp.data);
     this.authState.setUser(resp.data);
 
     let returnUrl = this.redirectUrl || '/admin/dashboard';
 
     if (!this.redirectUrl) {
-      const urlTree = this.router.parseUrl(this.router.url);
-      const returnUrlParam = urlTree.queryParams['returnUrl'];
+      const returnUrlParam = this.router.parseUrl(this.router.url).queryParams[
+        'returnUrl'
+      ];
       if (returnUrlParam) {
         returnUrl = returnUrlParam;
       }
     }
 
-    console.log('🔄 Login redirect:', {
-      storedRedirectUrl: this.redirectUrl,
-      currentUrl: this.router.url,
-      queryParamReturnUrl: this.router.parseUrl(this.router.url).queryParams[
-        'returnUrl'
-      ],
-      finalReturnUrl: returnUrl,
-    });
-
     this.redirectUrl = null;
-    setTimeout(() => this.router.navigateByUrl(returnUrl), 50);
+    this.router.navigateByUrl(returnUrl);
   }
 
   logout(): Observable<ApiResponse<unknown>> {
@@ -133,7 +121,6 @@ export class AuthService {
 
   private clearLocalSession(): void {
     this.loggedInStatus = false;
-    this.userInfo = {} as AuthUserData;
     this.clearUserInfo();
     this.authState.clearUser();
   }
@@ -191,27 +178,29 @@ export class AuthService {
       );
   }
 
-  getUserInfo(): AuthUserData {
-    return this.userInfo;
+  getUserInfo(): AuthUserData | null {
+    return this.authState.user();
   }
 
   isGrandAdmin(): boolean {
-    const arr = [CONSTANT.PERMISSION.GRAND_ADMIN];
-    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
+    const user = this.authState.user();
+    return !!(user && user.permission === CONSTANT.PERMISSION.GRAND_ADMIN);
   }
 
   isAdmin(): boolean {
-    const arr = [CONSTANT.PERMISSION.GRAND_ADMIN, CONSTANT.PERMISSION.ADMIN];
-    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
+    const user = this.authState.user();
+    const roles = [CONSTANT.PERMISSION.GRAND_ADMIN, CONSTANT.PERMISSION.ADMIN];
+    return !!(user && roles.includes(user.permission!));
   }
 
   isMember(): boolean {
-    const arr = [
+    const user = this.authState.user();
+    const roles = [
       CONSTANT.PERMISSION.GRAND_ADMIN,
       CONSTANT.PERMISSION.ADMIN,
       CONSTANT.PERMISSION.MEMBER,
     ];
-    return !!(this.userInfo && arr.includes(this.userInfo.permission!));
+    return !!(user && roles.includes(user.permission!));
   }
 
   isGuest(): boolean {
@@ -234,7 +223,6 @@ export class AuthService {
       .pipe(
         tap((resp: ApiResponse<AuthUserData>) => {
           if (resp.status === 'success' && resp.data) {
-            this.userInfo = resp.data;
             this.saveUserLoginInfo(resp.data);
             this.authState.setUser(resp.data);
           }

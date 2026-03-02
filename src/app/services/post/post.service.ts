@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { Post } from '@models/_index';
 import { PostListResponse, PostQueryParams } from '@models/api';
-import { buildQueryString, handleError, ghostLog } from '@shared/common';
+import { buildQueryString, handleError } from '@shared/common';
 import { ApiConfigService } from '@services/api-config/api-config.service';
 
 @Injectable({
@@ -25,7 +25,6 @@ export class PostService {
     const queryString = (hasKeys && '?' + buildQueryString(req)) || '';
     const url = `${this.apiUrl}/public${queryString}`;
     return this.http.get<PostListResponse>(url).pipe(
-      tap(() => ghostLog(`fetched public post`)),
       catchError(
         handleError<PostListResponse>(`getPublicPost`, {
           posts: [],
@@ -45,12 +44,13 @@ export class PostService {
       params.set('private', 'true');
     }
     const url = `${this.apiUrl}/most-read?${params.toString()}`;
-    return this.http.get<{ posts: Post[] }>(url).pipe(
-      tap(() => ghostLog(`fetched most read posts`)),
-      catchError(
-        handleError<{ posts: Post[] }>(`getMostReadPosts`, { posts: [] })
-      )
-    );
+    return this.http
+      .get<{ posts: Post[] }>(url)
+      .pipe(
+        catchError(
+          handleError<{ posts: Post[] }>(`getMostReadPosts`, { posts: [] })
+        )
+      );
   }
 
   getRecentPosts(
@@ -66,7 +66,6 @@ export class PostService {
     }
     const url = `${this.apiUrl}/recent?${params.toString()}`;
     return this.http.get<PostListResponse>(url).pipe(
-      tap(() => ghostLog(`fetched recent posts`)),
       catchError(
         handleError<PostListResponse>(`getRecentPosts`, {
           posts: [],
@@ -87,7 +86,6 @@ export class PostService {
     return this.http
       .get<{ tags: { name: string; count: number; _id?: string }[] }>(url)
       .pipe(
-        tap(() => ghostLog(`fetched tags summary`)),
         catchError(
           handleError<{
             tags: { name: string; count: number; _id?: string }[];
@@ -107,7 +105,6 @@ export class PostService {
     return this.http
       .get<{ series: { name: string; count: number; _id?: string }[] }>(url)
       .pipe(
-        tap(() => ghostLog(`fetched series summary`)),
         catchError(
           handleError<{
             series: { name: string; count: number; _id?: string }[];
@@ -118,18 +115,16 @@ export class PostService {
 
   getPost(ref: string): Observable<Post> {
     const url = `${this.apiUrl}/ref/${ref}`;
-    return this.http.get<Post>(url).pipe(
-      tap(() => ghostLog(`fetched post by ref=${ref}`)),
-      catchError(handleError<Post>(`getPost ref=${ref}`))
-    );
+    return this.http
+      .get<Post>(url)
+      .pipe(catchError(handleError<Post>(`getPost ref=${ref}`)));
   }
 
   getPostAsAdmin(id: string | number): Observable<Post> {
     const url = `${this.apiUrl}/get-as-member/${id}`;
-    return this.http.get<Post>(url).pipe(
-      tap(() => ghostLog(`fetched post by id=${id}`)),
-      catchError(handleError<Post>(`getPost id=${id}`))
-    );
+    return this.http
+      .get<Post>(url)
+      .pipe(catchError(handleError<Post>(`getPost id=${id}`)));
   }
 
   getAllPost(
@@ -142,7 +137,6 @@ export class PostService {
     const queryString = buildQueryString(requestParams);
     const url = `${this.apiUrl}?${queryString}`;
     return this.http.get<PostListResponse>(url).pipe(
-      tap(() => ghostLog(`fetched my post`)),
       catchError(
         handleError<PostListResponse>(`getAllPost`, {
           posts: [],
@@ -153,35 +147,29 @@ export class PostService {
   }
 
   addPost(post: Post): Observable<Post> {
-    return this.http.post<Post>(this.apiUrl, post).pipe(
-      tap(() => ghostLog(`added post id=${post.id}`)),
-      catchError(handleError<Post>('addPost'))
-    );
+    return this.http
+      .post<Post>(this.apiUrl, post)
+      .pipe(catchError(handleError<Post>('addPost')));
   }
 
   clapPost(post: Post, num: number): Observable<Post> {
     return this.http
       .put<Post>(`${this.apiUrl}/clap-post/${post.id}`, { numIncrease: num })
-      .pipe(
-        tap(() => ghostLog(`clap post id=${post.id}`)),
-        catchError(handleError<Post>('clap post'))
-      );
+      .pipe(catchError(handleError<Post>('clap post')));
   }
 
   updatePost(id: string | number, post: Post): Observable<Post> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.put<Post>(url, post).pipe(
-      tap(() => ghostLog(`updated post id=${id}`)),
-      catchError(handleError<Post>('updatePost'))
-    );
+    return this.http
+      .put<Post>(url, post)
+      .pipe(catchError(handleError<Post>('updatePost')));
   }
 
   deletePost(id: string | number): Observable<Post> {
     const url = `${this.apiUrl}/${id}`;
-    return this.http.delete<Post>(url).pipe(
-      tap(() => ghostLog(`deleted post id=${id}`)),
-      catchError(handleError<Post>('deletePost'))
-    );
+    return this.http
+      .delete<Post>(url)
+      .pipe(catchError(handleError<Post>('deletePost')));
   }
 
   getSeriesPosts(seriesId: string, currentPostId?: number): Observable<Post[]> {
@@ -189,9 +177,12 @@ export class PostService {
     if (currentPostId) {
       url += `?currentPostId=${currentPostId}`;
     }
-    return this.http.get<Post[]>(url).pipe(
-      tap(() => ghostLog(`fetched posts for series=${seriesId}`)),
-      catchError(handleError<Post[]>(`getSeriesPosts seriesId=${seriesId}`, []))
-    );
+    return this.http
+      .get<Post[]>(url)
+      .pipe(
+        catchError(
+          handleError<Post[]>(`getSeriesPosts seriesId=${seriesId}`, [])
+        )
+      );
   }
 }

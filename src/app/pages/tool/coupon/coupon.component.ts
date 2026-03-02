@@ -18,7 +18,7 @@ import {
   AuthService,
   ConfigService,
 } from '@services/_index';
-import { compareWithFunc } from '@shared/common';
+import { looseEqualCompareWithFunc } from '@shared/common';
 
 @Component({
   selector: 'app-coupon',
@@ -42,7 +42,7 @@ export class CouponComponent implements OnInit {
   rewardForm: UntypedFormGroup;
   bulkForm: UntypedFormGroup;
   redeemForm: UntypedFormGroup;
-  compareWithFunc = compareWithFunc;
+  looseEqualCompareWithFunc = looseEqualCompareWithFunc;
 
   isEditing = false;
   showingBulkForm = false;

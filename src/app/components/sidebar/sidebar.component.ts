@@ -287,9 +287,9 @@ export class SidebarComponent implements OnInit {
     this.isMember = this.authService.isMember();
   }
   setUserInfo() {
-    const { username, fullName, permission } = this.authService.getUserInfo();
-    this.username = username;
-    this.fullName = fullName;
+    const user = this.authService.getUserInfo();
+    this.username = user?.username ?? 'Guest';
+    this.fullName = user?.fullName ?? 'Guest';
     this.permission =
       (
         {
@@ -297,7 +297,7 @@ export class SidebarComponent implements OnInit {
           ADMIN: 'ADMIN',
           MEMBER: 'MEMBER',
         } as Record<string, string>
-      )[permission] || 'GUEST';
+      )[user?.permission ?? ''] || 'GUEST';
   }
   resetToGuest() {
     this.setUserInfo();

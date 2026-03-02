@@ -93,7 +93,15 @@ export class TokenInterceptor implements HttpInterceptor {
         }),
         catchError(err => {
           this.isRefreshing = false;
-          this.handleLogout();
+          this.refreshTokenSubject.next(null);
+          // Only force logout if the user has no session at all.
+          // If USER_INFO is still in storage the cookie may simply not have
+          // propagated yet (race condition right after login); let the
+          // original error bubble up instead of kicking the user out.
+          const hasSession = !!this.storageService.getItem(CONSTANT.USER_INFO);
+          if (!hasSession) {
+            this.handleLogout();
+          }
           return throwError(err);
         })
       );
@@ -122,7 +130,6 @@ export class TokenInterceptor implements HttpInterceptor {
         : null;
 
     this.storageService.removeItem(CONSTANT.USER_INFO);
-    this.storageService.removeItem(CONSTANT.TOKEN);
 
     if (returnUrl) {
       this.router.navigate(['/login'], { queryParams: { returnUrl } });

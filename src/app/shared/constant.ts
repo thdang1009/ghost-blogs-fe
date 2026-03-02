@@ -3,15 +3,14 @@ import { PLATFORM_ID, inject, InjectionToken } from '@angular/core';
 
 export const CONSTANT = {
   USER_INFO: 'USER_INFO',
-  TOKEN: 'token',
   SOCKET_ID: 'SOCKET_ID',
   PERMISSION: {
     GRAND_ADMIN: 'GRAND_ADMIN',
     ADMIN: 'ADMIN',
     MEMBER: 'MEMBER',
-    GUEST: 'GUEST'
-  }
-}
+    GUEST: 'GUEST',
+  },
+};
 
 export const DEBOUCE_TIME = 200;
 
@@ -22,7 +21,7 @@ export const PDF_ASSETS_PATH = new InjectionToken<string>('PDF_ASSETS_PATH', {
       return window.location.origin + '/assets/pdf';
     }
     return '/assets/pdf'; // fallback for server-side rendering
-  }
+  },
 });
 
 export const SAVED_CODE = 'SAVED_CODE';

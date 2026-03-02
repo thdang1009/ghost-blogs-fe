@@ -78,9 +78,7 @@ export interface AuthUserData extends User {
 }
 
 /** Shape of the full login API response */
-export interface LoginApiResponse extends ApiResponse<AuthUserData> {
-  token: string;
-}
+export interface LoginApiResponse extends ApiResponse<AuthUserData> {}
 
 /** Auth-related signals state for the AuthStateService */
 export interface AuthState {
