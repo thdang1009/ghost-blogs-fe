@@ -49,7 +49,6 @@ export class BookComponent implements OnInit {
   public uploader: FileUploader = new FileUploader({
     url: this.apiUrl,
     itemAlias: 'file',
-    withCredentials: true,
   });
 
   constructor(
