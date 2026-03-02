@@ -1,23 +1,40 @@
-import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  Input,
+  OnDestroy,
+} from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Alert, AlertType } from '@models/_index';
 import { AlertService } from '@components/alert/alert.service';
-import { animate, state, style, transition, trigger } from '@angular/animations';
+import {
+  animate,
+  state,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
 
 @Component({
   selector: 'app-alert',
   templateUrl: './alert.component.html',
   styleUrls: ['./alert.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [
     trigger('fadeInOut', [
-      state('void', style({
-        opacity: 0,
-        transform: 'translateY(-20px)'
-      })),
+      state(
+        'void',
+        style({
+          opacity: 0,
+          transform: 'translateY(-20px)',
+        })
+      ),
       transition('void <=> *', animate('300ms ease-in-out')),
-    ])
-  ]
+    ]),
+  ],
 })
 export class AlertComponent implements OnInit, OnDestroy {
   @Input() id = 'default-alert';
@@ -29,12 +46,14 @@ export class AlertComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private alertService: AlertService
-  ) { }
+    private alertService: AlertService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     // Subscribe to new alert notifications
-    this.alertSubscription = this.alertService.onAlert(this.id)
+    this.alertSubscription = this.alertService
+      .onAlert(this.id)
       .subscribe(alert => {
         // Clear alerts when an empty alert is received
         if (!alert.message) {
@@ -48,6 +67,7 @@ export class AlertComponent implements OnInit, OnDestroy {
 
         // Add alert to array
         this.alerts.push(alert);
+        this.cdr.markForCheck();
 
         // Auto close alert if required
         if (alert.autoClose) {
@@ -59,6 +79,7 @@ export class AlertComponent implements OnInit, OnDestroy {
     this.routeSubscription = this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
         this.alertService.clear(this.id);
+        this.cdr.markForCheck();
       }
     });
   }
@@ -75,6 +96,7 @@ export class AlertComponent implements OnInit, OnDestroy {
 
     // Remove alert
     this.alerts = this.alerts.filter(x => x !== alert);
+    this.cdr.markForCheck();
   }
 
   cssClass(alert: Alert) {
@@ -86,7 +108,7 @@ export class AlertComponent implements OnInit, OnDestroy {
       [AlertType.Success]: 'alert-success',
       [AlertType.Error]: 'alert-danger',
       [AlertType.Info]: 'alert-info',
-      [AlertType.Warning]: 'alert-warning'
+      [AlertType.Warning]: 'alert-warning',
     };
 
     if (alert.type !== undefined) {
@@ -107,7 +129,7 @@ export class AlertComponent implements OnInit, OnDestroy {
       [AlertType.Success]: 'check_circle',
       [AlertType.Error]: 'error',
       [AlertType.Info]: 'info',
-      [AlertType.Warning]: 'warning'
+      [AlertType.Warning]: 'warning',
     };
 
     return alertTypeIcon[alert.type];

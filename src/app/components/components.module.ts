@@ -31,6 +31,9 @@ import { MarkdownModule } from 'ngx-markdown';
     DragDropModule,
     SharedModule,
     MarkdownModule,
+    // standalone components
+    PostCardComponent,
+    SkeletonLoaderComponent,
   ],
   declarations: [
     FooterComponent,
@@ -42,8 +45,6 @@ import { MarkdownModule } from 'ngx-markdown';
     ProgressWithLabelComponent,
     GhostSiteBtnComponent,
     ListBadgeComponent,
-    PostCardComponent,
-    SkeletonLoaderComponent,
     LanguageSwitcherComponent,
     DownloadMyCvComponent,
     PricingPopupComponent,

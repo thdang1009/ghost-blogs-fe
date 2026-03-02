@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: `https://dangtrinh.site/api`,
-  // apiUrl: `http://localhost:3000`,
+  // apiUrl: `https://dangtrinh.site/api`,
+  apiUrl: `http://localhost:3000`,
   siteUrl: `http://localhost:4500`,
   gaCode: 'G-FWH80SC06E',
   SOCKET_ENDPOINT: 'http://localhost:3200',

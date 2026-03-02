@@ -5,17 +5,17 @@ import { AutosizeModule } from 'ngx-autosize';
 import { SimpleTimePipe, TimeAgoPipe } from '@pipes/_index';
 import { AngularMaterialModule } from './angular-material/angular-material.module';
 @NgModule({
-  declarations: [
-    TimeAgoPipe,
-    SimpleTimePipe,
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
+    // standalone pipes
+    TimeAgoPipe,
+    SimpleTimePipe,
     // third party
     AutosizeModule,
-    AngularMaterialModule
+    AngularMaterialModule,
   ],
   exports: [
     CommonModule,
@@ -26,7 +26,7 @@ import { AngularMaterialModule } from './angular-material/angular-material.modul
     // pipes
     TimeAgoPipe,
     SimpleTimePipe,
-    AngularMaterialModule
-  ]
+    AngularMaterialModule,
+  ],
 })
-export class SharedModule { }
+export class SharedModule {}

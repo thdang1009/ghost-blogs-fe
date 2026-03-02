@@ -3,10 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { GuestMessageComponent } from './guest-message/guest-message.component';
 import { NoteComponent } from './note/note.component';
 import { CouponComponent } from './coupon/coupon.component';
-import { GrandAdminGuard } from '@guards/grand-admin.guard';
-import { AdminGuard } from '@guards/admin.guard';
+import { grandAdminGuard, adminGuard, loginGuard } from '@guards/auth.guards';
 import { JournalComponent } from './journal/journal.component';
-import { LoginGuard } from '@guards/login.guard';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 
@@ -15,43 +13,43 @@ const routes: Routes = [
     path: 'todo-today',
     title: `Todo Today`,
     component: TodoTodayComponent,
-    canActivate: [LoginGuard],
+    canActivate: [loginGuard],
   },
   {
     path: 'note',
     title: `Note`,
     component: NoteComponent,
-    canActivate: [LoginGuard],
+    canActivate: [loginGuard],
   },
   {
     path: 'guest-message',
     title: `List Guest Message`,
     component: GuestMessageComponent,
-    canActivate: [GrandAdminGuard],
+    canActivate: [grandAdminGuard],
   },
   {
     path: 'coupon',
     title: `Coupon Management`,
     component: CouponComponent,
-    canActivate: [GrandAdminGuard],
+    canActivate: [grandAdminGuard],
   },
   {
     path: 'note',
     title: `Notes`,
     component: NoteComponent,
-    canActivate: [AdminGuard],
+    canActivate: [adminGuard],
   },
   {
     path: 'journal',
     title: `Journal & Gratitude`,
     component: JournalComponent,
-    canActivate: [AdminGuard],
+    canActivate: [adminGuard],
   },
   {
     path: 'vibe-coding',
     title: `Vibe Coding`,
     component: VibeCodingComponent,
-    canActivate: [GrandAdminGuard],
+    canActivate: [grandAdminGuard],
   },
 ];
 

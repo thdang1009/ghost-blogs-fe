@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '@services/_index';
 
@@ -246,6 +246,17 @@ export class SidebarComponent implements OnInit {
     if (this.isLogined) {
       this.checkAfterLogin();
     }
+    // React to auth state changes using signals instead of EventEmitter
+    effect(() => {
+      const loggedIn = this.authService.isLoggedIn();
+      if (loggedIn) {
+        this.isLogined = true;
+        this.checkAfterLogin();
+      } else {
+        this.isLogined = false;
+        this.resetToGuest();
+      }
+    });
   }
 
   checkAfterLogin() {
@@ -254,14 +265,6 @@ export class SidebarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.isLoggedIn.subscribe((status: any) => {
-      if (status === true) {
-        this.isLogined = true;
-        this.checkAfterLogin();
-      } else {
-        this.resetToGuest();
-      }
-    });
     const checkSubMenu = ROUTES.map(sub => ({
       ...sub,
       children: (sub.children || []).filter(

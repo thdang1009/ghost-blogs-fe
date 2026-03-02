@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from '@pages/auth/login/login.component';
 import { RegisterComponent } from '@pages/auth/register/register.component';
 import { HomeComponent } from '@pages/home/home.component';
-import { NotLoginGuard } from '@guards/not-login.guard';
+import { notLoginGuard } from '@guards/auth.guards';
 import { LogoutComponent } from '@pages/auth/logout/logout.component';
 import { DonationComponent } from '@pages/donation/donation.component';
 import { ResetPasswordComponent } from '@pages/auth/reset-password/reset-password.component';
@@ -16,73 +16,79 @@ export const GuestLayoutRoutes: Routes = [
   {
     path: '',
     redirectTo: 'home',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'blogs/:ref',
-    title: 'Ghost\'s Posts',
+    title: "Ghost's Posts",
     component: PostDetailComponent,
   },
   {
     path: 'home',
-    title: 'Ghost\'s Blogs',
-    component: HomeComponent
+    title: "Ghost's Blogs",
+    component: HomeComponent,
   },
   {
     path: 'post-by-series',
     title: 'Blog Series',
-    component: PostBySeriesComponent
+    component: PostBySeriesComponent,
   },
   {
     path: 'post-by-series/:slug',
     title: 'Blog Series',
-    component: PostBySeriesComponent
+    component: PostBySeriesComponent,
   },
   {
     path: 'search',
     title: 'Search Results',
-    component: SearchResultsComponent
+    component: SearchResultsComponent,
   },
   {
     path: 'reset-password',
     title: 'Reset password',
-    component: ResetPasswordComponent, canActivate: [NotLoginGuard]
+    component: ResetPasswordComponent,
+    canActivate: [notLoginGuard],
   },
   {
     path: 'login',
     title: 'Login',
-    component: LoginComponent, canActivate: [NotLoginGuard]
+    component: LoginComponent,
+    canActivate: [notLoginGuard],
   },
   {
     path: 'logout',
     title: 'Logout',
-    component: LogoutComponent
+    component: LogoutComponent,
   },
   {
     path: 'register',
     title: 'Register',
-    component: RegisterComponent, canActivate: [NotLoginGuard]
+    component: RegisterComponent,
+    canActivate: [notLoginGuard],
   },
   {
     path: 'donation',
     title: 'Donate',
-    component: DonationComponent
+    component: DonationComponent,
   },
   {
     path: 'data-deletion',
     title: 'Data Deletion Instructions',
-    component: DataDeletionComponent
+    component: DataDeletionComponent,
   },
   {
     path: 'me',
-    children: [{
-      path: '',
-      loadChildren: () => import('../../pages/me/me.module').then(m => m.MeModule),
-      canActivate: []
-    }]
+    children: [
+      {
+        path: '',
+        loadChildren: () =>
+          import('../../pages/me/me.module').then(m => m.MeModule),
+        canActivate: [],
+      },
+    ],
   },
   {
     path: 'confirm-email/:confirmationCode',
-    component: ConfirmEmailComponent
+    component: ConfirmEmailComponent,
   },
 ];

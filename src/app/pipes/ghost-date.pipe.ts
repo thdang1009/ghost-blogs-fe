@@ -4,13 +4,12 @@ import * as dateFns from 'date-fns';
 
 @Pipe({
   name: 'simpleTime',
-  pure: false
+  standalone: true,
+  pure: false,
 })
 // xét xem thời gian đã cho là ngày hôm nay, hôm qua, ngày ngày mai, còn lại thì hiện là dd/mm
 export class SimpleTimePipe implements PipeTransform {
-  constructor(
-    private datePipe: DatePipe
-  ) { }
+  constructor(private datePipe: DatePipe) {}
   transform(value: string) {
     const date = new Date(value);
     const isToDay = dateFns.isToday(date);
@@ -27,4 +26,3 @@ export class SimpleTimePipe implements PipeTransform {
     }
   }
 }
-

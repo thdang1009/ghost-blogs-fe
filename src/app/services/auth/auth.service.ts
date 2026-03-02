@@ -1,7 +1,8 @@
-import { Injectable, Output, EventEmitter } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CONSTANT } from '@shared/constant';
 import { LoginResponse, ghostLog, handleError } from '@shared/common';
@@ -14,8 +15,14 @@ import { ApiConfigService } from '@services/api-config/api-config.service';
   providedIn: 'root',
 })
 export class AuthService {
-  @Output() isLoggedIn: EventEmitter<any> = new EventEmitter();
-  @Output() isAdminE: EventEmitter<any> = new EventEmitter();
+  private readonly _isLoggedIn = signal(false);
+  private readonly _isAdminSignal = signal(false);
+
+  /** Read-only signal: true when a user session is active */
+  readonly isLoggedIn = this._isLoggedIn.asReadonly();
+  /** Read-only signal: true when the current user has admin or grand-admin role */
+  readonly isAdminSignal = this._isAdminSignal.asReadonly();
+
   userInfo: any = {};
   loggedInStatus = false;
   redirectUrl: string | null = null;
@@ -37,6 +44,8 @@ export class AuthService {
       this.userInfo = JSON.parse(
         localStorage.getItem(CONSTANT.USER_INFO) || '{}'
       );
+      this._isLoggedIn.set(true);
+      this._isAdminSignal.set(this.isAdmin());
     }
   }
 
@@ -59,9 +68,9 @@ export class AuthService {
     console.log('🔑 [Auth Debug] Login successful, tokens stored as cookies');
     this.loggedInStatus = true;
     this.userInfo = resp.data;
-    this.isLoggedIn.emit(true);
-    this.saveUserLoginInfo(resp.data); // <- before check isAdminE
-    this.isAdminE.emit(this.isAdmin());
+    this.saveUserLoginInfo(resp.data); // <- before isAdmin() check
+    this._isLoggedIn.set(true);
+    this._isAdminSignal.set(this.isAdmin());
 
     // Use the stored redirect URL if available, otherwise get returnUrl from current URL query params
     let returnUrl = this.redirectUrl || '/admin/dashboard';
@@ -85,7 +94,9 @@ export class AuthService {
     });
 
     this.redirectUrl = null; // Clear the stored URL
-    this.router.navigateByUrl(returnUrl);
+    // Defer navigation by one macrotask so the browser has time to store the
+    // HttpOnly cookie before the next page's components fire their API calls.
+    setTimeout(() => this.router.navigateByUrl(returnUrl), 50);
   }
 
   logout(): Observable<any> {
@@ -93,17 +104,29 @@ export class AuthService {
       .post<any>(this.apiUrl + '/logout', {}, { withCredentials: true })
       .pipe(
         tap(_ => {
-          this.isLoggedIn.emit(false);
-          this.loggedInStatus = false;
-          this.userInfo = {}; // Clear userInfo immediately
-          this.clearUserInfo(); // Clear localStorage
-          this.isAdminE.emit(false); // Set to false since user is logged out
-          setTimeout(() => {
-            this.router.navigate(['/login']);
-          }, 1000);
+          this.clearLocalSession();
+          setTimeout(() => this.router.navigate(['/login']), 1000);
         }),
-        catchError(handleError('logout', []))
+        catchError((error: HttpErrorResponse) => {
+          // A 401 on logout means the session is already gone on the server.
+          // Treat it as a successful logout from the client's perspective.
+          if (error.status === 401) {
+            this.clearLocalSession();
+            setTimeout(() => this.router.navigate(['/login']), 500);
+            return of({ success: true });
+          }
+          console.error('logout failed', error);
+          return of({ success: false, msg: error.message });
+        })
       );
+  }
+
+  private clearLocalSession(): void {
+    this.loggedInStatus = false;
+    this.userInfo = {};
+    this.clearUserInfo();
+    this._isLoggedIn.set(false);
+    this._isAdminSignal.set(false);
   }
 
   changePassword(data: any): Observable<any> {
