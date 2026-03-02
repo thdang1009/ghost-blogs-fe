@@ -1,5 +1,16 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
-import { Location, PopStateEvent, CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
+import {
+  isPlatformBrowser,
+  Location,
+  PopStateEvent,
+  CommonModule,
+} from '@angular/common';
 import {
   Router,
   NavigationEnd,
@@ -19,13 +30,19 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
   private _router: Subscription | undefined;
   private lastPoppedUrl: string | undefined;
   private yScrollStack: number[] = [];
+  private isBrowser: boolean;
 
   constructor(
     public location: Location,
-    private router: Router
-  ) {}
+    private router: Router,
+    @Inject(PLATFORM_ID) platformId: object
+  ) {
+    this.isBrowser = isPlatformBrowser(platformId);
+  }
 
   ngOnInit() {
+    if (!this.isBrowser) return;
+
     const isWindows = navigator.platform.indexOf('Win') > -1 ? true : false;
 
     if (
@@ -162,6 +179,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     });
   }
   ngAfterViewInit() {
+    if (!this.isBrowser) return;
     this.runOnRouteChange();
   }
   isMaps(path: string) {
@@ -174,6 +192,7 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
   }
   runOnRouteChange(): void {
+    if (!this.isBrowser) return;
     if (window.matchMedia(`(min-width: 960px)`).matches && !this.isMac()) {
       const elemMainPanel = document.querySelector('.main-panel');
       if (elemMainPanel) {
@@ -183,13 +202,10 @@ export class AdminLayoutComponent implements OnInit, AfterViewInit {
     }
   }
   isMac(): boolean {
-    let bool = false;
-    if (
+    if (!this.isBrowser) return false;
+    return (
       navigator.platform.toUpperCase().indexOf('MAC') >= 0 ||
       navigator.platform.toUpperCase().indexOf('IPAD') >= 0
-    ) {
-      bool = true;
-    }
-    return bool;
+    );
   }
 }

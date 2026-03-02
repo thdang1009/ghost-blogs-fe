@@ -49,9 +49,8 @@ export class ThirdPartyLoaderService {
   private loadGoogleAnalytics(delayMs: number = 3000): void {
     if (!this.isBrowser || !environment.gaCode) return;
 
-    // Prevent duplicate loads (BUG FIX: was loading 3x)
+    // Prevent duplicate loads
     if ((window as any).__gaLoaded) {
-      console.log('[ThirdParty] Google Analytics already loaded, skipping...');
       return;
     }
     (window as any).__gaLoaded = true;
@@ -65,12 +64,6 @@ export class ThirdPartyLoaderService {
     window.gtag('config', environment.gaCode, {
       page_path: window.location.pathname,
     });
-
-    console.log(
-      '[ThirdParty] Loading Google Analytics after',
-      delayMs,
-      'ms...'
-    );
 
     // Load the script
     this.scriptLoader
@@ -92,7 +85,7 @@ export class ThirdPartyLoaderService {
     window.fbAsyncInit = function () {
       if (window.FB) {
         window.FB.init({
-          appId: '598355823212592',
+          appId: environment.fbAppId,
           xfbml: true,
           version: 'v22.0',
         });

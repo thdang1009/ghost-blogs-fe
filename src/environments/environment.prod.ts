@@ -1,12 +1,11 @@
-
 export const environment = {
   production: true,
   apiUrl: `https://dangtrinh.site/api`,
-  // apiUrl: `http://localhost:3000`,
   siteUrl: `https://dangtrinh.site`,
-  gaCode: 'G-FWH80SC06E',
+  gaCode: 'GA_CODE_PLACEHOLDER',
+  fbAppId: 'FB_APP_ID_PLACEHOLDER',
   SOCKET_ENDPOINT: 'https://dangtrinh.site',
   googleAnalytics: {
-    propertyId: '317190690' // Replace with your actual GA4 property ID
-  }
+    propertyId: '317190690',
+  },
 };

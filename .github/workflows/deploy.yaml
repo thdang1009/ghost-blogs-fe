@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main # Or your main development branch
+      - main
 
 jobs:
   deploy:
@@ -18,8 +18,14 @@ jobs:
         with:
           node-version: '18.x'
 
+      - name: Inject secrets into environment.prod.ts
+        working-directory: ./ghost-blogs-fe
+        run: |
+          sed -i "s|GA_CODE_PLACEHOLDER|${{ secrets.GA_CODE }}|g" src/environments/environment.prod.ts
+          sed -i "s|FB_APP_ID_PLACEHOLDER|${{ secrets.FB_APP_ID }}|g" src/environments/environment.prod.ts
+
       - name: Build Angular Frontend (SSR)
-        working-directory: ./
+        working-directory: ./ghost-blogs-fe
         run: |
           npm install
           npm run build
@@ -27,7 +33,7 @@ jobs:
       - name: Package Application
         run: |
           mkdir -p ghost-blogs-fe
-          cp -r ./dist/ghost-blogs-fe/* ghost-blogs-fe
+          cp -r ./ghost-blogs-fe/dist/ghost-blogs-fe/* ghost-blogs-fe
 
       - name: SSH and Deploy to EC2
         uses: appleboy/scp-action@master
