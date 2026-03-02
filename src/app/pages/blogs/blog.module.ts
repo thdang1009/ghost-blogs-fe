@@ -1,19 +1,11 @@
-import { NgModule, SecurityContext } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { BlogRoutingModule } from './blog-routing.module';
 import { PostDetailComponent } from './post/post-detail/post-detail.component';
 import { SharedModule } from '@shared/shared-module.module';
-import {
-  ClipboardButtonComponent,
-  CLIPBOARD_OPTIONS,
-  MarkdownModule,
-  MARKED_OPTIONS,
-  MarkedOptions,
-  MarkedRenderer,
-} from 'ngx-markdown';
-import { HttpClient } from '@angular/common/http';
+import { MarkdownModule, MarkedOptions, MarkedRenderer } from 'ngx-markdown';
 import { ReuseComponentModule } from '@reuse/reuse.module';
 import { ComponentsModule } from '@components/components.module';
 import { AnchorService } from '@shared/anchor/anchor.service';
@@ -71,22 +63,8 @@ export function markedOptionsFactory(
     ReuseComponentModule,
     BlogRoutingModule,
     ComponentsModule,
-    // third party
-    MarkdownModule.forRoot({
-      loader: HttpClient,
-      markedOptions: {
-        provide: MARKED_OPTIONS,
-        useFactory: markedOptionsFactory,
-        deps: [AnchorService],
-      },
-      clipboardOptions: {
-        provide: CLIPBOARD_OPTIONS,
-        useValue: {
-          buttonComponent: ClipboardButtonComponent,
-        },
-      },
-      sanitize: SecurityContext.NONE,
-    }),
+    // third party — forChild() reuses the root MarkdownModule config from app.module.ts
+    MarkdownModule.forChild(),
     MatProgressSpinnerModule,
   ],
 })
