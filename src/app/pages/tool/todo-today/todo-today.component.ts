@@ -346,15 +346,15 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       status: toggleStatus(item.status!),
     };
     this.isLoadingResults = true;
-    this.todoTodayService.updateTodoToday(item.id, req).subscribe(
-      (res: any) => {
+    this.todoTodayService.updateTodoToday(item.id!, req).subscribe({
+      next: (res: any) => {
         this.setChangedLineOnly(res, index);
         this.isLoadingResults = false;
       },
-      err => {
+      error: () => {
         this.isLoadingResults = false;
-      }
-    );
+      },
+    });
   }
   saveItem(id: number, item: TodoToday, index: number) {
     item.content = item.content?.trim();
@@ -442,16 +442,16 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         ...item,
         order: newOrder,
       };
-      this.todoTodayService.updateTodoToday(item.id, req).subscribe(
-        (_: any) => {
+      this.todoTodayService.updateTodoToday(item.id!, req).subscribe({
+        next: () => {
           this.isLoadingResults = false;
           resolve('success');
         },
-        err => {
+        error: () => {
           this.isLoadingResults = false;
           reject('fail');
-        }
-      );
+        },
+      });
     });
   }
 
@@ -474,7 +474,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       // Update all items on the server
       for (const update of updates) {
         await this.todoTodayService
-          .updateTodoToday(update.id, { order: update.order })
+          .updateTodoToday(update.id!, { order: update.order })
           .toPromise();
       }
 

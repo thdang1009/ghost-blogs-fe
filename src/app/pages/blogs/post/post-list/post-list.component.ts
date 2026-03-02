@@ -214,16 +214,16 @@ export class PostListComponent implements OnInit {
         ...item,
         order: newOrder + delta,
       };
-      this.postService.updatePost(item.id, req).subscribe(
-        (_: any) => {
+      this.postService.updatePost(item.id!, req).subscribe({
+        next: (_: any) => {
           this.isLoadingResults = false;
           resolve('success');
         },
-        err => {
+        error: () => {
           this.isLoadingResults = false;
           reject('fail');
-        }
-      );
+        },
+      });
     });
   }
   saveItem({ item, isBack }: PostSaveWrapper) {
@@ -236,13 +236,13 @@ export class PostListComponent implements OnInit {
       });
     };
 
-    this.postService.updatePost(item.id, item).subscribe(
-      (res: any) => {
+    this.postService.updatePost(item.id!, item).subscribe({
+      next: () => {
         if (isBack && callback) {
           callback();
         }
       },
-      err => {}
-    );
+      error: () => {},
+    });
   }
 }

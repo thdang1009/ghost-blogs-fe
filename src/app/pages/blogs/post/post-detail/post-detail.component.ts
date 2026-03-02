@@ -501,7 +501,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     // Update the item with the new alternativeContent
     this.item = { ...this.item, ...updatedPost };
     // Save the updated post to the server
-    this.postService.updatePost(this.item._id, this.item).subscribe(
+    this.postService.updatePost(this.item._id!, this.item).subscribe(
       savedPost => {
         this.item = savedPost;
         this.updateDisplayContent();
