@@ -431,9 +431,7 @@
             />
           </a>
         </div>
-        <ng-container
-          *ngFor="let item of listPortfolio.slice(1); let i = index"
-        >
+        <ng-container *ngFor="let item of listPortfolio; let i = index">
           <div class="product-preview-iframe">
             <label>
               <a [href]="item.src" target="_blank">

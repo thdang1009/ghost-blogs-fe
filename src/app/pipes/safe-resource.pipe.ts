@@ -9,6 +9,10 @@ const ALLOWED_EMBED_HOSTS = [
   'www.youtube.com',
   'docs.google.com',
   'dangtrinh.site',
+  'mc.zalopay.vn',
+  'tarotfree.netlify.app',
+  'diff-tool.netlify.app',
+  'thdang1009.github.io',
 ];
 
 @Pipe({ name: 'safe' })
