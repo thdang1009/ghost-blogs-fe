@@ -41,11 +41,6 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   debounceID = undefined;
   listPortfolio: Array<PortfolioData> = [
     {
-      src: 'https://dangtrinh.site/home',
-      title: "Personal's blogs",
-      allowFullscreen: true,
-    },
-    {
       src: 'https://mc.zalopay.vn/homepage/index.html',
       title: 'Merchant tool',
       allowFullscreen: true,

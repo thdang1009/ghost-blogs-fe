@@ -16,7 +16,7 @@ import { SeriesService } from '../../../services/series/series.service';
 import { Post } from '../../../models/post';
 import { Tag } from '../../../models/tag';
 import { Series } from '../../../models/series';
-import { Subject, Observable } from 'rxjs';
+import { Subject, Observable, forkJoin } from 'rxjs';
 import { takeUntil, map, startWith } from 'rxjs/operators';
 import { FormControl } from '@angular/forms';
 
@@ -224,53 +224,50 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
     const startDateStr = this.formatDateForAPI(this.startDate);
     const endDateStr = this.formatDateForAPI(this.endDate, true);
 
-    // Load top performing posts
-    this.postAnalyticsService
-      .getTopPerformingPosts(startDateStr, endDateStr)
+    forkJoin({
+      topPosts: this.postAnalyticsService.getTopPerformingPosts(
+        startDateStr,
+        endDateStr
+      ),
+      tagData: this.postAnalyticsService.getTagAnalytics(
+        undefined,
+        startDateStr,
+        endDateStr
+      ),
+      seriesSummary: this.postAnalyticsService.getSeriesAnalyticsSummary(
+        startDateStr,
+        endDateStr
+      ),
+      topSeries: this.postAnalyticsService.getTopPerformingSeries(
+        startDateStr,
+        endDateStr,
+        5
+      ),
+      trafficSources: this.postAnalyticsService.getTrafficSourceAnalytics(
+        startDateStr,
+        endDateStr
+      ),
+    })
       .pipe(takeUntil(this.destroy$))
-      .subscribe(posts => {
-        this.topPosts = posts;
+      .subscribe({
+        next: ({
+          topPosts,
+          tagData,
+          seriesSummary,
+          topSeries,
+          trafficSources,
+        }) => {
+          this.topPosts = topPosts;
+          this.tagAnalytics = tagData.tagAnalytics;
+          this.seriesAnalyticsSummary = seriesSummary;
+          this.topPerformingSeries = topSeries;
+          this.trafficSources = trafficSources;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
-
-    // Load tag analytics
-    this.postAnalyticsService
-      .getTagAnalytics(undefined, startDateStr, endDateStr)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        this.tagAnalytics = data.tagAnalytics;
-      });
-
-    // Load series analytics summary
-    this.postAnalyticsService
-      .getSeriesAnalyticsSummary(startDateStr, endDateStr)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(seriesData => {
-        this.seriesAnalyticsSummary = seriesData;
-      });
-
-    // Load top performing series
-    this.postAnalyticsService
-      .getTopPerformingSeries(startDateStr, endDateStr, 5)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(topSeries => {
-        this.topPerformingSeries = topSeries;
-      });
-
-    // Load traffic sources
-    this.postAnalyticsService
-      .getTrafficSourceAnalytics(startDateStr, endDateStr)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(sources => {
-        this.trafficSources = sources;
-        this.loading = false;
-      });
-  }
-
-  onPostSelected(): void {
-    if (this.selectedPost) {
-      this.selectedView = 'post-details';
-      this.loadPostAnalytics();
-    }
   }
 
   // Autocomplete selection handlers
@@ -303,17 +300,11 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
   }
 
   loadPostAnalytics(): void {
-    if (!this.selectedPost) {
-      console.log('No selected post');
-      return;
-    }
+    if (!this.selectedPost) return;
 
-    console.log('Loading post analytics for:', this.selectedPost);
     this.loading = true;
     const startDateStr = this.formatDateForAPI(this.startDate);
     const endDateStr = this.formatDateForAPI(this.endDate, true);
-
-    console.log('Date range:', startDateStr, 'to', endDateStr);
 
     this.postAnalyticsService
       .getPostAnalytics(
@@ -324,17 +315,15 @@ export class PostAnalyticsComponent implements OnInit, OnDestroy {
         this.groupBy
       )
       .pipe(takeUntil(this.destroy$))
-      .subscribe(
-        data => {
-          console.log('Post analytics received:', data);
+      .subscribe({
+        next: data => {
           this.selectedPostAnalytics = data;
           this.loading = false;
         },
-        error => {
-          console.error('Error loading post analytics:', error);
+        error: () => {
           this.loading = false;
-        }
-      );
+        },
+      });
   }
 
   loadTagSpecificAnalytics(): void {
