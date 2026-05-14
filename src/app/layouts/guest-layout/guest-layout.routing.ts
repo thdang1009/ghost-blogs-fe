@@ -11,6 +11,7 @@ import { PostBySeriesComponent } from '@pages/blogs/post/post-by-series/post-by-
 import { ConfirmEmailComponent } from '@pages/user/confirm-email/confirm-email.component';
 import { DataDeletionComponent } from '@pages/data-deletion/data-deletion.component';
 import { SearchResultsComponent } from '@components/search-results/search-results.component';
+import { postResolver } from '@pages/blogs/post/post-detail/post.resolver';
 
 export const GuestLayoutRoutes: Routes = [
   {
@@ -22,6 +23,8 @@ export const GuestLayoutRoutes: Routes = [
     path: 'blogs/:ref',
     title: "Ghost's Posts",
     component: PostDetailComponent,
+    resolve: { post: postResolver },
+    runGuardsAndResolvers: 'paramsChange',
   },
   {
     path: 'home',

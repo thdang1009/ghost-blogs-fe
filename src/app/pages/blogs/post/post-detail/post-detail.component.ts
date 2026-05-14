@@ -109,48 +109,40 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // The post is pre-fetched by postResolver so its body, <title>, and
+    // OG/Twitter meta tags are present in the initial SSR HTML.
+    const resolved = this.route.snapshot.data['post'] as Post | null | undefined;
+
+    if (resolved) {
+      this.applyPost(resolved);
+      return;
+    }
+
+    // Fallback: if the resolver didn't run (e.g. programmatic navigation in
+    // dev, or the route was reached without param resolution), fetch directly.
     const id = this.route.snapshot.paramMap.get('ref');
+    this.postService
+      .getPost(id as string)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(post => this.applyPost(post));
+  }
 
-    this.postService.getPost(id as string).subscribe(post => {
-      this.item = post;
-      this.count = post.clapCount || 0;
+  private applyPost(post: Post): void {
+    this.item = post;
+    this.count = post.clapCount || 0;
 
-      // Set the current page URL for Facebook plugins
-      this.setCurrentPageUrl();
+    this.setCurrentPageUrl();
+    // Resolver already populated the static meta tags; only set the URL meta
+    // here because it depends on the resolved browser/SSR location.
+    this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
 
-      const subject = post.title as string;
-      const desc = post.description as string;
-      const creator = post.author as string;
-      const img = post.postBackgroundImg as string;
-      this.titleService.setTitle(post.title as string);
-      this.meta.updateTag({ itemprop: 'name', content: subject });
-      this.meta.updateTag({ itemprop: 'description', content: desc });
-      this.meta.updateTag({ name: 'twitter:card', content: 'summary' });
-      this.meta.updateTag({ name: 'twitter:title', content: subject });
-      this.meta.updateTag({ name: 'twitter:description', content: desc });
-      this.meta.updateTag({ name: 'twitter:creator', content: creator });
-      this.meta.updateTag({ name: 'twitter:image', content: img });
-      this.meta.updateTag({ property: 'og:title', content: subject });
-      this.meta.updateTag({ property: 'og:description', content: desc });
-      this.meta.updateTag({ property: 'og:creator', content: creator });
-      this.meta.updateTag({ property: 'og:image', content: img });
-      this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+    this.initializeBilingualContent();
+    this.ready = true;
+    this.startAnalyticsTracking();
 
-      // Initialize bilingual content
-      this.initializeBilingualContent();
-
-      this.ready = true;
-
-      // Start analytics tracking
-      this.startAnalyticsTracking();
-
-      // Initialize code run buttons after content is rendered (browser only)
-      if (!isPlatformServer(this.platformId)) {
-        setTimeout(() => {
-          this.initializeCodeRunButtons();
-        }, 100);
-      }
-    });
+    if (!isPlatformServer(this.platformId)) {
+      setTimeout(() => this.initializeCodeRunButtons(), 100);
+    }
   }
 
   ngAfterViewInit() {

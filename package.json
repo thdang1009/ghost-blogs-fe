@@ -4,6 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4500",
+    "prerender:routes": "node scripts/generate-prerender-routes.mjs",
+    "prebuild": "node scripts/generate-prerender-routes.mjs",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test ghost-blogs-fe",
