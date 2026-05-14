@@ -18,8 +18,11 @@ export class ApiConfigService {
 
   private determineApiUrl(): string {
     if (isPlatformServer(this.platformId)) {
-      // Phase 1: Server-side rendering - use localhost for fastest data access
-      return 'http://localhost:3000';
+      // SSR: hit the backend over loopback to skip nginx. Use 127.0.0.1, not
+      // `localhost` — Node 20's fetch resolves `localhost` to ::1 first, but
+      // the backend binds to 0.0.0.0 (IPv4 only), so the IPv6 attempt is
+      // refused and SSR loses every API response.
+      return 'http://127.0.0.1:3000';
     } else if (isPlatformBrowser(this.platformId)) {
       // Phase 2: Client-side - use the correct domain API
       return environment.production ? 'https://dangtrinh.site/api' : environment.apiUrl;

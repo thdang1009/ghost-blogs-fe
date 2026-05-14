@@ -19,8 +19,8 @@ describe('ApiConfigService', () => {
       expect(service).toBeTruthy();
     });
 
-    it('should use localhost for SSR', () => {
-      expect(service.apiUrl).toBe('http://localhost:3000');
+    it('should use 127.0.0.1 for SSR', () => {
+      expect(service.apiUrl).toBe('http://127.0.0.1:3000');
     });
 
     it('should identify as server-side', () => {
@@ -29,9 +29,9 @@ describe('ApiConfigService', () => {
     });
 
     it('should generate correct endpoint URLs for SSR', () => {
-      expect(service.getApiUrl('/v1/post')).toBe('http://localhost:3000/v1/post');
-      expect(service.getApiUrl('v1/auth')).toBe('http://localhost:3000/v1/auth');
-      expect(service.getApiUrl()).toBe('http://localhost:3000');
+      expect(service.getApiUrl('/v1/post')).toBe('http://127.0.0.1:3000/v1/post');
+      expect(service.getApiUrl('v1/auth')).toBe('http://127.0.0.1:3000/v1/auth');
+      expect(service.getApiUrl()).toBe('http://127.0.0.1:3000');
     });
   });
 

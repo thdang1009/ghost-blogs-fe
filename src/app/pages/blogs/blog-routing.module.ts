@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { PostDetailComponent } from './post/post-detail/post-detail.component';
 import { TagListComponent } from './tag/tag-list/tag-list.component';
 import { adminGuard, loginGuard } from '@guards/auth.guards';
 import { PostListComponent } from './post/post-list/post-list.component';
@@ -17,13 +16,6 @@ const routes2: Routes = [
     title: 'List Post',
     component: PostListComponent,
     canActivate: [loginGuard],
-  },
-  {
-    path: 'blogs/:ref',
-    title: "Ghost's Post",
-    component: PostDetailComponent,
-    canActivate: [],
-    pathMatch: 'full',
   },
   {
     path: 'tag-list',
