@@ -21,7 +21,6 @@ export const GuestLayoutRoutes: Routes = [
   },
   {
     path: 'blogs/:ref',
-    title: "Ghost's Posts",
     component: PostDetailComponent,
     resolve: { post: postResolver },
     runGuardsAndResolvers: 'paramsChange',

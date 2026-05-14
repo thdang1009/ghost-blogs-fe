@@ -33,3 +33,4 @@ export * from './code-runner/code-runner.service';
 export * from './code-validator/code-validator.service';
 export * from './simple-code-runner/simple-code-runner.service';
 export * from './error-handler/global-error-handler.service';
+export * from './seo/seo.service';

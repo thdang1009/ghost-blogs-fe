@@ -12,6 +12,7 @@ import {
 import { ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PostService } from '@services/_index';
 import { PostAnalyticsService } from '@services/post-analytics/post-analytics.service';
+import { SeoService } from '@services/seo/seo.service';
 import { Router } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { POST_TYPE } from '@shared/enum';
@@ -67,6 +68,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private titleService: Title,
     private meta: Meta,
+    private seo: SeoService,
     @Inject(DOCUMENT) private document: Document,
     @Inject(PLATFORM_ID) private platformId: Object,
     private platformLocation: PlatformLocation,
@@ -132,9 +134,9 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.count = post.clapCount || 0;
 
     this.setCurrentPageUrl();
-    // Resolver already populated the static meta tags; only set the URL meta
-    // here because it depends on the resolved browser/SSR location.
-    this.meta.updateTag({ property: 'og:url', content: this.currentPageUrl });
+    // Idempotent — the resolver already ran on SSR and SPA navigation, but the
+    // fallback fetch path in ngOnInit also needs the meta tags applied.
+    this.seo.setBlogTags(post);
 
     this.initializeBilingualContent();
     this.ready = true;
@@ -202,19 +204,7 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     // Stop analytics tracking and send final data
     this.stopAnalyticsTracking();
 
-    this.meta.removeTag('itemprop="name"');
-    this.meta.removeTag('itemprop="description"');
-    this.meta.removeTag('name="twitter:card"');
-    this.meta.removeTag('name="twitter:title"');
-    this.meta.removeTag('name="twitter:description"');
-    this.meta.removeTag('name="twitter:creator"');
-    this.meta.removeTag('name="twitter:image"');
-    this.meta.removeTag('property="og:title"');
-    this.meta.removeTag('property="og:description"');
-    this.meta.removeTag('property="og:creator"');
-    this.meta.removeTag('property="og:image"');
-    this.meta.removeTag('property="og:url"');
-    this.titleService.setTitle('Ghost Site');
+    this.seo.resetToDefaults();
 
     this.destroy$.next();
     this.destroy$.complete();
