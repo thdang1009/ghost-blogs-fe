@@ -1,24 +1,6 @@
 <div class="ghost-wrapper">
   <div class="header-box">
     <div class="ghost-box">
-      <div>
-        <a [routerLink]="['/']">
-          <img
-            loading="eager"
-            fetchpriority="high"
-            width="80"
-            height="80"
-            style="aspect-ratio: 1; object-fit: contain"
-            alt="Ghost Blog"
-            src="assets/img/ghost.png"
-          />
-        </a>
-      </div>
-      <!-- Badge Section -->
-      <div class="badges-section">
-        <app-list-badge></app-list-badge>
-      </div>
-
       <!-- Enhanced Header Actions -->
       <div class="header-actions">
         <!-- Private Mode Toggle for Admins -->
@@ -340,7 +322,10 @@
             class="tags-grid"
           >
             <button
-              *ngFor="let tag of tagsSummary(); trackBy: trackByTagId"
+              *ngFor="
+                let tag of tagsSummary().slice(0, 20);
+                trackBy: trackByTagId
+              "
               (click)="navigateToTagFilter(tag.name)"
               class="tag-chip"
             >
