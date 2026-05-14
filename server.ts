@@ -3,7 +3,185 @@ import { CommonEngine } from '@angular/ssr';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { request as httpRequest, IncomingMessage } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 import bootstrap from './src/main.server';
+
+// Backend host used by the SSR Express process to look up post metadata for
+// social-share previews. Direct loopback to the API on the same EC2 box —
+// nginx + cookies + the Angular HTTP backend are all out of the picture, so
+// this works regardless of whether the Angular SSR resolver happens to pick
+// the response up before serialisation.
+const SSR_API_BASE = process.env['SSR_API_BASE'] || 'http://127.0.0.1:3000';
+const SITE_ORIGIN = 'https://dangtrinh.site';
+const DEFAULT_OG_IMAGE = `${SITE_ORIGIN}/assets/img/ghost.png`;
+
+interface PostSeo {
+  title: string;
+  description: string;
+  image: string;
+  author: string;
+  tags: string[];
+  publishedTime?: string;
+  modifiedTime?: string;
+}
+
+// Uses node:http directly instead of global fetch because EC2's Node runtime
+// is older than 18.17 and `fetch` is not defined — that was the actual reason
+// the SSR meta-tag injection silently produced default fallbacks.
+function httpGetJson(
+  url: string,
+  timeoutMs: number
+): Promise<{ status: number; body: any }> {
+  const requestFn = url.startsWith('https:') ? httpsRequest : httpRequest;
+  return new Promise((resolveP, rejectP) => {
+    const req = requestFn(
+      url,
+      { method: 'GET', headers: { Accept: 'application/json' } },
+      (res: IncomingMessage) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => {
+          const text = Buffer.concat(chunks).toString('utf8');
+          let body: any = null;
+          try {
+            body = text ? JSON.parse(text) : null;
+          } catch (e: any) {
+            return rejectP(
+              new Error(`json parse failed: ${e?.message || e}`)
+            );
+          }
+          resolveP({ status: res.statusCode || 0, body });
+        });
+        res.on('error', rejectP);
+      }
+    );
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`timeout after ${timeoutMs}ms`));
+    });
+    req.on('error', rejectP);
+    req.end();
+  });
+}
+
+async function fetchPostSeo(ref: string): Promise<PostSeo | null> {
+  const url = `${SSR_API_BASE}/v1/post/ref/${encodeURIComponent(ref)}`;
+  const started = Date.now();
+  try {
+    const { status, body: post } = await httpGetJson(url, 5000);
+    if (status < 200 || status >= 300) {
+      console.warn(
+        `[seo] fetchPostSeo ${ref}: status=${status} url=${url} time=${Date.now() - started}ms`
+      );
+      return null;
+    }
+    if (!post || !post.title) {
+      console.warn(
+        `[seo] fetchPostSeo ${ref}: empty/invalid body keys=${post ? Object.keys(post).join(',') : 'null'} time=${Date.now() - started}ms`
+      );
+      return null;
+    }
+    console.log(
+      `[seo] fetchPostSeo ${ref}: ok title="${String(post.title).slice(0, 60)}" img=${post.postBackgroundImg ? 'yes' : 'no'} time=${Date.now() - started}ms`
+    );
+    return {
+      title: String(post.title),
+      description: String(post.description || ''),
+      image: toAbsoluteAssetUrl(post.postBackgroundImg) || DEFAULT_OG_IMAGE,
+      author: String(post.author || 'Dang Trinh'),
+      tags: Array.isArray(post.tags)
+        ? post.tags
+            .map((t: any) => (t && typeof t.name === 'string' ? t.name : null))
+            .filter((name: string | null): name is string => !!name)
+        : [],
+      publishedTime: post.createdAt ? String(post.createdAt) : undefined,
+      modifiedTime: post.updatedAt ? String(post.updatedAt) : undefined,
+    };
+  } catch (e: any) {
+    console.error(
+      `[seo] fetchPostSeo ${ref}: error url=${url} time=${Date.now() - started}ms message=${e?.message || e} code=${e?.code || ''}`
+    );
+    return null;
+  }
+}
+
+function toAbsoluteAssetUrl(maybeUrl?: string | null): string {
+  if (!maybeUrl) return '';
+  const trimmed = String(maybeUrl).trim();
+  if (!trimmed) return '';
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('//')) return `https:${trimmed}`;
+  return `${SITE_ORIGIN}${trimmed.startsWith('/') ? '' : '/'}${trimmed}`;
+}
+
+function escapeAttr(value: string): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function setMeta(
+  html: string,
+  attr: 'name' | 'property',
+  key: string,
+  content: string
+): string {
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(
+    `<meta\\s+${attr}="${escapedKey}"\\s+content="[^"]*"\\s*\\/?>`,
+    'i'
+  );
+  const replacement = `<meta ${attr}="${key}" content="${escapeAttr(content)}">`;
+  if (re.test(html)) return html.replace(re, replacement);
+  return html.replace(/<\/head>/i, `${replacement}</head>`);
+}
+
+function injectPostSeo(
+  html: string,
+  post: PostSeo,
+  canonicalUrl: string
+): string {
+  let out = html.replace(
+    /<title>[^<]*<\/title>/i,
+    `<title>${escapeAttr(post.title)}</title>`
+  );
+  out = out.replace(
+    /<meta\s+name="description"\s+content="[^"]*"\s*\/?>/i,
+    `<meta name="description" content="${escapeAttr(post.description)}">`
+  );
+  out = setMeta(out, 'property', 'og:type', 'article');
+  out = setMeta(out, 'property', 'og:title', post.title);
+  out = setMeta(out, 'property', 'og:description', post.description);
+  out = setMeta(out, 'property', 'og:image', post.image);
+  out = setMeta(out, 'property', 'og:image:alt', post.title);
+  out = setMeta(out, 'property', 'og:url', canonicalUrl);
+  out = setMeta(out, 'name', 'twitter:title', post.title);
+  out = setMeta(out, 'name', 'twitter:description', post.description);
+  out = setMeta(out, 'name', 'twitter:image', post.image);
+  out = setMeta(out, 'name', 'twitter:image:alt', post.title);
+  out = setMeta(out, 'property', 'article:author', post.author);
+  if (post.publishedTime) {
+    out = setMeta(out, 'property', 'article:published_time', post.publishedTime);
+  }
+  if (post.modifiedTime) {
+    out = setMeta(out, 'property', 'article:modified_time', post.modifiedTime);
+  }
+  if (post.tags.length) {
+    const tagMetas = post.tags
+      .map(t => `<meta property="article:tag" content="${escapeAttr(t)}">`)
+      .join('');
+    // Strip any prior article:tag occurrences first to avoid duplicates from
+    // cached / pre-existing renders.
+    out = out.replace(
+      /<meta\s+property="article:tag"\s+content="[^"]*"\s*\/?>/gi,
+      ''
+    );
+    out = out.replace(/<\/head>/i, `${tagMetas}</head>`);
+  }
+  return out;
+}
 
 // CDN-friendly cache profile per route class.
 // Public reading surface: cache at the edge for 60s, serve stale for up to 10min
@@ -141,21 +319,51 @@ export function app(): express.Express {
       const cached = readRenderCache(pathname);
       if (cached) {
         res.setHeader('X-Render-Cache', 'HIT');
+        console.log(`[ssr] HIT ${pathname}`);
         return res.send(cached);
       }
+      console.log(`[ssr] MISS ${pathname} ua="${(req.get('user-agent') || '').slice(0, 40)}"`);
 
       if (req.isBot) {
         res.setTimeout(30000);
       }
 
-      const html = await commonEngine.render({
-        bootstrap,
-        documentFilePath: indexHtml,
-        url,
-        publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
-        inlineCriticalCss: true,
-      });
+      // Run the post-metadata fetch alongside the Angular SSR render. Whatever
+      // the Angular pipeline emits, we rewrite the OG/Twitter meta tags from
+      // the authoritative post record here so social-share unfurlers always
+      // see the right title/image/description/tags.
+      const blogMatch = pathname.match(/^\/blogs\/([^/?#]+)\/?$/);
+      const postSeoPromise: Promise<PostSeo | null> = blogMatch
+        ? fetchPostSeo(blogMatch[1])
+        : Promise.resolve(null);
+
+      const [renderedHtml, postSeo] = await Promise.all([
+        commonEngine.render({
+          bootstrap,
+          documentFilePath: indexHtml,
+          url,
+          publicPath: browserDistFolder,
+          providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+          inlineCriticalCss: true,
+        }),
+        postSeoPromise,
+      ]);
+
+      const canonicalUrl = `${SITE_ORIGIN}${pathname}`;
+      let html: string;
+      if (postSeo) {
+        html = injectPostSeo(renderedHtml, postSeo, canonicalUrl);
+        console.log(
+          `[seo] injected ${pathname} title="${postSeo.title.slice(0, 60)}" tags=${postSeo.tags.length}`
+        );
+      } else {
+        html = renderedHtml;
+        if (blogMatch) {
+          console.warn(
+            `[seo] no injection for ${pathname} (postSeo was null — fetch failed or no match)`
+          );
+        }
+      }
 
       writeRenderCache(pathname, html);
       res.setHeader('X-Render-Cache', 'MISS');
