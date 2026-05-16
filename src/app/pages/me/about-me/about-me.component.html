@@ -67,6 +67,7 @@
       >
         <h2 class="section-header">About Me</h2>
       </div>
+
       <div class="who-am-i-container">
         <span class="static-text">
           <ngx-typed-writer
@@ -87,310 +88,102 @@
             padding: '0 0 12px 0',
           }"
         ></app-list-badge>
-        <p>
-          I am
-          <strong>Đăng Trịnh</strong>
-          , a Senior Full Stack Engineer with
-          <strong>8+</strong>
-          years of experience building backend and frontend and maintaining
-          responsive websites. I am a super fan of
-          <strong>JavaScript</strong>
-          language and its ecosystem. I am committed to producing
-          <strong> clean, reliable, and scalable </strong>
-          code that prioritizes
-          <strong>performance</strong>
-          optimization. Outside of work, I love to
-          <strong>read</strong>
-          , I’m also a
-          <strong>minimalist</strong>
-          .
+
+        <p class="bio">
+          <strong>Đăng Trịnh</strong> — Senior Full Stack Engineer with
+          <strong>8+ years</strong> across frontend, backend and microservices.
+          JavaScript &amp; TypeScript specialist shipping
+          <strong>clean, reliable, performant</strong> code.
         </p>
-        <strong>
-          Techstack: Angular, NodeJS, NestJS, TypeScript, JavaScript, HTML, CSS,
-          PostgreSQL, MongoDB, ...
-        </strong>
 
-        <!-- CV Download and Hire Me Buttons -->
-        <!-- <div class="action-buttons-container">
-					<app-download-my-cv
-						[buttonText]="'Download CV'"
-						[buttonClass]="'btn btn-primary'">
-					</app-download-my-cv>
-				</div> -->
+        <div class="currently-at">
+          <i class="material-icons" aria-hidden="true">bolt</i>
+          <span>
+            Currently <strong>&#64; CoverGo</strong> · Ho Chi Minh City · Open
+            to
+            <a
+              href="https://www.upwork.com/freelancers/~01cb8f92b533a4d365"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              freelance
+            </a>
+          </span>
+        </div>
       </div>
-      <div class="detail-info">
-        <ul class="list list-with-divider">
-          <li>
-            <p>
-              <strong>Birthday:</strong>
-              10/09/1996
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Website:</strong>
-              <a href="https://dangtrinh.site"> &nbsp;dangtrinh.site </a>
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Degree:</strong>
-              Bachelor
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Location:</strong>
-              HO CHI MINH City
-            </p>
-          </li>
-        </ul>
 
-        <ul class="list list-with-divider">
-          <li>
-            <p>
-              <strong>Age:</strong>
-              {{ yearOlds }}
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Email:</strong>
-              <a href="mailto:thdang1009@gmail.com">
-                thdang1009&#64;gmail&#46;com
-              </a>
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Phone:</strong>
-              <a href="phoneto:+84327123239"> &nbsp;+84 327 123 239 </a>
-            </p>
-          </li>
-          <li>
-            <p>
-              <strong>Freelance:</strong>
+      <div class="stats-row">
+        <ng-container *ngFor="let s of stats">
+          <a
+            *ngIf="s.url; else plainStat"
+            class="stat"
+            [href]="s.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div class="stat-value">{{ s.value }}</div>
+            <div class="stat-label">{{ s.label }}</div>
+          </a>
+          <ng-template #plainStat>
+            <div class="stat">
+              <div class="stat-value">{{ s.value }}</div>
+              <div class="stat-label">{{ s.label }}</div>
+            </div>
+          </ng-template>
+        </ng-container>
+      </div>
+
+      <div class="tech-groups">
+        <div class="tech-group" *ngFor="let g of techGroups">
+          <span class="tech-group-label">{{ g.label }}</span>
+          <span class="tech-chip" *ngFor="let t of g.items">{{ t }}</span>
+        </div>
+      </div>
+
+      <div class="exp-section">
+        <h3>Experience</h3>
+        <div class="exp-list">
+          <article class="exp-card" *ngFor="let e of experiences">
+            <header class="exp-head">
+              <span class="exp-period">
+                <i class="material-icons" aria-hidden="true">calendar_month</i>
+                {{ e.period }}
+              </span>
               <a
-                class="hover-pointer"
-                href="https://www.upwork.com/freelancers/~01cb8f92b533a4d365"
+                *ngIf="e.companyUrl; else plainCompany"
+                [href]="e.companyUrl"
                 target="_blank"
                 rel="noopener noreferrer"
+                class="exp-company"
+                >{{ e.company }}</a
               >
-                Available
-              </a>
-            </p>
-          </li>
-        </ul>
-        <ul class="list pdx-2">
-          <li>
-            <app-progress-with-label
-              [percent]="95"
-              [label]="'Javascript'"
-            ></app-progress-with-label>
-          </li>
-          <li>
-            <app-progress-with-label
-              [percent]="85"
-              [label]="'HTML5, CSS3, SCSS'"
-            ></app-progress-with-label>
-          </li>
-          <li>
-            <app-progress-with-label
-              [percent]="95"
-              [label]="'Angular, Vue'"
-            ></app-progress-with-label>
-          </li>
-          <li>
-            <app-progress-with-label
-              [percent]="90"
-              [label]="'NodeJS, NestJS'"
-            ></app-progress-with-label>
-          </li>
-          <li>
-            <app-progress-with-label
-              [percent]="85"
-              [label]="'MongoDB, PostgreSQL'"
-            ></app-progress-with-label>
-          </li>
-        </ul>
+              <ng-template #plainCompany>
+                <span class="exp-company">{{ e.company }}</span>
+              </ng-template>
+            </header>
+            <div class="exp-role">{{ e.role }}</div>
+            <p class="exp-impact">{{ e.impact }}</p>
+            <div class="exp-tech">
+              <span class="tech-chip" *ngFor="let t of e.tech">{{ t }}</span>
+            </div>
+          </article>
+        </div>
       </div>
-      <div class="two-col row">
-        <div class="time-line-container col-sm-12 col-lg-6">
-          <h3>Education</h3>
-          <div class="card">
-            <!-- Stepper HTML -->
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2011 - 2014
-                </div>
-                <div class="content base dark400">
-                  High School
-                  <br />
-                  <a
-                    href="https://ndc.edu.vn/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Collège de Mytho (Trường Trung học Phổ thông Nguyễn Đình
-                    Chiểu)
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2014 - 2018
-                </div>
-                <div class="content base dark400">
-                  Software Engineer
-                  <br />
-                  <a
-                    href="https://www.hcmus.edu.vn/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    HCMUS (Khoa học tự nhiên)
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2018 - present
-                </div>
-                <div class="content base dark400">
-                  Fullstack Software Engineer &#64;
-                  <a
-                    href="https://frontendmasters.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Frontend Master
-                  </a>
-                </div>
-              </div>
-            </div>
-            <!-- END Step -->
+
+      <div class="edu-section">
+        <h3>Education</h3>
+        <article class="edu-card" *ngFor="let ed of educations">
+          <span class="exp-period">
+            <i class="material-icons" aria-hidden="true">school</i>
+            {{ ed.period }}
+          </span>
+          <div class="edu-school">
+            <a [href]="ed.url" target="_blank" rel="noopener noreferrer">
+              {{ ed.school }}
+            </a>
           </div>
-        </div>
-        <div class="time-line-container col-sm-12 col-lg-6">
-          <h3>Experience</h3>
-          <div class="card">
-            <!-- Stepper HTML -->
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2017 - 2018
-                </div>
-                <div class="content base dark400">
-                  VNG Corp
-                  <br />
-                  Javascript Fresher
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2018 - 2021
-                </div>
-                <div class="content base dark400">
-                  ZION
-                  <br />
-                  Frontend Engineer
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  2022 - 09/2023
-                </div>
-                <div class="content base dark400">
-                  ZION, Freelancer
-                  <br />
-                  Senior Fullstack Engineer
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  10/2023 - 3/2025
-                </div>
-                <div class="content base dark400">
-                  BlueSG, Freelancer
-                  <br />
-                  Senior Fullstack Engineer
-                </div>
-              </div>
-            </div>
-            <div class="step">
-              <div>
-                <div class="circle"></div>
-              </div>
-              <div>
-                <div class="title">
-                  <i class="material-icons" aria-hidden="true">
-                    calendar_month
-                  </i>
-                  4/2025 - present
-                </div>
-                <div class="content base dark400">
-                  CoverGo
-                  <br />
-                  Senior Fullstack Engineer
-                </div>
-              </div>
-            </div>
-            <!-- END Step -->
-          </div>
-        </div>
+          <div class="edu-degree">{{ ed.degree }}</div>
+        </article>
       </div>
     </section>
     <!-- **** **** **** **** ABOUT ME END **** **** **** **** -->
