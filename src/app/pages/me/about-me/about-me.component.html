@@ -278,21 +278,19 @@
             [formGroup]="contactForm"
             (ngSubmit)="sendMessageToMe(contactForm.value)"
           >
-            <div class="form-row">
-              <div class="form-col">
-                <mat-form-field appearance="outline">
-                  <mat-label>Name</mat-label>
-                  <input matInput type="text" formControlName="name" />
-                  <mat-error>Name is required</mat-error>
-                </mat-form-field>
-              </div>
-              <div class="form-col">
-                <mat-form-field appearance="outline">
-                  <mat-label>Email</mat-label>
-                  <input matInput type="email" formControlName="email" />
-                  <mat-error>Valid email required</mat-error>
-                </mat-form-field>
-              </div>
+            <div class="form-col">
+              <mat-form-field appearance="outline">
+                <mat-label>Name</mat-label>
+                <input matInput type="text" formControlName="name" />
+                <mat-error>Name is required</mat-error>
+              </mat-form-field>
+            </div>
+            <div class="form-col">
+              <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput type="email" formControlName="email" />
+                <mat-error>Valid email required</mat-error>
+              </mat-form-field>
             </div>
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Subject</mat-label>
