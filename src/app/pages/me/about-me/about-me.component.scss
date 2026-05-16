@@ -201,6 +201,8 @@ iframe {
 .product-preview-iframe {
   width: 100%;
   margin-bottom: 10px;
+  max-height: 838px;
+  overflow: scroll;
 }
 
 @media (min-width: 1200px) {
