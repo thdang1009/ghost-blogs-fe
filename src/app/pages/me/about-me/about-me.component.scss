@@ -302,7 +302,7 @@ iframe {
     font-weight: 700;
     text-transform: uppercase;
     color: #334c65;
-    min-width: 80px;
+    min-width: auto;
     letter-spacing: 0.06em;
   }
 }
@@ -580,5 +580,9 @@ a.exp-company {
 
   .contact-form-wrap {
     margin-top: 38px;
+  }
+
+  .tech-group-label {
+    min-width: 80px;
   }
 }

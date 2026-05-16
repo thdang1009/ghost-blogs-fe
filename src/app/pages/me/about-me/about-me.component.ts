@@ -153,7 +153,7 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   techGroups: TechGroup[] = [
     {
       label: 'Frontend',
-      items: ['Angular', 'Vue', 'TypeScript', 'HTML', 'CSS/SCSS'],
+      items: ['Angular', 'Vue', 'React', 'TypeScript', 'HTML', 'CSS/SCSS'],
     },
     {
       label: 'Backend',
