@@ -10,11 +10,12 @@ import {
 import {
   UntypedFormBuilder,
   UntypedFormGroup,
+  FormGroupDirective,
   NgForm,
   Validators,
 } from '@angular/forms';
 import { Meta } from '@angular/platform-browser';
-import { GuestMessageService, AlertService } from '@services/_index';
+import { GuestMessageService } from '@services/_index';
 import { addStructuredData } from '@shared/common';
 
 export interface PortfolioData {
@@ -49,6 +50,14 @@ export interface Stat {
   value: string;
   url?: string;
 }
+
+export interface ContactChannel {
+  label: string;
+  value: string;
+  href: string;
+  icon: string;
+  external: boolean;
+}
 @Component({
   selector: 'app-about-me',
   templateUrl: './about-me.component.html',
@@ -59,6 +68,7 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   @ViewChild('portfolio') portfolioElement: ElementRef | undefined;
   @ViewChild('contact') contactElement: ElementRef | undefined;
   @ViewChild('aboutMeContent') aboutMeContent: ElementRef | undefined;
+  @ViewChild(FormGroupDirective) private formDirective!: FormGroupDirective;
 
   isRunning = false;
   contactForm!: UntypedFormGroup;
@@ -167,12 +177,52 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
     },
   ];
 
+  contactChannels: ContactChannel[] = [
+    {
+      label: 'Email',
+      value: 'thdang1009@gmail.com',
+      href: 'mailto:thdang1009@gmail.com',
+      icon: 'email',
+      external: false,
+    },
+    {
+      label: 'Phone',
+      value: '+84 327 123 239',
+      href: 'tel:+84327123239',
+      icon: 'phone',
+      external: false,
+    },
+    {
+      label: 'LinkedIn',
+      value: 'Dang Trinh',
+      href: 'https://www.linkedin.com/in/dang-trinh-a049a314b',
+      icon: 'person',
+      external: true,
+    },
+    {
+      label: 'GitHub',
+      value: 'thdang1009',
+      href: 'https://github.com/thdang1009',
+      icon: 'code',
+      external: true,
+    },
+    {
+      label: 'Upwork',
+      value: 'Available for freelance',
+      href: 'https://www.upwork.com/freelancers/~01cb8f92b533a4d365',
+      icon: 'work',
+      external: true,
+    },
+  ];
+
+  messageSent = false;
+  messageError = '';
+
   indexInterval = 0;
   constructor(
     private formBuilder: UntypedFormBuilder,
     private guestMessage: GuestMessageService,
     private meta: Meta,
-    private alertService: AlertService,
     @Inject(DOCUMENT) private document: Document
   ) {
     addStructuredData(this.document);
@@ -223,19 +273,21 @@ export class AboutMeComponent implements OnInit, AfterViewInit {
   }
   sendMessageToMe(form: NgForm) {
     this.isRunning = true;
+    this.messageSent = false;
+    this.messageError = '';
     this.guestMessage.sendGuestMessage(form).subscribe(
       res => {
         this.isRunning = false;
         if (res && res.id) {
-          this.alertService.showNoti('Send success!', 'success');
+          this.messageSent = true;
+          this.formDirective.resetForm();
         }
       },
-      err => {
+      _err => {
         this.isRunning = false;
-        this.alertService.showNoti('Send Fail! ' + err.error, 'danger');
+        this.messageError = 'Something went wrong — try emailing me directly.';
       }
     );
-    // call api save guest message
   }
   scrollTo(s: string) {
     const element = document.getElementById(s);
