@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18.x'
+          node-version: '20.x'
 
       - name: Inject secrets into environment.prod.ts
         run: |
@@ -30,8 +30,8 @@ jobs:
 
       - name: Package Application
         run: |
-          mkdir -p ghost-blogs-fe
-          cp -r ./dist/ghost-blogs-fe/* ghost-blogs-fe
+          mkdir -p dangtrinh-ssr
+          cp -r ./dist/ghost-blogs-fe/* dangtrinh-ssr
 
       - name: SSH and Deploy to EC2
         uses: appleboy/scp-action@master
@@ -39,8 +39,8 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: ghost-blogs-fe
-          target: /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}
+          source: dangtrinh-ssr
+          target: /var/www
 
       - name: SSH and Restart Application
         uses: appleboy/ssh-action@master
@@ -49,6 +49,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            cd /home/${{ secrets.EC2_USER }}/${{ secrets.GHOST_SITE_DIR }}/ghost-blogs-fe
+            cd /var/www/dangtrinh-ssr
             pm2 reload ghost-blogs-fe
             echo "Deployment successful!"
