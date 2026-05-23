@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy Frontend to Lightsail
 
 on:
   push:
@@ -17,38 +17,43 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+          cache: 'npm'
 
       - name: Inject secrets into environment.prod.ts
         run: |
           sed -i "s|GA_CODE_PLACEHOLDER|${{ secrets.GA_CODE }}|g" src/environments/environment.prod.ts
           sed -i "s|FB_APP_ID_PLACEHOLDER|${{ secrets.FB_APP_ID }}|g" src/environments/environment.prod.ts
 
-      - name: Build Angular Frontend (SSR)
+      - name: Install and build
         run: |
-          npm install
+          npm ci
           npm run build
 
-      - name: Package Application
+      - name: Package for staging
         run: |
-          mkdir -p dangtrinh-ssr
-          cp -r ./dist/ghost-blogs-fe/* dangtrinh-ssr
+          mkdir -p dangtrinh-ssr-staging
+          cp -r ./dist/ghost-blogs-fe/* dangtrinh-ssr-staging/
 
-      - name: SSH and Deploy to EC2
-        uses: appleboy/scp-action@master
+      - name: Upload to staging directory
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: dangtrinh-ssr
+          source: dangtrinh-ssr-staging
           target: /var/www
 
-      - name: SSH and Restart Application
-        uses: appleboy/ssh-action@master
+      - name: Swap directories and reload
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            cd /var/www/dangtrinh-ssr
+            set -e
+            rm -rf /var/www/dangtrinh-ssr-old
+            [ -d /var/www/dangtrinh-ssr ] && mv /var/www/dangtrinh-ssr /var/www/dangtrinh-ssr-old
+            mv /var/www/dangtrinh-ssr-staging /var/www/dangtrinh-ssr
             pm2 reload ghost-blogs-fe
-            echo "Deployment successful!"
+            rm -rf /var/www/dangtrinh-ssr-old
+            echo "Frontend deployed successfully"
