@@ -54,6 +54,7 @@ jobs:
             rm -rf /var/www/dangtrinh-ssr-old
             [ -d /var/www/dangtrinh-ssr ] && mv /var/www/dangtrinh-ssr /var/www/dangtrinh-ssr-old
             mv /var/www/dangtrinh-ssr-staging /var/www/dangtrinh-ssr
-            pm2 reload ghost-blogs-fe
+            pm2 reload ghost-blogs-fe || pm2 start /var/www/dangtrinh-backend/ecosystem.config.js --only ghost-blogs-fe
+            pm2 save
             rm -rf /var/www/dangtrinh-ssr-old
             echo "Frontend deployed successfully"

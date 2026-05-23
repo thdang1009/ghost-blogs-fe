@@ -13,7 +13,7 @@
     "lint:check": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky",
+    "prepare": "is-ci || husky",
     "ssr": "ng build && node dist/ghost-blogs-fe/server/server.mjs",
     "serve:ssr:ghost-blogs-fe": "node dist/ghost-blogs-fe/server/server.mjs --port 4500"
   },
