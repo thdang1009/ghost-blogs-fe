@@ -13,30 +13,12 @@ const apiUrl = environment.apiUrl + '/v1/system';
 export class SystemService {
   constructor(private http: HttpClient) {}
 
-  startProduction(): Observable<any> {
-    return this.http.post<any>(apiUrl + '/start-production', {}).pipe(
-      tap(response => {
-        ghostLog('Start production response:', response);
-      }),
-      catchError(handleError('startProduction', null))
-    );
-  }
-
   restartSystem(): Observable<any> {
     return this.http.put<any>(apiUrl + '/restart', {}).pipe(
       tap(response => {
         ghostLog('Restart system response:', response);
       }),
       catchError(handleError('restartSystem', null))
-    );
-  }
-
-  restartBackend(): Observable<any> {
-    return this.http.post<any>(apiUrl + '/restart-backend', {}).pipe(
-      tap(response => {
-        ghostLog('Restart backend response:', response);
-      }),
-      catchError(handleError('restartBackend', null))
     );
   }
 
