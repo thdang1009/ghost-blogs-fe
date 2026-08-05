@@ -195,30 +195,98 @@
                       </div>
 
                       <ul class="item-list">
-                        <li
-                          *ngFor="let item of section.items"
-                          class="item"
-                          [class.item--done]="isDone(item)"
-                          [class.item--pending]="isPending(item)"
-                        >
-                          <label class="item__label hover-pointer">
-                            <input
-                              type="checkbox"
-                              class="item__checkbox"
-                              [checked]="isDone(item)"
-                              [disabled]="isPending(item)"
-                              (change)="toggleItem(item)"
-                            />
-                            <span class="item__text">{{ item.text }}</span>
-                          </label>
-                          <span
-                            *ngIf="item.doneAt"
-                            class="item__date"
-                            matTooltip="Đánh dấu hoàn thành"
+                        <ng-container *ngFor="let item of section.items">
+                          <li
+                            class="item"
+                            [class.item--done]="isDone(item)"
+                            [class.item--pending]="isPending(item)"
                           >
-                            {{ item.doneAt | date: 'dd-MM' }}
-                          </span>
-                        </li>
+                            <label class="item__label hover-pointer">
+                              <input
+                                type="checkbox"
+                                class="item__checkbox"
+                                [checked]="isDone(item)"
+                                [disabled]="isPending(item)"
+                                (change)="toggleItem(item)"
+                              />
+                              <span class="item__text">{{ item.text }}</span>
+                            </label>
+                            <span
+                              *ngIf="item.doneAt"
+                              class="item__date"
+                              matTooltip="Đánh dấu hoàn thành"
+                            >
+                              {{ item.doneAt | date: 'dd-MM' }}
+                            </span>
+
+                            <!-- Đã có bài: mở thẳng trong CMS -->
+                            <a
+                              *ngIf="item.draft as draft"
+                              [routerLink]="['/admin/blog/post-list']"
+                              [queryParams]="{ id: draft.id }"
+                              class="item__draft-link"
+                              [matTooltip]="draft.title"
+                            >
+                              <em class="material-icons">article</em>
+                              Bản nháp
+                            </a>
+
+                            <!-- Chưa có bài: nút mở ô chọn series -->
+                            <button
+                              *ngIf="canDraft(item) && draftingKey !== item.key"
+                              (click)="openDraft(item)"
+                              type="button"
+                              matTooltip="Tạo bài blog nháp từ mục này"
+                              class="item__draft-btn"
+                            >
+                              <em class="material-icons">edit_note</em>
+                              Viết bài
+                            </button>
+                          </li>
+
+                          <!-- Ô chọn series, mở ngay dưới mục đang chọn -->
+                          <li
+                            *ngIf="draftingKey === item.key"
+                            class="draft-picker"
+                          >
+                            <select
+                              [(ngModel)]="selectedSeriesId"
+                              [disabled]="isCreatingDraft"
+                              class="form-control draft-picker__select"
+                            >
+                              <option
+                                *ngFor="let option of seriesOptions"
+                                [value]="option.id"
+                              >
+                                {{ option.name }}
+                              </option>
+                            </select>
+
+                            <span
+                              *ngIf="suggestedSeriesName(item) as suggested"
+                              class="draft-picker__hint"
+                            >
+                              gợi ý: {{ suggested }}
+                            </span>
+
+                            <button
+                              (click)="createDraft(item)"
+                              [disabled]="isCreatingDraft || !selectedSeriesId"
+                              type="button"
+                              class="btn btn-success btn-sm"
+                            >
+                              Tạo nháp
+                            </button>
+                            <button
+                              (click)="cancelDraft()"
+                              [disabled]="isCreatingDraft"
+                              type="button"
+                              class="btn btn-sm"
+                            >
+                              Huỷ
+                            </button>
+                          </li>
+                        </ng-container>
                       </ul>
                     </div>
                   </div>

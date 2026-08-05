@@ -7,6 +7,7 @@ import {
   LearningSection,
   MilestoneStats,
   RoadmapImportResult,
+  RoadmapSeriesOption,
   RoadmapWithStats,
 } from '@models/_index';
 import { AlertService, LearningRoadmapService } from '@services/_index';
@@ -33,6 +34,13 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
   /** Các key đang chờ server trả lời — để khoá đúng checkbox đó thôi. */
   pendingKeys = new Set<string>();
 
+  // Cầu nối blog: chọn series rồi sinh bài nháp từ một mục đã học.
+  seriesOptions: RoadmapSeriesOption[] = [];
+  /** Mục đang mở ô chọn series; chỉ một mục tại một thời điểm. */
+  draftingKey: string | null = null;
+  selectedSeriesId = '';
+  isCreatingDraft = false;
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -42,6 +50,7 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadRoadmap();
+    this.loadSeriesOptions();
   }
 
   ngOnDestroy(): void {
@@ -290,6 +299,97 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
           this.isImporting = false;
           this.alertService.showNoti(
             err?.error?.msg || 'Import thất bại',
+            'danger'
+          );
+        },
+      });
+  }
+
+  // --- Cầu nối blog ----------------------------------------------------------
+
+  /**
+   * Danh sách series cho dropdown. Lỗi ở đây không chặn màn hình chính — chỉ
+   * làm mất nút "Viết bài", nên báo nhẹ thay vì dựng cờ lỗi toàn trang.
+   */
+  private loadSeriesOptions(): void {
+    this.learningRoadmapService
+      .getSeriesOptions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: options => (this.seriesOptions = options ?? []),
+        error: err => {
+          console.error('Failed to load series options', err);
+          this.seriesOptions = [];
+        },
+      });
+  }
+
+  canDraft(item: LearningItem): boolean {
+    return !item.draft && this.seriesOptions.length > 0;
+  }
+
+  /** Mở ô chọn series, ưu tiên series backend gợi ý. */
+  openDraft(item: LearningItem): void {
+    this.draftingKey = item.key;
+    const suggested = this.seriesOptions.find(
+      option => option.slug === item.suggestedSeries
+    );
+    this.selectedSeriesId = suggested?.id ?? this.seriesOptions[0]?.id ?? '';
+  }
+
+  cancelDraft(): void {
+    this.draftingKey = null;
+    this.selectedSeriesId = '';
+  }
+
+  /** Tên series được gợi ý, để hiện cạnh dropdown. */
+  suggestedSeriesName(item: LearningItem): string {
+    return (
+      this.seriesOptions.find(option => option.slug === item.suggestedSeries)
+        ?.name ?? ''
+    );
+  }
+
+  createDraft(item: LearningItem): void {
+    if (!this.selectedSeriesId || this.isCreatingDraft) {
+      return;
+    }
+
+    this.isCreatingDraft = true;
+    this.learningRoadmapService
+      .createDraft(item.key, this.selectedSeriesId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: result => {
+          this.isCreatingDraft = false;
+          item.draft = {
+            postId: result.postId,
+            id: result.id,
+            title: result.title,
+          };
+          this.cancelDraft();
+          this.alertService.showNoti(
+            `Đã tạo bản nháp: ${result.title}`,
+            'success'
+          );
+        },
+        error: err => {
+          this.isCreatingDraft = false;
+          // 409 = mục đã có bài. Không phải lỗi thật, chỉ là màn hình đã cũ —
+          // gắn lại bài cũ để nút đổi thành "Mở bản nháp".
+          if (err?.status === 409 && err?.error?.postId) {
+            item.draft = {
+              postId: err.error.postId,
+              id: err.error.id,
+              title: err.error.title || '',
+            };
+            this.cancelDraft();
+            this.alertService.showNoti('Mục này đã có bài nháp', 'info');
+            return;
+          }
+          console.error('Failed to create draft', err);
+          this.alertService.showNoti(
+            err?.error?.msg || 'Không tạo được bản nháp',
             'danger'
           );
         },

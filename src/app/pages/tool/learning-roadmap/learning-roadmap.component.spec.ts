@@ -57,6 +57,8 @@ function buildRoadmap(): RoadmapWithStats {
                   text: 'Event loop',
                   status: 'DONE',
                   doneAt: '2026-08-01T00:00:00.000Z',
+                  draft: null,
+                  suggestedSeries: 'daily-depth',
                 },
                 {
                   key: 'm1-REVIEW-bbb',
@@ -64,6 +66,8 @@ function buildRoadmap(): RoadmapWithStats {
                   text: 'LeetCode medium',
                   status: 'TODO',
                   doneAt: null,
+                  draft: null,
+                  suggestedSeries: 'daily-problem-solving',
                 },
               ],
             },
@@ -138,10 +142,22 @@ describe('LearningRoadmapComponent', () => {
       'getDashboard',
       'importRoadmap',
       'updateItemStatus',
+      'getSeriesOptions',
+      'createDraft',
     ]);
     alertSpy = jasmine.createSpyObj('AlertService', ['showNoti']);
 
     serviceSpy.getRoadmap.and.returnValue(of(buildRoadmap()));
+    serviceSpy.getSeriesOptions.and.returnValue(
+      of([
+        {
+          id: 'sid-ps',
+          name: 'Daily Problem Solving',
+          slug: 'daily-problem-solving',
+        },
+        { id: 'sid-depth', name: 'Daily Depth', slug: 'daily-depth' },
+      ])
+    );
 
     await TestBed.configureTestingModule({
       declarations: [LearningRoadmapComponent],
@@ -397,6 +413,138 @@ describe('LearningRoadmapComponent', () => {
       expect(component.showImport).toBe(false);
       expect(component.markdownInput).toBe('');
       expect(component.previewResult).toBeNull();
+    });
+  });
+
+  describe('cầu nối blog', () => {
+    const draftResult = {
+      postId: 'pid-1',
+      id: 42,
+      title: 'Daily Problem Solving #6 — LeetCode medium',
+      postReference: 'daily-problem-solving-6-leetcode-medium',
+      seriesName: 'Daily Problem Solving',
+      number: 6,
+    };
+
+    beforeEach(() => fixture.detectChanges());
+
+    it('nạp danh sách series khi khởi tạo', () => {
+      expect(serviceSpy.getSeriesOptions).toHaveBeenCalled();
+      expect(component.seriesOptions.length).toBe(2);
+    });
+
+    it('mở ô chọn thì chọn sẵn series được gợi ý', () => {
+      component.openDraft(secondItem()); // gợi ý daily-problem-solving
+      expect(component.draftingKey).toBe('m1-REVIEW-bbb');
+      expect(component.selectedSeriesId).toBe('sid-ps');
+    });
+
+    it('không có gợi ý khớp thì lấy series đầu tiên', () => {
+      const item = { ...secondItem(), suggestedSeries: 'không-tồn-tại' };
+      component.openDraft(item);
+      expect(component.selectedSeriesId).toBe('sid-ps');
+    });
+
+    it('hiện tên series được gợi ý', () => {
+      expect(component.suggestedSeriesName(secondItem())).toBe(
+        'Daily Problem Solving'
+      );
+      expect(component.suggestedSeriesName(firstItem())).toBe('Daily Depth');
+    });
+
+    it('tạo nháp xong thì gắn bài vào mục và đóng ô chọn', () => {
+      serviceSpy.createDraft.and.returnValue(of(draftResult));
+
+      component.openDraft(secondItem());
+      component.createDraft(secondItem());
+
+      expect(serviceSpy.createDraft).toHaveBeenCalledWith(
+        'm1-REVIEW-bbb',
+        'sid-ps'
+      );
+      expect(secondItem().draft?.id).toBe(42);
+      expect(component.draftingKey).toBeNull();
+      expect(alertSpy.showNoti).toHaveBeenCalledWith(
+        `Đã tạo bản nháp: ${draftResult.title}`,
+        'success'
+      );
+    });
+
+    it('mục đã có bài thì không cho tạo nữa', () => {
+      expect(component.canDraft(secondItem())).toBe(true);
+      secondItem().draft = { postId: 'pid-1', id: 42, title: 'x' };
+      expect(component.canDraft(secondItem())).toBe(false);
+    });
+
+    it('không có series nào thì ẩn nút viết bài', () => {
+      component.seriesOptions = [];
+      expect(component.canDraft(secondItem())).toBe(false);
+    });
+
+    // 409 nghĩa là màn hình đang cũ, không phải hỏng — gắn lại bài đã có
+    // để nút đổi thành "Bản nháp" thay vì báo lỗi đỏ vô nghĩa.
+    it('409 thì gắn bài đã có và báo nhẹ, không báo lỗi', () => {
+      serviceSpy.createDraft.and.returnValue(
+        throwError(() => ({
+          status: 409,
+          error: { postId: 'pid-old', id: 7, title: 'Bài cũ' },
+        }))
+      );
+
+      component.openDraft(secondItem());
+      component.createDraft(secondItem());
+
+      expect(secondItem().draft?.id).toBe(7);
+      expect(component.draftingKey).toBeNull();
+      expect(alertSpy.showNoti).toHaveBeenCalledWith(
+        'Mục này đã có bài nháp',
+        'info'
+      );
+    });
+
+    it('lỗi thật thì báo msg backend và giữ ô chọn để thử lại', () => {
+      serviceSpy.createDraft.and.returnValue(
+        throwError(() => ({ status: 500, error: { msg: 'Series not found.' } }))
+      );
+
+      component.openDraft(secondItem());
+      component.createDraft(secondItem());
+
+      expect(secondItem().draft).toBeFalsy();
+      expect(component.draftingKey).toBe('m1-REVIEW-bbb');
+      expect(component.isCreatingDraft).toBe(false);
+      expect(alertSpy.showNoti).toHaveBeenCalledWith(
+        'Series not found.',
+        'danger'
+      );
+    });
+
+    it('chưa chọn series thì không gọi API', () => {
+      component.draftingKey = 'm1-REVIEW-bbb';
+      component.selectedSeriesId = '';
+      component.createDraft(secondItem());
+      expect(serviceSpy.createDraft).not.toHaveBeenCalled();
+    });
+
+    it('huỷ thì đóng ô chọn', () => {
+      component.openDraft(secondItem());
+      component.cancelDraft();
+      expect(component.draftingKey).toBeNull();
+      expect(component.selectedSeriesId).toBe('');
+    });
+
+    // Danh sách series hỏng chỉ mất nút viết bài, không được làm sập màn hình.
+    it('lỗi tải series không làm hỏng màn hình chính', () => {
+      serviceSpy.getSeriesOptions.and.returnValue(
+        throwError(() => new Error('net'))
+      );
+
+      const other = TestBed.createComponent(LearningRoadmapComponent);
+      other.detectChanges();
+
+      expect(other.componentInstance.seriesOptions).toEqual([]);
+      expect(other.componentInstance.loadFailed).toBe(false);
+      expect(other.componentInstance.data).toBeTruthy();
     });
   });
 });

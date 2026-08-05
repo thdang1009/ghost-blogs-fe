@@ -7,7 +7,9 @@ import {
   LearningItemStatus,
   LearningProgress,
   RoadmapDashboard,
+  RoadmapDraftResult,
   RoadmapImportResult,
+  RoadmapSeriesOption,
   RoadmapWithStats,
 } from '@models/_index';
 import { environment } from '@environments/environment';
@@ -85,6 +87,28 @@ export class LearningRoadmapService {
       >(`${apiUrl}/item/${encodeURIComponent(key)}`, body)
       .pipe(
         tap(() => ghostLog(`updated roadmap item ${key} -> ${status}`)),
+        map(res => res.data)
+      );
+  }
+
+  /** Series đang bật, dùng cho dropdown chọn khi viết bài. */
+  getSeriesOptions(): Observable<RoadmapSeriesOption[]> {
+    return this.http
+      .get<LearningApiResponse<RoadmapSeriesOption[]>>(`${apiUrl}/series`)
+      .pipe(
+        tap(() => ghostLog('fetched roadmap series options')),
+        map(res => res.data)
+      );
+  }
+
+  /** Sinh bài blog nháp (PRIVATE) từ một mục đã học. */
+  createDraft(key: string, seriesId: string): Observable<RoadmapDraftResult> {
+    return this.http
+      .post<
+        LearningApiResponse<RoadmapDraftResult>
+      >(`${apiUrl}/item/${encodeURIComponent(key)}/draft`, { seriesId })
+      .pipe(
+        tap(() => ghostLog(`created draft for roadmap item ${key}`)),
         map(res => res.data)
       );
   }

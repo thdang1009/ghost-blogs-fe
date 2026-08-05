@@ -7,7 +7,9 @@ import { LearningRoadmapService } from './learning-roadmap.service';
 import { environment } from '@environments/environment';
 import {
   RoadmapDashboard,
+  RoadmapDraftResult,
   RoadmapImportResult,
+  RoadmapSeriesOption,
   RoadmapWithStats,
 } from '@models/_index';
 
@@ -178,6 +180,72 @@ describe('LearningRoadmapService', () => {
       const req = httpMock.expectOne(`${apiUrl}/item/m1%2FREVIEW`);
       expect(req.request.method).toBe('PATCH');
       req.flush({ success: true, data: { status: 'DONE' } });
+    });
+  });
+
+  describe('getSeriesOptions', () => {
+    it('gọi endpoint riêng của module, không phải /v1/series', () => {
+      let result: RoadmapSeriesOption[] | undefined;
+      service.getSeriesOptions().subscribe(res => (result = res));
+
+      const req = httpMock.expectOne(`${apiUrl}/series`);
+      expect(req.request.method).toBe('GET');
+      req.flush({
+        success: true,
+        data: [{ id: 'a', name: 'Daily Depth', slug: 'daily-depth' }],
+      });
+
+      expect(result).toEqual([
+        { id: 'a', name: 'Daily Depth', slug: 'daily-depth' },
+      ]);
+    });
+  });
+
+  describe('createDraft', () => {
+    it('POST seriesId tới endpoint draft của mục', () => {
+      let result: RoadmapDraftResult | undefined;
+      service
+        .createDraft('m1-REVIEW-abc12345', 'series-id')
+        .subscribe(res => (result = res));
+
+      const req = httpMock.expectOne(`${apiUrl}/item/m1-REVIEW-abc12345/draft`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ seriesId: 'series-id' });
+      req.flush({
+        success: true,
+        data: {
+          postId: 'pid',
+          id: 42,
+          title: 'Daily Depth #10 — X',
+          postReference: 'daily-depth-10-x',
+          seriesName: 'Daily Depth',
+          number: 10,
+        },
+      });
+
+      expect(result?.id).toBe(42);
+      expect(result?.number).toBe(10);
+    });
+
+    it('409 nổi lên nguyên vẹn để component gắn lại bài cũ', () => {
+      let status = 0;
+      let body: { postId?: string } | undefined;
+      service.createDraft('m1-REVIEW-abc12345', 'series-id').subscribe({
+        error: err => {
+          status = err.status;
+          body = err.error;
+        },
+      });
+
+      httpMock
+        .expectOne(`${apiUrl}/item/m1-REVIEW-abc12345/draft`)
+        .flush(
+          { success: false, msg: 'Mục này đã có bài nháp.', postId: 'pid-old' },
+          { status: 409, statusText: 'Conflict' }
+        );
+
+      expect(status).toBe(409);
+      expect(body?.postId).toBe('pid-old');
     });
   });
 });

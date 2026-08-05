@@ -21,6 +21,38 @@ export interface LearningItem {
   status?: LearningItemStatus;
   doneAt?: string | null;
   note?: string;
+  /** Bài blog nháp đã sinh từ mục này, null nếu chưa viết. */
+  draft?: RoadmapItemDraft | null;
+  /** Slug series backend gợi ý — chỉ là gợi ý, user vẫn tự chọn. */
+  suggestedSeries?: string | null;
+}
+
+/**
+ * Bài nháp gắn với một mục.
+ * `id` là `Post.id` dạng số — CMS mở bài bằng `/admin/blog/post-list?id=`,
+ * không dùng ObjectId.
+ */
+export interface RoadmapItemDraft {
+  postId: string;
+  id: number;
+  title: string;
+}
+
+/** Series để chọn khi tạo bài nháp. */
+export interface RoadmapSeriesOption {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+/** Kết quả POST /item/:key/draft */
+export interface RoadmapDraftResult {
+  postId: string;
+  id: number;
+  title: string;
+  postReference: string;
+  seriesName: string;
+  number: number;
 }
 
 export interface LearningSection {
