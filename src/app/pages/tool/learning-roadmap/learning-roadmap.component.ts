@@ -5,9 +5,12 @@ import {
   LearningItem,
   LearningMilestone,
   LearningSection,
+  LearningSession,
+  LearningSessionType,
   MilestoneStats,
   RoadmapImportResult,
   RoadmapSeriesOption,
+  RoadmapSessions,
   RoadmapWithStats,
 } from '@models/_index';
 import { AlertService, LearningRoadmapService } from '@services/_index';
@@ -34,6 +37,10 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
   /** Các key đang chờ server trả lời — để khoá đúng checkbox đó thôi. */
   pendingKeys = new Set<string>();
 
+  // Ngân sách tuần: đếm số buổi, không đếm giờ.
+  sessions: RoadmapSessions | null = null;
+  isLoggingSession = false;
+
   // Cầu nối blog: chọn series rồi sinh bài nháp từ một mục đã học.
   seriesOptions: RoadmapSeriesOption[] = [];
   /** Mục đang mở ô chọn series; chỉ một mục tại một thời điểm. */
@@ -50,6 +57,7 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadRoadmap();
+    this.loadSessions();
     this.loadSeriesOptions();
   }
 
@@ -301,6 +309,105 @@ export class LearningRoadmapComponent implements OnInit, OnDestroy {
             err?.error?.msg || 'Import thất bại',
             'danger'
           );
+        },
+      });
+  }
+
+  // --- Ngân sách tuần & streak -----------------------------------------------
+
+  /**
+   * Tuần này đã chạm sàn chưa. Lỗi ở đây chỉ làm mất thẻ tuần, không dựng cờ
+   * lỗi toàn trang — lộ trình vẫn xem và tick được bình thường.
+   */
+  private loadSessions(): void {
+    this.learningRoadmapService
+      .getSessions()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: data => (this.sessions = data),
+        error: err => {
+          console.error('Failed to load learning sessions', err);
+          this.sessions = null;
+        },
+      });
+  }
+
+  get thisWeekSessions(): LearningSession[] {
+    return this.sessions?.thisWeek ?? [];
+  }
+
+  /** Còn thiếu mấy buổi nữa là chạm sàn. */
+  get sessionsToFloor(): number {
+    const week = this.sessions?.week;
+    if (!week) {
+      return 0;
+    }
+    return Math.max(0, week.floor - week.total);
+  }
+
+  /**
+   * Câu nhắc khi chưa chạm sàn.
+   * Lộ trình yêu cầu nhắc NHẸ, không gắt: nguyên tắc là giữ chuỗi, và tuần
+   * nhẹ không phải là thất bại — nên không dùng chữ mang tính trách móc.
+   */
+  get weekMessage(): string {
+    const week = this.sessions?.week;
+    if (!week) {
+      return '';
+    }
+    if (week.targetMet) {
+      return 'Tuần này vượt sàn rồi, quá ổn.';
+    }
+    if (week.floorMet) {
+      return 'Đã chạm sàn tuần này. Thêm buổi nào cũng là bonus.';
+    }
+    if (week.total === 0) {
+      return `Tuần này chưa có buổi nào. ${week.floor} buổi là chạm sàn.`;
+    }
+    return `Còn ${this.sessionsToFloor} buổi nữa là chạm sàn.`;
+  }
+
+  logSession(type: LearningSessionType): void {
+    if (this.isLoggingSession) {
+      return;
+    }
+
+    this.isLoggingSession = true;
+    this.learningRoadmapService
+      .logSession(type)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isLoggingSession = false;
+          // Sàn và streak do backend tính — tải lại thay vì đoán ở client.
+          this.loadSessions();
+        },
+        error: err => {
+          console.error('Failed to log session', err);
+          this.isLoggingSession = false;
+          this.alertService.showNoti('Chưa ghi được buổi học', 'danger');
+        },
+      });
+  }
+
+  deleteSession(session: LearningSession): void {
+    if (this.isLoggingSession) {
+      return;
+    }
+
+    this.isLoggingSession = true;
+    this.learningRoadmapService
+      .deleteSession(session._id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.isLoggingSession = false;
+          this.loadSessions();
+        },
+        error: err => {
+          console.error('Failed to delete session', err);
+          this.isLoggingSession = false;
+          this.alertService.showNoti('Chưa gỡ được buổi học', 'danger');
         },
       });
   }

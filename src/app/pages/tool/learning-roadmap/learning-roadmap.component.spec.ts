@@ -9,8 +9,21 @@ import {
   LearningItem,
   LearningItemStatus,
   LearningProgress,
+  LearningSession,
+  RoadmapSessions,
   RoadmapWithStats,
 } from '@models/_index';
+
+const sessionRow = (
+  id: string,
+  type: 'SHORT' | 'LONG' = 'SHORT'
+): LearningSession => ({
+  _id: id,
+  user: 1,
+  date: '2026-08-05T13:00:00.000Z',
+  type,
+  note: '',
+});
 
 /** Row tiến độ mà backend trả về sau PATCH. */
 function progressRow(
@@ -18,6 +31,26 @@ function progressRow(
   doneAt: string | null = null
 ): LearningProgress {
   return { user: 1, itemKey: 'key', status, doneAt, note: '' };
+}
+
+function buildSessions(
+  overrides: Partial<RoadmapSessions> = {}
+): RoadmapSessions {
+  return {
+    thisWeek: [],
+    week: {
+      weekKey: '2026-08-03',
+      short: 0,
+      long: 0,
+      total: 0,
+      floor: 2,
+      floorMet: false,
+      targetMet: false,
+    },
+    streak: { current: 0, longest: 0, currentWeekMet: false },
+    weeks: [],
+    ...overrides,
+  };
 }
 
 function buildRoadmap(): RoadmapWithStats {
@@ -144,10 +177,14 @@ describe('LearningRoadmapComponent', () => {
       'updateItemStatus',
       'getSeriesOptions',
       'createDraft',
+      'logSession',
+      'deleteSession',
+      'getSessions',
     ]);
     alertSpy = jasmine.createSpyObj('AlertService', ['showNoti']);
 
     serviceSpy.getRoadmap.and.returnValue(of(buildRoadmap()));
+    serviceSpy.getSessions.and.returnValue(of(buildSessions()));
     serviceSpy.getSeriesOptions.and.returnValue(
       of([
         {
@@ -545,6 +582,183 @@ describe('LearningRoadmapComponent', () => {
       expect(other.componentInstance.seriesOptions).toEqual([]);
       expect(other.componentInstance.loadFailed).toBe(false);
       expect(other.componentInstance.data).toBeTruthy();
+    });
+  });
+
+  describe('ngân sách tuần & streak', () => {
+    it('nạp buổi học khi khởi tạo', () => {
+      fixture.detectChanges();
+      expect(serviceSpy.getSessions).toHaveBeenCalled();
+      expect(component.sessions).toBeTruthy();
+    });
+
+    it('tính số buổi còn thiếu để chạm sàn', () => {
+      serviceSpy.getSessions.and.returnValue(
+        of(
+          buildSessions({
+            week: {
+              weekKey: '2026-08-03',
+              short: 1,
+              long: 0,
+              total: 1,
+              floor: 2,
+              floorMet: false,
+              targetMet: false,
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+      expect(component.sessionsToFloor).toBe(1);
+    });
+
+    it('chạm sàn rồi thì không còn thiếu buổi nào', () => {
+      serviceSpy.getSessions.and.returnValue(
+        of(
+          buildSessions({
+            week: {
+              weekKey: '2026-08-03',
+              short: 3,
+              long: 1,
+              total: 4,
+              floor: 2,
+              floorMet: true,
+              targetMet: true,
+            },
+          })
+        )
+      );
+      fixture.detectChanges();
+      expect(component.sessionsToFloor).toBe(0);
+    });
+
+    // Lộ trình yêu cầu nhắc NHẸ: tuần nhẹ không phải thất bại, nên câu chữ
+    // không được mang tính trách móc.
+    describe('câu nhắc', () => {
+      const withWeek = (week: Partial<RoadmapSessions['week']>) => {
+        serviceSpy.getSessions.and.returnValue(
+          of(
+            buildSessions({
+              week: {
+                weekKey: '2026-08-03',
+                short: 0,
+                long: 0,
+                total: 0,
+                floor: 2,
+                floorMet: false,
+                targetMet: false,
+                ...week,
+              },
+            })
+          )
+        );
+        fixture.detectChanges();
+      };
+
+      it('chưa có buổi nào thì nói rõ sàn là bao nhiêu', () => {
+        withWeek({ total: 0 });
+        expect(component.weekMessage).toBe(
+          'Tuần này chưa có buổi nào. 2 buổi là chạm sàn.'
+        );
+      });
+
+      it('còn thiếu thì đếm ngược, không trách móc', () => {
+        withWeek({ short: 1, total: 1 });
+        expect(component.weekMessage).toBe('Còn 1 buổi nữa là chạm sàn.');
+      });
+
+      it('chạm sàn thì nói vượt sàn là bonus', () => {
+        withWeek({ short: 2, total: 2, floorMet: true });
+        expect(component.weekMessage).toContain('Đã chạm sàn');
+        expect(component.weekMessage).toContain('bonus');
+      });
+
+      it('đạt mục tiêu thì khen', () => {
+        withWeek({
+          short: 3,
+          long: 1,
+          total: 4,
+          floorMet: true,
+          targetMet: true,
+        });
+        expect(component.weekMessage).toContain('vượt sàn');
+      });
+    });
+
+    it('ghi buổi ngắn rồi tải lại để backend tính lại sàn/streak', () => {
+      fixture.detectChanges();
+      serviceSpy.logSession.and.returnValue(of(sessionRow('s1')));
+
+      component.logSession('SHORT');
+
+      expect(serviceSpy.logSession).toHaveBeenCalledWith('SHORT');
+      // Không tự cộng ở client — streak là logic của backend.
+      expect(serviceSpy.getSessions).toHaveBeenCalledTimes(2);
+      expect(component.isLoggingSession).toBe(false);
+    });
+
+    it('ghi lỗi thì báo rõ và không tải lại', () => {
+      fixture.detectChanges();
+      serviceSpy.logSession.and.returnValue(throwError(() => new Error('net')));
+
+      component.logSession('LONG');
+
+      expect(component.isLoggingSession).toBe(false);
+      expect(serviceSpy.getSessions).toHaveBeenCalledTimes(1);
+      expect(alertSpy.showNoti).toHaveBeenCalledWith(
+        'Chưa ghi được buổi học',
+        'danger'
+      );
+    });
+
+    it('không gửi request thứ hai khi đang ghi', () => {
+      fixture.detectChanges();
+      component.isLoggingSession = true;
+      component.logSession('SHORT');
+      expect(serviceSpy.logSession).not.toHaveBeenCalled();
+    });
+
+    it('gỡ được buổi ghi nhầm rồi tải lại', () => {
+      serviceSpy.getSessions.and.returnValue(
+        of(buildSessions({ thisWeek: [sessionRow('s1')] }))
+      );
+      fixture.detectChanges();
+      serviceSpy.deleteSession.and.returnValue(of(undefined));
+
+      expect(component.thisWeekSessions.length).toBe(1);
+      component.deleteSession(sessionRow('s1'));
+
+      expect(serviceSpy.deleteSession).toHaveBeenCalledWith('s1');
+      expect(serviceSpy.getSessions).toHaveBeenCalledTimes(2);
+    });
+
+    it('gỡ lỗi thì báo rõ', () => {
+      fixture.detectChanges();
+      serviceSpy.deleteSession.and.returnValue(
+        throwError(() => new Error('net'))
+      );
+
+      component.deleteSession(sessionRow('s1'));
+
+      expect(component.isLoggingSession).toBe(false);
+      expect(alertSpy.showNoti).toHaveBeenCalledWith(
+        'Chưa gỡ được buổi học',
+        'danger'
+      );
+    });
+
+    // Thẻ tuần hỏng không được kéo sập cả màn hình lộ trình.
+    it('lỗi tải buổi học không dựng cờ lỗi toàn trang', () => {
+      serviceSpy.getSessions.and.returnValue(
+        throwError(() => new Error('net'))
+      );
+      fixture.detectChanges();
+
+      expect(component.sessions).toBeNull();
+      expect(component.loadFailed).toBe(false);
+      expect(component.data).toBeTruthy();
+      expect(component.weekMessage).toBe('');
+      expect(component.sessionsToFloor).toBe(0);
     });
   });
 });

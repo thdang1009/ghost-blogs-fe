@@ -6,10 +6,13 @@ import {
   LearningApiResponse,
   LearningItemStatus,
   LearningProgress,
+  LearningSession,
+  LearningSessionType,
   RoadmapDashboard,
   RoadmapDraftResult,
   RoadmapImportResult,
   RoadmapSeriesOption,
+  RoadmapSessions,
   RoadmapWithStats,
 } from '@models/_index';
 import { environment } from '@environments/environment';
@@ -109,6 +112,45 @@ export class LearningRoadmapService {
       >(`${apiUrl}/item/${encodeURIComponent(key)}/draft`, { seriesId })
       .pipe(
         tap(() => ghostLog(`created draft for roadmap item ${key}`)),
+        map(res => res.data)
+      );
+  }
+
+  /** Ghi nhận một buổi đã học. Không có thời lượng — lộ trình đếm số buổi. */
+  logSession(
+    type: LearningSessionType,
+    date?: string
+  ): Observable<LearningSession> {
+    const body: { type: LearningSessionType; date?: string } = { type };
+    if (date) {
+      body.date = date;
+    }
+    return this.http
+      .post<LearningApiResponse<LearningSession>>(`${apiUrl}/session`, body)
+      .pipe(
+        tap(() => ghostLog(`logged ${type} learning session`)),
+        map(res => res.data)
+      );
+  }
+
+  /** Gỡ một buổi ghi nhầm. */
+  deleteSession(id: string): Observable<void> {
+    return this.http
+      .delete<
+        LearningApiResponse<void>
+      >(`${apiUrl}/session/${encodeURIComponent(id)}`)
+      .pipe(
+        tap(() => ghostLog(`deleted learning session ${id}`)),
+        map(res => res.data)
+      );
+  }
+
+  /** Buổi học tuần này + lịch sử theo tuần. */
+  getSessions(): Observable<RoadmapSessions> {
+    return this.http
+      .get<LearningApiResponse<RoadmapSessions>>(`${apiUrl}/sessions`)
+      .pipe(
+        tap(() => ghostLog('fetched learning sessions')),
         map(res => res.data)
       );
   }

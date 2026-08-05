@@ -122,6 +122,44 @@ export interface RoadmapWithStats {
   stats: RoadmapStats;
 }
 
+export type LearningSessionType = 'SHORT' | 'LONG';
+
+/** Một buổi học đã ngồi vào. Không có thời lượng — lộ trình đo bằng số buổi. */
+export interface LearningSession {
+  _id: string;
+  user: number;
+  date: string;
+  type: LearningSessionType;
+  note: string;
+}
+
+/** Thống kê một tuần. `floorMet` là thứ quyết định streak, không phải `targetMet`. */
+export interface WeekSummary {
+  weekKey: string;
+  short: number;
+  long: number;
+  total: number;
+  floor: number;
+  floorMet: boolean;
+  targetMet: boolean;
+  start?: string;
+  end?: string;
+}
+
+export interface StreakInfo {
+  current: number;
+  longest: number;
+  currentWeekMet: boolean;
+}
+
+/** Trả về từ GET /v1/learning-roadmap/sessions */
+export interface RoadmapSessions {
+  thisWeek: LearningSession[];
+  week: WeekSummary;
+  streak: StreakInfo;
+  weeks: WeekSummary[];
+}
+
 /** Trả về từ GET /v1/learning-roadmap/dashboard */
 export interface RoadmapDashboard {
   title: string;
@@ -130,6 +168,8 @@ export interface RoadmapDashboard {
   milestones: MilestoneStats[];
   overall: { total: number; done: number; percent: number };
   weeklyBudget: WeeklyBudget | null;
+  week: WeekSummary;
+  streak: StreakInfo;
 }
 
 /** Một mục bị đổi key khi re-import, kèm độ giống đã dùng để khớp. */

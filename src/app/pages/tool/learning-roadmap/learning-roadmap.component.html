@@ -95,25 +95,78 @@
                 </div>
               </div>
 
-              <!-- Ngân sách tuần: mục tiêu đọc từ file. Việc ĐẾM số buổi
-                   thực tế thuộc slice sau, nên chỗ này chỉ nêu sàn. -->
-              <div
-                *ngIf="data.roadmap.weeklyBudget as budget"
-                class="weekly-budget"
-              >
-                <em class="material-icons">event_available</em>
-                <span *ngIf="budget.shortPerWeek !== null">
-                  Sàn tuần: <strong>{{ budget.shortPerWeek }}</strong> buổi ngắn
-                  <span *ngIf="budget.shortFloor !== null"
-                    >(tối thiểu {{ budget.shortFloor }})</span
+              <!-- Tuần này: đếm SỐ BUỔI, không đếm giờ. -->
+              <div *ngIf="sessions as s" class="weekly-budget">
+                <div class="weekly-budget__row">
+                  <em class="material-icons">event_available</em>
+
+                  <span class="weekly-budget__count">
+                    Tuần này <strong>{{ s.week.total }}</strong
+                    >/{{ s.week.floor }} buổi
+                    <span *ngIf="s.week.short || s.week.long" class="text-muted"
+                      >({{ s.week.short }} ngắn, {{ s.week.long }} dài)</span
+                    >
+                  </span>
+
+                  <span
+                    class="weekly-budget__badge"
+                    [class.weekly-budget__badge--met]="s.week.floorMet"
                   >
-                  <span *ngIf="budget.longPerWeek !== null">
-                    + <strong>{{ budget.longPerWeek }}</strong> buổi dài</span
+                    {{ s.week.floorMet ? 'Đã chạm sàn' : 'Chưa chạm sàn' }}
+                  </span>
+
+                  <span
+                    *ngIf="s.streak.current > 0"
+                    class="weekly-budget__streak"
+                    matTooltip="Chuỗi dài nhất: {{ s.streak.longest }} tuần"
                   >
-                </span>
-                <span *ngIf="budget.shortPerWeek === null" class="text-muted">
-                  Chưa đọc được ngân sách tuần từ file.
-                </span>
+                    <em class="material-icons">local_fire_department</em>
+                    {{ s.streak.current }} tuần liên tục
+                  </span>
+
+                  <span class="weekly-budget__actions">
+                    <button
+                      (click)="logSession('SHORT')"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Buổi ngắn ~45–60'"
+                      class="btn btn-sm btn-info"
+                    >
+                      + Buổi ngắn
+                    </button>
+                    <button
+                      (click)="logSession('LONG')"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Buổi dài ~2.5–3h"
+                      class="btn btn-sm btn-success"
+                    >
+                      + Buổi dài
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Nhắc nhẹ, không gắt: tuần nhẹ không phải thất bại. -->
+                <div class="weekly-budget__message">{{ weekMessage }}</div>
+
+                <div *ngIf="thisWeekSessions.length" class="session-chips">
+                  <span
+                    *ngFor="let session of thisWeekSessions"
+                    class="session-chip"
+                    [class.session-chip--long]="session.type === 'LONG'"
+                  >
+                    {{ session.date | date: 'EEE dd-MM' }}
+                    <button
+                      (click)="deleteSession(session)"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Gỡ buổi ghi nhầm"
+                      class="session-chip__remove"
+                    >
+                      ×
+                    </button>
+                  </span>
+                </div>
               </div>
 
               <!-- Accordion các mốc -->
@@ -295,7 +348,7 @@
 
               <!-- Phần không tick được: nguyên tắc, track LeetCode... -->
               <details
-                *ngIf="data.roadmap.notes?.length"
+                *ngIf="data.roadmap.notes.length"
                 class="notes"
                 data-testid="roadmap-notes"
               >

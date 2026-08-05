@@ -10,6 +10,7 @@ import {
   RoadmapDraftResult,
   RoadmapImportResult,
   RoadmapSeriesOption,
+  RoadmapSessions,
   RoadmapWithStats,
 } from '@models/_index';
 
@@ -246,6 +247,64 @@ describe('LearningRoadmapService', () => {
 
       expect(status).toBe(409);
       expect(body?.postId).toBe('pid-old');
+    });
+  });
+
+  describe('buổi học', () => {
+    it('logSession POST type, không gửi date khi không truyền', () => {
+      service.logSession('SHORT').subscribe();
+
+      const req = httpMock.expectOne(`${apiUrl}/session`);
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual({ type: 'SHORT' });
+      req.flush({ success: true, data: { _id: 'x', type: 'SHORT' } });
+    });
+
+    it('logSession gửi kèm date khi có', () => {
+      service.logSession('LONG', '2026-08-08T09:00:00+07:00').subscribe();
+
+      const req = httpMock.expectOne(`${apiUrl}/session`);
+      expect(req.request.body).toEqual({
+        type: 'LONG',
+        date: '2026-08-08T09:00:00+07:00',
+      });
+      req.flush({ success: true, data: { _id: 'x', type: 'LONG' } });
+    });
+
+    it('deleteSession DELETE đúng id', () => {
+      service.deleteSession('sid-1').subscribe();
+
+      const req = httpMock.expectOne(`${apiUrl}/session/sid-1`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ success: true });
+    });
+
+    it('getSessions bóc data gồm tuần này, tóm tắt tuần và streak', () => {
+      let result: RoadmapSessions | undefined;
+      service.getSessions().subscribe(res => (result = res));
+
+      const req = httpMock.expectOne(`${apiUrl}/sessions`);
+      expect(req.request.method).toBe('GET');
+      req.flush({
+        success: true,
+        data: {
+          thisWeek: [],
+          week: {
+            weekKey: '2026-08-03',
+            short: 2,
+            long: 0,
+            total: 2,
+            floor: 2,
+            floorMet: true,
+            targetMet: false,
+          },
+          streak: { current: 3, longest: 5, currentWeekMet: true },
+          weeks: [],
+        },
+      });
+
+      expect(result?.week.floorMet).toBe(true);
+      expect(result?.streak.current).toBe(3);
     });
   });
 });
