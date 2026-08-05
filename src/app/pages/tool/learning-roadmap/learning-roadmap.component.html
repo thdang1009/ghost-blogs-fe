@@ -1,0 +1,446 @@
+<div class="main-content" tabindex="-1">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card" tabindex="-1">
+          <div class="card-body">
+            <!-- Đang tải lần đầu -->
+            <div *ngIf="isLoadingResults" class="text-center">
+              <app-table-loading (size)="('sm')"></app-table-loading>
+              Đang tải lộ trình...
+            </div>
+
+            <!-- Lỗi mạng: KHÁC với chưa import, nên nói rõ dữ liệu vẫn còn -->
+            <div
+              *ngIf="!isLoadingResults && loadFailed"
+              class="text-center empty-state"
+            >
+              <em class="material-icons empty-icon">cloud_off</em>
+              <p>Không tải được lộ trình. Dữ liệu trên server vẫn nguyên.</p>
+              <button
+                (click)="loadRoadmap()"
+                type="button"
+                class="btn btn-info btn-w100"
+              >
+                <em class="material-icons">refresh</em>
+                Thử lại
+              </button>
+            </div>
+
+            <!-- Chưa import lần nào -->
+            <div
+              *ngIf="!isLoadingResults && !loadFailed && !data"
+              class="text-center empty-state"
+            >
+              <em class="material-icons empty-icon">map</em>
+              <p>Chưa có lộ trình nào. Dán file markdown để bắt đầu.</p>
+              <button
+                (click)="openImport()"
+                type="button"
+                class="btn btn-success btn-w100"
+              >
+                <em class="material-icons">upload_file</em>
+                Import lộ trình
+              </button>
+            </div>
+
+            <!-- Nội dung chính -->
+            <ng-container *ngIf="!isLoadingResults && data">
+              <!-- Dashboard tối giản -->
+              <div class="roadmap-header">
+                <div class="roadmap-header__main">
+                  <h4 class="roadmap-title">{{ data.roadmap.title }}</h4>
+
+                  <div *ngIf="currentMilestone" class="current-milestone">
+                    <span class="badge-milestone"
+                      >MỐC {{ currentMilestone.number }}</span
+                    >
+                    <span class="current-milestone__title">{{
+                      currentMilestone.title
+                    }}</span>
+                    <span class="current-milestone__timeframe">{{
+                      currentMilestone.timeframe
+                    }}</span>
+                  </div>
+                  <p *ngIf="currentMilestone?.goal" class="current-goal">
+                    {{ currentMilestone?.goal }}
+                  </p>
+                </div>
+
+                <div class="roadmap-header__actions">
+                  <button
+                    (click)="openImport()"
+                    type="button"
+                    matTooltip="Dán lại file markdown để cập nhật"
+                    class="btn btn-info btn-w100"
+                  >
+                    <em class="material-icons">upload_file</em>
+                    Cập nhật
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tổng thể -->
+              <div class="overall">
+                <div class="overall__label">
+                  Tổng thể
+                  <strong>{{ overallDone }}/{{ overallTotal }}</strong>
+                  ({{ overallPercent }}%)
+                </div>
+                <div class="progress-track">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="overallPercent"
+                  ></div>
+                </div>
+              </div>
+
+              <!-- Tuần này: đếm SỐ BUỔI, không đếm giờ. -->
+              <div *ngIf="sessions as s" class="weekly-budget">
+                <div class="weekly-budget__row">
+                  <em class="material-icons">event_available</em>
+
+                  <span class="weekly-budget__count">
+                    Tuần này <strong>{{ s.week.total }}</strong
+                    >/{{ s.week.floor }} buổi
+                    <span *ngIf="s.week.short || s.week.long" class="text-muted"
+                      >({{ s.week.short }} ngắn, {{ s.week.long }} dài)</span
+                    >
+                  </span>
+
+                  <span
+                    class="weekly-budget__badge"
+                    [class.weekly-budget__badge--met]="s.week.floorMet"
+                  >
+                    {{ s.week.floorMet ? 'Đã chạm sàn' : 'Chưa chạm sàn' }}
+                  </span>
+
+                  <span
+                    *ngIf="s.streak.current > 0"
+                    class="weekly-budget__streak"
+                    matTooltip="Chuỗi dài nhất: {{ s.streak.longest }} tuần"
+                  >
+                    <em class="material-icons">local_fire_department</em>
+                    {{ s.streak.current }} tuần liên tục
+                  </span>
+
+                  <span class="weekly-budget__actions">
+                    <button
+                      (click)="logSession('SHORT')"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Buổi ngắn ~45–60'"
+                      class="btn btn-sm btn-info"
+                    >
+                      + Buổi ngắn
+                    </button>
+                    <button
+                      (click)="logSession('LONG')"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Buổi dài ~2.5–3h"
+                      class="btn btn-sm btn-success"
+                    >
+                      + Buổi dài
+                    </button>
+                  </span>
+                </div>
+
+                <!-- Nhắc nhẹ, không gắt: tuần nhẹ không phải thất bại. -->
+                <div class="weekly-budget__message">{{ weekMessage }}</div>
+
+                <div *ngIf="thisWeekSessions.length" class="session-chips">
+                  <span
+                    *ngFor="let session of thisWeekSessions"
+                    class="session-chip"
+                    [class.session-chip--long]="session.type === 'LONG'"
+                  >
+                    {{ session.date | date: 'EEE dd-MM' }}
+                    <button
+                      (click)="deleteSession(session)"
+                      [disabled]="isLoggingSession"
+                      type="button"
+                      matTooltip="Gỡ buổi ghi nhầm"
+                      class="session-chip__remove"
+                    >
+                      ×
+                    </button>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Accordion các mốc -->
+              <div class="milestones">
+                <div
+                  *ngFor="let milestone of milestones"
+                  class="milestone"
+                  [class.milestone--current]="
+                    milestone.key === currentMilestone?.key
+                  "
+                >
+                  <div
+                    class="milestone__head hover-pointer"
+                    (click)="toggleMilestone(milestone.key)"
+                  >
+                    <em class="material-icons milestone__chevron">
+                      {{
+                        expandedMilestone === milestone.key
+                          ? 'expand_more'
+                          : 'chevron_right'
+                      }}
+                    </em>
+
+                    <span class="badge-milestone"
+                      >MỐC {{ milestone.number }}</span
+                    >
+
+                    <span class="milestone__title">{{ milestone.title }}</span>
+                    <span class="milestone__timeframe">{{
+                      milestone.timeframe
+                    }}</span>
+
+                    <ng-container *ngIf="statsFor(milestone.key) as stat">
+                      <span class="milestone__count"
+                        >{{ stat.done }}/{{ stat.total }}</span
+                      >
+                      <div class="progress-track progress-track--sm">
+                        <div
+                          class="progress-fill"
+                          [style.width.%]="stat.percent"
+                        ></div>
+                      </div>
+                      <span class="milestone__percent"
+                        >{{ stat.percent }}%</span
+                      >
+                    </ng-container>
+                  </div>
+
+                  <div
+                    *ngIf="expandedMilestone === milestone.key"
+                    class="milestone__body"
+                  >
+                    <p *ngIf="milestone.goal" class="milestone__goal">
+                      {{ milestone.goal }}
+                    </p>
+
+                    <div
+                      *ngFor="let section of milestone.sections"
+                      class="section"
+                    >
+                      <div class="section__head">
+                        <span
+                          class="section__kind"
+                          [class.section__kind--review]="
+                            section.kind === 'REVIEW'
+                          "
+                          [class.section__kind--new]="section.kind === 'NEW'"
+                          [class.section__kind--output]="
+                            section.kind === 'OUTPUT'
+                          "
+                        >
+                          {{ sectionLabel(section) }}
+                        </span>
+                        <span
+                          *ngIf="section.ratio !== null"
+                          class="section__ratio"
+                          >{{ section.ratio }}%</span
+                        >
+                      </div>
+
+                      <ul class="item-list">
+                        <ng-container *ngFor="let item of section.items">
+                          <li
+                            class="item"
+                            [class.item--done]="isDone(item)"
+                            [class.item--pending]="isPending(item)"
+                          >
+                            <label class="item__label hover-pointer">
+                              <input
+                                type="checkbox"
+                                class="item__checkbox"
+                                [checked]="isDone(item)"
+                                [disabled]="isPending(item)"
+                                (change)="toggleItem(item)"
+                              />
+                              <span class="item__text">{{ item.text }}</span>
+                            </label>
+                            <span
+                              *ngIf="item.doneAt"
+                              class="item__date"
+                              matTooltip="Đánh dấu hoàn thành"
+                            >
+                              {{ item.doneAt | date: 'dd-MM' }}
+                            </span>
+
+                            <!-- Đã có bài: mở thẳng trong CMS -->
+                            <a
+                              *ngIf="item.draft as draft"
+                              [routerLink]="['/admin/blog/post-list']"
+                              [queryParams]="{ id: draft.id }"
+                              class="item__draft-link"
+                              [matTooltip]="draft.title"
+                            >
+                              <em class="material-icons">article</em>
+                              Bản nháp
+                            </a>
+
+                            <!-- Chưa có bài: nút mở ô chọn series -->
+                            <button
+                              *ngIf="canDraft(item) && draftingKey !== item.key"
+                              (click)="openDraft(item)"
+                              type="button"
+                              matTooltip="Tạo bài blog nháp từ mục này"
+                              class="item__draft-btn"
+                            >
+                              <em class="material-icons">edit_note</em>
+                              Viết bài
+                            </button>
+                          </li>
+
+                          <!-- Ô chọn series, mở ngay dưới mục đang chọn -->
+                          <li
+                            *ngIf="draftingKey === item.key"
+                            class="draft-picker"
+                          >
+                            <select
+                              [(ngModel)]="selectedSeriesId"
+                              [disabled]="isCreatingDraft"
+                              class="form-control draft-picker__select"
+                            >
+                              <option
+                                *ngFor="let option of seriesOptions"
+                                [value]="option.id"
+                              >
+                                {{ option.name }}
+                              </option>
+                            </select>
+
+                            <span
+                              *ngIf="suggestedSeriesName(item) as suggested"
+                              class="draft-picker__hint"
+                            >
+                              gợi ý: {{ suggested }}
+                            </span>
+
+                            <button
+                              (click)="createDraft(item)"
+                              [disabled]="isCreatingDraft || !selectedSeriesId"
+                              type="button"
+                              class="btn btn-success btn-sm"
+                            >
+                              Tạo nháp
+                            </button>
+                            <button
+                              (click)="cancelDraft()"
+                              [disabled]="isCreatingDraft"
+                              type="button"
+                              class="btn btn-sm"
+                            >
+                              Huỷ
+                            </button>
+                          </li>
+                        </ng-container>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Phần không tick được: nguyên tắc, track LeetCode... -->
+              <details
+                *ngIf="data.roadmap.notes.length"
+                class="notes"
+                data-testid="roadmap-notes"
+              >
+                <summary>Ghi chú &amp; nguyên tắc</summary>
+                <div *ngFor="let note of data.roadmap.notes" class="note">
+                  <h6 class="note__heading">{{ note.heading }}</h6>
+                  <pre class="note__body">{{ note.markdown }}</pre>
+                </div>
+              </details>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dialog import -->
+<div *ngIf="showImport" class="import-backdrop" (click)="closeImport()">
+  <div class="import-dialog" (click)="$event.stopPropagation()">
+    <div class="import-dialog__head">
+      <h5>Import lộ trình</h5>
+      <button
+        (click)="closeImport()"
+        type="button"
+        class="mdc-icon-button material-icons"
+      >
+        close
+      </button>
+    </div>
+
+    <p class="import-hint">
+      Dán nội dung <code>lo-trinh-on-tap-phong-van.md</code> hoặc chọn file.
+      Tiến độ đã đánh dấu được giữ nguyên.
+    </p>
+
+    <input
+      type="file"
+      accept=".md,text/markdown,text/plain"
+      class="form-control-file"
+      (change)="onFileSelected($event)"
+    />
+
+    <textarea
+      [(ngModel)]="markdownInput"
+      [disabled]="isImporting"
+      placeholder="# Lộ trình ôn tập..."
+      rows="10"
+      class="form-control import-textarea"
+    ></textarea>
+
+    <!-- Bảng diff của dryRun -->
+    <div *ngIf="previewResult as preview" class="import-preview">
+      <div class="import-preview__title">
+        {{ preview.title }} — {{ preview.milestoneCount }} mốc,
+        {{ preview.itemCount }} mục
+      </div>
+      <div *ngIf="preview.sourceUnchanged" class="text-muted">
+        File giống hệt lần import trước.
+      </div>
+      <ul class="diff-list">
+        <li>Giữ nguyên: {{ preview.diff.unchanged }}</li>
+        <li>Thêm mới: {{ preview.diff.added }}</li>
+        <li [class.diff-warn]="preview.diff.removed > 0">
+          Mất khỏi file: {{ preview.diff.removed }}
+          <span *ngIf="preview.diff.removed > 0" class="text-muted"
+            >(tiến độ vẫn được giữ lại)</span
+          >
+        </li>
+        <li>Dời tiến độ sang mục đã sửa chữ: {{ preview.diff.remapped }}</li>
+      </ul>
+    </div>
+
+    <div class="import-dialog__actions">
+      <button
+        (click)="preview()"
+        [disabled]="isImporting"
+        type="button"
+        class="btn btn-info"
+      >
+        <em class="material-icons">visibility</em>
+        Xem trước
+      </button>
+      <button
+        (click)="confirmImport()"
+        [disabled]="isImporting"
+        type="button"
+        class="btn btn-success"
+      >
+        <em class="material-icons">save</em>
+        Import
+      </button>
+    </div>
+  </div>
+</div>

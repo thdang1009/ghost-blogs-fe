@@ -7,8 +7,15 @@ import { grandAdminGuard, adminGuard, loginGuard } from '@guards/auth.guards';
 import { JournalComponent } from './journal/journal.component';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
+import { LearningRoadmapComponent } from './learning-roadmap/learning-roadmap.component';
 
 const routes: Routes = [
+  {
+    path: 'learning-roadmap',
+    title: `Learning Roadmap`,
+    component: LearningRoadmapComponent,
+    canActivate: [loginGuard],
+  },
   {
     path: 'todo-today',
     title: `Todo Today`,

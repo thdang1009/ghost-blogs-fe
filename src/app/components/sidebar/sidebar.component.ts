@@ -67,6 +67,13 @@ export const ROUTES: RouteInfo[] = [
         permission: 'isMember',
       },
       {
+        path: 'tool/learning-roadmap',
+        title: 'Learning Roadmap',
+        icon: 'map',
+        class: '',
+        permission: 'isMember',
+      },
+      {
         path: 'tool/guest-message',
         title: 'List Guest Message',
         icon: 'list',

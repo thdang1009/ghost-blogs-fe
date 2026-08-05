@@ -24,9 +24,11 @@ const mockUserData: AuthUserData = {
   status: 'ACTIVE',
 };
 
+// `/v1/auth/login` trả `{success, data}` — access token nằm trong cookie
+// httpOnly, không có trong body. Trường `token` ở đây là tàn dư trước khi
+// chuyển sang cookie và làm hỏng type-check của cả suite.
 const mockLoginResponse: LoginApiResponse = {
   status: 'success',
-  token: 'jwt-token-abc',
   data: mockUserData,
 };
 

@@ -14,6 +14,7 @@ import {
 import { JournalComponent } from './journal/journal.component';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
+import { LearningRoadmapComponent } from './learning-roadmap/learning-roadmap.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 @NgModule({
@@ -26,6 +27,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     RedemptionInfoDialogComponent,
     JournalComponent,
     VibeCodingComponent,
+    LearningRoadmapComponent,
   ],
   imports: [
     CommonModule,

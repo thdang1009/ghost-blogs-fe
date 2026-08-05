@@ -14,5 +14,6 @@ export * from './coupon';
 export * from './reward';
 export * from './series';
 export * from './journal';
+export * from './learning-roadmap';
 export * from './mood-item';
 export * from './mood-type';
