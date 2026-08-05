@@ -25,6 +25,7 @@ export * from './analytics/analytics.service';
 export * from './search/search.service';
 export * from './series/series.service';
 export * from './journal/journal.service';
+export * from './learning-roadmap/learning-roadmap.service';
 export * from './mood/mood.service';
 export * from './system/system.service';
 export * from './aws/aws.service';

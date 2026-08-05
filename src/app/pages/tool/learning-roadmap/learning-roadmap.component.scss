@@ -1,0 +1,402 @@
+// Learning Roadmap — bám bảng màu Bootstrap 4 sẵn có của admin theme.
+
+$brand-info: #00bcd4;
+$brand-success: #4caf50;
+$brand-warning: #ff9800;
+$text-muted: #999;
+$border: #eee;
+
+.empty-state {
+  padding: 40px 0;
+
+  .empty-icon {
+    font-size: 48px;
+    color: $text-muted;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: $text-muted;
+    margin-bottom: 16px;
+  }
+}
+
+// --- Header -----------------------------------------------------------------
+
+.roadmap-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $border;
+
+  &__main {
+    flex: 1 1 320px;
+    min-width: 0;
+  }
+
+  &__actions {
+    flex: 0 0 auto;
+  }
+}
+
+.roadmap-title {
+  margin: 0 0 8px;
+  font-weight: 500;
+}
+
+.current-milestone {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__timeframe {
+    color: $text-muted;
+    font-size: 13px;
+  }
+}
+
+.current-goal {
+  margin: 6px 0 0;
+  color: $text-muted;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.badge-milestone {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: $brand-info;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+// --- Thanh tiến độ -----------------------------------------------------------
+
+.overall {
+  margin: 16px 0;
+
+  &__label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+}
+
+.progress-track {
+  position: relative;
+  height: 8px;
+  border-radius: 4px;
+  background: #e9e9e9;
+  overflow: hidden;
+
+  &--sm {
+    height: 5px;
+    flex: 0 0 80px;
+    max-width: 80px;
+  }
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: $brand-success;
+  transition: width 0.25s ease;
+}
+
+.weekly-budget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  background: rgba(0, 188, 212, 0.08);
+  font-size: 13px;
+
+  .material-icons {
+    font-size: 18px;
+    color: $brand-info;
+  }
+}
+
+// --- Mốc ---------------------------------------------------------------------
+
+.milestone {
+  border: 1px solid $border;
+  border-radius: 4px;
+  margin-bottom: 8px;
+
+  &--current {
+    border-color: $brand-info;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+
+  &__chevron {
+    color: $text-muted;
+    font-size: 20px;
+  }
+
+  &__title {
+    font-weight: 500;
+    flex: 1 1 auto;
+    min-width: 120px;
+  }
+
+  &__timeframe {
+    color: $text-muted;
+    font-size: 12px;
+  }
+
+  &__count {
+    font-size: 12px;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  &__percent {
+    font-size: 12px;
+    min-width: 34px;
+    text-align: right;
+  }
+
+  &__body {
+    padding: 4px 12px 12px 40px;
+    border-top: 1px solid $border;
+  }
+
+  &__goal {
+    margin: 8px 0;
+    color: $text-muted;
+    font-size: 13px;
+    font-style: italic;
+  }
+}
+
+// --- Section + mục -----------------------------------------------------------
+
+.section {
+  margin-top: 12px;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  &__kind {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #f0f0f0;
+    color: #666;
+
+    &--review {
+      background: rgba(0, 188, 212, 0.15);
+      color: darken($brand-info, 15%);
+    }
+
+    &--new {
+      background: rgba(255, 152, 0, 0.15);
+      color: darken($brand-warning, 15%);
+    }
+
+    &--output {
+      background: rgba(76, 175, 80, 0.15);
+      color: darken($brand-success, 10%);
+    }
+  }
+
+  &__ratio {
+    font-size: 11px;
+    color: $text-muted;
+  }
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 3px 0;
+
+  &--done .item__text {
+    text-decoration: line-through;
+    color: $text-muted;
+  }
+
+  // Đang chờ server: mờ đi để thấy rõ là chưa chốt.
+  &--pending {
+    opacity: 0.5;
+  }
+
+  &__label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    flex: 1 1 auto;
+    font-weight: 400;
+  }
+
+  &__checkbox {
+    margin-top: 4px;
+    flex: 0 0 auto;
+  }
+
+  &__text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  &__date {
+    font-size: 11px;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+}
+
+// --- Ghi chú ------------------------------------------------------------------
+
+.notes {
+  margin-top: 20px;
+  border-top: 1px solid $border;
+  padding-top: 12px;
+
+  summary {
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+  }
+}
+
+.note {
+  margin-top: 12px;
+
+  &__heading {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &__body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 12px;
+    background: #fafafa;
+    border: 1px solid $border;
+    border-radius: 4px;
+    padding: 8px;
+    margin: 0;
+    max-height: 260px;
+    overflow: auto;
+  }
+}
+
+// --- Dialog import ------------------------------------------------------------
+
+.import-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.import-dialog {
+  background: #fff;
+  border-radius: 6px;
+  padding: 20px;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h5 {
+      margin: 0;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+}
+
+.import-hint {
+  color: $text-muted;
+  font-size: 13px;
+  margin: 8px 0 12px;
+}
+
+.import-textarea {
+  margin-top: 12px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.import-preview {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 4px;
+  background: #fafafa;
+  border: 1px solid $border;
+  font-size: 13px;
+
+  &__title {
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+}
+
+.diff-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: 1px 0;
+  }
+}
+
+.diff-warn {
+  color: $brand-warning;
+}
