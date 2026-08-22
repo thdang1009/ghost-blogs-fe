@@ -1,6 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { TodoLabel, TodoToday } from '@models/_index';
+import {
+  TodoBoard,
+  TodoLabel,
+  TodoSoftCap,
+  TodoToday,
+  UserTodoSettings,
+} from '@models/_index';
 import * as dateFns from 'date-fns';
 import {
   AlertService,
@@ -17,17 +23,13 @@ import {
 } from '@shared/common';
 import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import * as dateFnsFormat from 'date-fns';
+import { effectiveWeight, sortTodos } from './todo-weight.util';
 
 const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold
 const FINISH_WORDS = ['done', 'xong', 'finish', 'completed', 'đã'];
 const INPUT_WORDS = ['add', 'new', 'thêm', 'mới', 'tạo'];
 const IN_PROGRESS_WORDS = ['progress', 'đang', 'chưa'];
-const ENUM_CATEGORY = {
-  TODAY: 'TODAY',
-  WEEKLY: 'WEEKLY',
-  MONTHLY: 'MONTHLY',
-  PARKING_LOT: 'PARKING_LOT',
-};
 @Component({
   selector: 'app-todo-today',
   templateUrl: './todo-today.component.html',
@@ -60,12 +62,26 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // Search form toggle
   isSearchFormExpanded = false;
 
-  // Category settings
-  settings = {
+  // Ba trường đếm VẪN CÒN nhưng đổi nghĩa: từ "cắt danh sách theo vị trí"
+  // thành hạn mức MỀM, chỉ dùng để cảnh báo (§D1).
+  settings: UserTodoSettings = {
     todayCount: 3,
     weeklyCount: 5,
     monthlyCount: 2,
+    sortByWeight: true,
+    focusCount: 1,
+    endOfDayHour: 20,
+    autoDeferAtNight: true,
+    maxDeferBeforeBacklog: 3,
   };
+
+  // --- Todo Today v2 ---
+  board: TodoBoard | null = null;
+  focus: TodoToday[] = [];
+  overdue: TodoToday[] = [];
+  backlogCount = 0;
+  softCap: TodoSoftCap | null = null;
+  settingsOpen = false;
 
   // Reward settings (stored locally)
   rewardSettings = {
@@ -171,7 +187,6 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadSettings();
     this.loadRewardSettings();
     this.loadRewardState();
     this.searchToDoToDay();
@@ -182,17 +197,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     this.stopSyncInterval();
   }
 
-  loadSettings() {
-    this.userSettingsService.getTodoSettings().subscribe((settings: any) => {
-      if (settings) {
-        this.settings = {
-          todayCount: settings.todayCount,
-          weeklyCount: settings.weeklyCount,
-          monthlyCount: settings.monthlyCount,
-        };
-      }
-    });
-  }
+  // Settings về cùng lượt gọi /board, nên không còn request riêng ở đây nữa —
+  // đó là toàn bộ mục đích của endpoint board (§6.1).
 
   loadRewardSettings() {
     const saved = localStorage.getItem('todoRewardSettings');
@@ -216,31 +222,6 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     this.userSettingsService.updateTodoSettings(this.settings).subscribe(() => {
       this.alertService.showNoti('Settings updated', 'success');
     });
-  }
-
-  getCategoryForIndex(index: number): string {
-    const { todayCount, weeklyCount, monthlyCount } = this.settings;
-
-    if (index < todayCount) return ENUM_CATEGORY.TODAY;
-    if (index < todayCount + weeklyCount) return ENUM_CATEGORY.WEEKLY;
-    if (index < todayCount + weeklyCount + monthlyCount)
-      return ENUM_CATEGORY.MONTHLY;
-    return ENUM_CATEGORY.PARKING_LOT;
-  }
-
-  getCategoryColor(category: string): string {
-    const colors: { [key: string]: string } = {
-      [ENUM_CATEGORY.TODAY]: '#E7FAFD', // '#FAF5EE',
-      [ENUM_CATEGORY.WEEKLY]: '#f7fdff', // '#fff6e6',
-      [ENUM_CATEGORY.MONTHLY]: '#DFEAF2', //'#f7f1df',
-      [ENUM_CATEGORY.PARKING_LOT]: '#FFFFFF',
-    };
-    return colors[category] || '#FFFFFF';
-  }
-
-  getTaskCategory(task: TodoToday): string {
-    const index = this.data.indexOf(task);
-    return this.getCategoryForIndex(index);
   }
 
   addToDoToDay() {
@@ -300,42 +281,195 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     );
   }
 
-  _getMyToDoToDay(timeout = 0) {
+  /** 'YYYY-MM-DD' theo ngày đang xem trên thanh điều hướng. */
+  private get boardDateKey(): string {
     const value = (this.searchDate && this.searchDate.value) || new Date();
-    const fromDate = dateFns.startOfDay(value);
-    const toDate = dateFns.endOfDay(value);
-    const req = {
-      from: fromDate || undefined,
-      to: toDate || undefined,
-      status: this.searchStatus === 'NONE' ? undefined : this.searchStatus,
+    return dateFnsFormat.format(value, 'yyyy-MM-dd');
+  }
+
+  private decorate(todo: TodoToday): TodoToday {
+    return {
+      ...todo,
+      checked: todo.status === TDTD_STATUS.DONE,
+      todoLabel:
+        todo.todoLabel && todo.todoLabel.length
+          ? todo.todoLabel
+          : // extractTodoLabel khai báo trả String[] (kiểu bọc) từ thời trước —
+            // chuyển thật sang string[] thay vì ép kiểu cho qua mặt compiler.
+            this.todoLabelService
+              .extractTodoLabel(todo.content || '', this.dataLabel)
+              .map(icon => String(icon)),
     };
+  }
+
+  /**
+   * MỘT lượt gọi dựng cả màn hình (§6.1).
+   *
+   * Service mới KHÔNG nuốt lỗi (§D9), nên ở đây phải tự báo — trước kia lỗi
+   * mạng hiện ra y hệt "hôm nay không có việc nào".
+   */
+  _getMyToDoToDay(timeout = 0) {
     this.isLoadingResults = true;
-    this.todoTodayService.getMyTodoToday(req).subscribe(
-      (res: any) => {
-        this.data = res
-          .map((el: TodoToday) => {
-            return {
-              ...el,
-              checked: el.status === TDTD_STATUS.DONE,
-              todoLabel:
-                el.todoLabel && el.todoLabel.length
-                  ? el.todoLabel
-                  : this.todoLabelService.extractTodoLabel(
-                      el.content!,
-                      this.dataLabel
-                    ),
-            };
-          })
-          .sort(
-            (a: TodoToday, b: TodoToday) => (a.order || 0) - (b.order || 0)
-          );
-        console.log('dangth, data', this.data);
+    this.todoTodayService.getBoard(this.boardDateKey).subscribe({
+      next: (board: TodoBoard) => {
+        this.board = board;
+        this.settings = board.settings;
+        this.softCap = board.softCap;
+        this.focus = board.focus.map(el => this.decorate(el));
+        this.overdue = board.overdue.map(el => this.decorate(el));
+        this.backlogCount = board.backlog.count;
+        this.data = board.today.map(el => this.decorate(el));
         this.isLoadingResults = false;
       },
-      err => {
+      error: () => {
         this.isLoadingResults = false;
-      }
-    );
+        this.alertService.showNoti('Could not load the board', 'danger');
+      },
+    });
+  }
+
+  // ==========================================================================
+  // Board v2 — dẫn xuất cho template
+  // ==========================================================================
+
+  /**
+   * Danh sách hiển thị dưới Focus Bar.
+   *
+   * Ở chế độ mặc định (sắp theo weight) thì BỎ các việc đã nằm trên Focus Bar,
+   * vì `focus` là tập con của `today` và render cả hai sẽ hiện việc số 1 hai
+   * lần (§6.1). Ở chế độ kéo-thả thủ công thì render ĐỦ danh sách: việc trên
+   * Focus Bar có thể nằm giữa danh sách, và bỏ nó đi sẽ làm chỉ số kéo-thả
+   * lệch khỏi mảng thật.
+   */
+  get listItems(): TodoToday[] {
+    if (!this.settings.sortByWeight) {
+      return this.data;
+    }
+    const focusIds = new Set(this.focus.map(el => el.id));
+    return this.data.filter(el => !focusIds.has(el.id));
+  }
+
+  /** Kéo-thả chỉ có nghĩa khi đang ở thứ tự thủ công. */
+  get reorderable(): boolean {
+    return !this.settings.sortByWeight;
+  }
+
+  get openCount(): number {
+    return this.data.filter(el => el.status !== TDTD_STATUS.DONE).length;
+  }
+
+  get doneCount(): number {
+    return this.data.filter(el => el.status === TDTD_STATUS.DONE).length;
+  }
+
+  private indexOfTodo(todo: TodoToday): number {
+    return this.data.findIndex(el => el.id === todo.id);
+  }
+
+  /** Sắp lại tại chỗ để danh sách không nhảy khác ở lần tải kế tiếp. */
+  private resort(): void {
+    this.data = sortTodos(this.data, this.settings.sortByWeight);
+    this.focus = sortTodos(
+      this.data.filter(el => el.status !== TDTD_STATUS.DONE),
+      true
+    ).slice(0, this.settings.focusCount || 1);
+  }
+
+  onToggle(todo: TodoToday): void {
+    const index = this.indexOfTodo(todo);
+    if (index === -1) return;
+    this.updateStatus(this.data[index], index);
+  }
+
+  onContentChange(todo: TodoToday): void {
+    const index = this.indexOfTodo(todo);
+    if (index === -1) return;
+    this.saveItem(todo.id!, this.data[index], index);
+  }
+
+  onWeightChange(event: { todo: TodoToday; weight: number }): void {
+    const index = this.indexOfTodo(event.todo);
+    if (index === -1) return;
+    const previous = effectiveWeight(this.data[index]);
+
+    // Cập nhật lạc quan rồi sắp lại ngay: đổi weight mà danh sách đứng yên
+    // tới lượt tải sau thì thao tác trông như không có tác dụng.
+    this.data[index] = { ...this.data[index], weight: event.weight };
+    this.resort();
+
+    this.todoTodayService.setWeight(event.todo.id!, event.weight).subscribe({
+      next: (res: TodoToday) => {
+        const at = this.indexOfTodo(res);
+        if (at !== -1) this.data[at] = this.decorate(res);
+        this.resort();
+      },
+      error: () => {
+        const at = this.indexOfTodo(event.todo);
+        if (at !== -1) this.data[at] = { ...this.data[at], weight: previous };
+        this.resort();
+        this.alertService.showNoti('Could not change weight', 'danger');
+      },
+    });
+  }
+
+  onDeferTomorrow(todo: TodoToday): void {
+    this.deferTodo(todo, { to: 'TOMORROW' });
+  }
+
+  onSendToBacklog(todo: TodoToday): void {
+    this.deferTodo(todo, { to: 'BACKLOG' });
+  }
+
+  private deferTodo(
+    todo: TodoToday,
+    payload: { to: 'TOMORROW' | 'DATE' | 'BACKLOG'; date?: string }
+  ): void {
+    this.isLoadingResults = true;
+    this.todoTodayService.defer(todo.id!, payload).subscribe({
+      next: (res: TodoToday) => {
+        this.isLoadingResults = false;
+        // Việc đã rời khỏi ngày đang xem.
+        this.data = this.data.filter(el => el.id !== todo.id);
+        if (res.bucket === 'BACKLOG') this.backlogCount += 1;
+        this.resort();
+
+        // Nói rõ LÝ DO khi server tự đẩy vào backlog, thay vì để việc lặng lẽ
+        // biến mất khỏi hôm nay (§6.2).
+        if (res.autoBacklogged) {
+          this.alertService.showNoti(
+            `Deferred ${res.deferCount} times — moved to backlog and lowered to weight ${res.weight}`,
+            'warning'
+          );
+        } else {
+          this.alertService.showNoti(
+            payload.to === 'BACKLOG' ? 'Moved to backlog' : 'Moved to tomorrow',
+            'success'
+          );
+        }
+      },
+      error: () => {
+        this.isLoadingResults = false;
+        this.alertService.showNoti('Could not defer this task', 'danger');
+      },
+    });
+  }
+
+  onReorder(event: CdkDragDrop<TodoToday[]>): void {
+    this.drop(event);
+  }
+
+  openSettings(): void {
+    this.settingsOpen = true;
+  }
+
+  closeSettings(): void {
+    this.settingsOpen = false;
+  }
+
+  onSettingsChanged(settings: UserTodoSettings): void {
+    this.settings = settings;
+    this.updateSettings();
+    this.resort();
   }
   setChangedLineOnly(res: TodoToday, index: number) {
     this.data[index] = { ...res, checked: res.status === TDTD_STATUS.DONE };
@@ -398,7 +532,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       this.delete(tdtd.id!);
     }
   }
-  async drop(event: CdkDragDrop<string[]>) {
+  async drop(event: CdkDragDrop<TodoToday[]>) {
     const result = await this.sort(event.previousIndex, event.currentIndex);
     if (result === 'fail') {
       this.alertService.showNoti('Sort Fail!', 'danger');

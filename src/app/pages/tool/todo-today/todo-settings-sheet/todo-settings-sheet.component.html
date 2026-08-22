@@ -1,0 +1,182 @@
+<div class="sheet-backdrop" *ngIf="open" (click)="close()"></div>
+
+<div
+  class="sheet"
+  [class.is-open]="open"
+  role="dialog"
+  aria-label="Todo settings"
+>
+  <div class="sheet-handle" (click)="close()"></div>
+
+  <div class="sheet-head">
+    <h5>Settings</h5>
+    <button
+      type="button"
+      class="sheet-close"
+      (click)="close()"
+      aria-label="Close"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="sheet-body">
+    <section class="sheet-section">
+      <h6>Focus</h6>
+      <label class="sheet-toggle">
+        <input
+          type="checkbox"
+          [(ngModel)]="settings.sortByWeight"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+        <span>
+          Sort by weight
+          <small>Off = pure manual drag order</small>
+        </span>
+      </label>
+
+      <label class="sheet-field">
+        <span>Focus items <small>1&ndash;3</small></span>
+        <input
+          type="number"
+          min="1"
+          max="3"
+          [(ngModel)]="settings.focusCount"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+    </section>
+
+    <section class="sheet-section">
+      <h6>Soft caps</h6>
+      <p class="sheet-hint">Only used to warn you. Nothing is ever blocked.</p>
+
+      <label class="sheet-field">
+        <span>Must-do today</span>
+        <input
+          type="number"
+          min="0"
+          max="20"
+          [(ngModel)]="settings.todayCount"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+      <label class="sheet-field">
+        <span>Weekly</span>
+        <input
+          type="number"
+          min="0"
+          max="50"
+          [(ngModel)]="settings.weeklyCount"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+      <label class="sheet-field">
+        <span>Monthly</span>
+        <input
+          type="number"
+          min="0"
+          max="20"
+          [(ngModel)]="settings.monthlyCount"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+    </section>
+
+    <section class="sheet-section">
+      <h6>End of day</h6>
+      <label class="sheet-field">
+        <span>Triage hour <small>12&ndash;23</small></span>
+        <input
+          type="number"
+          min="12"
+          max="23"
+          [(ngModel)]="settings.endOfDayHour"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+      <label class="sheet-field">
+        <span>Backlog after N defers</span>
+        <input
+          type="number"
+          min="1"
+          max="10"
+          [(ngModel)]="settings.maxDeferBeforeBacklog"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+      <label class="sheet-toggle">
+        <input
+          type="checkbox"
+          [(ngModel)]="settings.autoDeferAtNight"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+        <span>
+          Auto-defer overnight
+          <small>Server sweep at 22:30</small>
+        </span>
+      </label>
+    </section>
+
+    <section class="sheet-section">
+      <h6>Reward</h6>
+      <div class="sheet-inline">
+        <label class="sheet-field compact">
+          <span>From</span>
+          <input
+            type="number"
+            [(ngModel)]="rewardSettings.rewardFrom"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="onRewardChange()"
+          />
+        </label>
+        <label class="sheet-field compact">
+          <span>To</span>
+          <input
+            type="number"
+            [(ngModel)]="rewardSettings.rewardTo"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="onRewardChange()"
+          />
+        </label>
+        <label class="sheet-field compact">
+          <span>&times;</span>
+          <input
+            type="number"
+            [(ngModel)]="rewardSettings.rewardMultiplier"
+            [ngModelOptions]="{ standalone: true }"
+            (change)="onRewardChange()"
+          />
+        </label>
+      </div>
+      <button
+        type="button"
+        class="sheet-action"
+        (click)="generateReward.emit()"
+      >
+        <mat-icon>card_giftcard</mat-icon> Generate reward
+      </button>
+    </section>
+
+    <section class="sheet-section" *ngIf="voiceSupported">
+      <h6>Voice</h6>
+      <button
+        type="button"
+        class="sheet-action"
+        [class.is-active]="isListening"
+        (click)="toggleVoice.emit()"
+      >
+        <mat-icon>{{ isListening ? 'mic' : 'mic_none' }}</mat-icon>
+        {{ isListening ? 'Listening…' : 'Start voice input' }}
+      </button>
+    </section>
+  </div>
+</div>

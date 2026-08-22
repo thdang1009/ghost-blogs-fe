@@ -17,6 +17,11 @@ import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 import { LearningRoadmapComponent } from './learning-roadmap/learning-roadmap.component';
 import { HttpClientModule } from '@angular/common/http';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+// Todo Today v2 — component con là standalone (§10.1). Parent vẫn nằm trong
+// declarations; chuyển parent sang standalone là việc ngoài phạm vi slice này.
+import { TodoFocusBarComponent } from './todo-today/todo-focus-bar/todo-focus-bar.component';
+import { TodoListComponent } from './todo-today/todo-list/todo-list.component';
+import { TodoSettingsSheetComponent } from './todo-today/todo-settings-sheet/todo-settings-sheet.component';
 @NgModule({
   declarations: [
     NoteComponent,
@@ -37,6 +42,10 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     HttpClientModule,
     AngularEditorModule,
     ReuseComponentModule,
+    // standalone
+    TodoFocusBarComponent,
+    TodoListComponent,
+    TodoSettingsSheetComponent,
   ],
   providers: [DatePipe],
 })

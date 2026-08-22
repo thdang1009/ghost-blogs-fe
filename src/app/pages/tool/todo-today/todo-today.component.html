@@ -1,266 +1,273 @@
-<div class="main-content">
+<div class="main-content todo-page">
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            <h4 class="card-title">{{ showTranscript }}</h4>
+        <div class="card todo-card">
+          <!--
+            Ngân sách trên nếp gấp, màn 360x640 (§10.2):
+              header 56 + Focus Bar 150 + chip 44 + progress 32 + 3 dòng x 56
+            Sáu ô số, nút mic và cụm reward đã chuyển vào todo-settings-sheet,
+            sau nút `⋯` trên Focus Bar. Ở bản cũ chúng nằm ngay đây và đẩy dòng
+            việc đầu tiên xuống khoảng y=520 — dưới nếp gấp.
+          -->
 
-            <!-- Row 1: Task Category Settings & Voice -->
-            <div class="d-flex align-items-center category-settings">
-              <input
-                name="todayCount"
-                type="number"
-                [(ngModel)]="settings.todayCount"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateSettings()"
-                min="0"
-                max="20"
-                placeholder="Today"
-                matTooltip="Today Count"
-              />
-
-              <input
-                name="weeklyCount"
-                type="number"
-                [(ngModel)]="settings.weeklyCount"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateSettings()"
-                min="0"
-                max="50"
-                placeholder="Weekly"
-                matTooltip="Weekly Count"
-              />
-
-              <input
-                name="monthlyCount"
-                type="number"
-                [(ngModel)]="settings.monthlyCount"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateSettings()"
-                min="0"
-                max="20"
-                placeholder="Monthly"
-                matTooltip="Monthly Count"
-              />
-
-              <button
-                [class.listening]="isListening"
-                (click)="toggleVoiceRecognition()"
-                matTooltip="Voice input"
-                class="btn btn-primary btn-round ml-2"
-              >
-                <i class="material-icons">
-                  {{ isListening ? 'mic' : 'mic_none' }}
-                </i>
-              </button>
-            </div>
-
-            <!-- Row 2: Reward Settings & Timer -->
-            <div class="d-flex align-items-center category-settings reward-row">
-              <input
-                name="rewardFrom"
-                type="number"
-                [(ngModel)]="rewardSettings.rewardFrom"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateRewardSettings()"
-                min="1"
-                max="1000"
-                placeholder="From"
-                matTooltip="Reward From"
-              />
-
-              <input
-                name="rewardTo"
-                type="number"
-                [(ngModel)]="rewardSettings.rewardTo"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateRewardSettings()"
-                min="1"
-                max="1000"
-                placeholder="To"
-                matTooltip="Reward To"
-              />
-
-              <input
-                name="rewardMultiplier"
-                type="number"
-                [(ngModel)]="rewardSettings.rewardMultiplier"
-                [ngModelOptions]="{ standalone: true }"
-                (blur)="updateRewardSettings()"
-                min="0.1"
-                max="100"
-                step="1"
-                placeholder="x"
-                matTooltip="Reward Multiplier"
-              />
-
-              <button
-                (click)="generateReward()"
-                matTooltip="Get Reward"
-                class="btn btn-success btn-round ml-2"
-              >
-                <i class="material-icons">card_giftcard</i>
-              </button>
-
-              <!-- Timer Badge (when minimized and active) -->
-              <div
-                *ngIf="isMinimized && savedRewardSeconds > 0"
-                class="timer-badge"
-                [class.running]="
-                  timerState === 'running' || timerState === 'minimized'
-                "
-                [class.paused]="timerState === 'paused'"
-                (click)="expandTimer()"
-                matTooltip="Click to expand timer"
-              >
-                <i class="material-icons">timer</i>
-                <span>{{ getTimerDisplay() }}</span>
-              </div>
-
-              <!-- Saved Reward Badge (when timer NOT active) -->
-              <div
-                *ngIf="!isMinimized && savedRewardSeconds > 0"
-                class="saved-reward-badge clickable"
-                (click)="openTimerFromSavedReward()"
-                matTooltip="Click to use your reward time"
-              >
-                <i class="material-icons">account_balance_wallet</i>
-                <span>{{ getSavedRewardDisplay() }}m</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Reward/Timer Display Overlay -->
-          <div
-            *ngIf="showReward"
-            class="reward-overlay"
-            (click)="closeReward()"
-          >
-            <div class="reward-card" (click)="$event.stopPropagation()">
-              <!-- Initial State: Beautiful reward generation -->
-              <ng-container *ngIf="timerState === 'initial'">
-                <div class="reward-icon">🎁</div>
-                <div class="reward-label">You Earned</div>
-                <div class="reward-value">{{ rewardResult }}</div>
-                <div class="reward-unit">minutes</div>
-                <div class="reward-info">
-                  <span
-                    *ngIf="
-                      savedRewardSeconds + rewardResult! * 60 >
-                      MAX_REWARD_SECONDS
-                    "
-                    class="cap-warning"
-                  >
-                    ⚠️ Bank at {{ MAX_REWARD_MINUTES }}m cap - overflow will be
-                    lost
-                  </span>
-                  <span *ngIf="savedRewardSeconds > 0" class="current-bank">
-                    Current bank: {{ getSavedRewardDisplay() }}m
-                  </span>
-                </div>
-                <div class="reward-actions">
-                  <button
-                    class="btn btn-success btn-lg"
-                    (click)="addRewardToBank()"
-                  >
-                    <i class="material-icons">account_balance_wallet</i> Add to
-                    Bank
-                  </button>
-                  <button class="btn btn-secondary" (click)="cancelReward()">
-                    <i class="material-icons">close</i> Cancel
-                  </button>
-                </div>
-              </ng-container>
-
-              <!-- Running State: Show countdown with pause and minimize -->
-              <ng-container *ngIf="timerState === 'running'">
-                <div class="reward-icon timer-icon">⏱</div>
-                <div class="reward-label">Reward Time</div>
-                <div class="timer-display">{{ getTimerDisplay() }}</div>
-                <div class="reward-actions">
-                  <button class="btn btn-warning" (click)="pauseTimer()">
-                    <i class="material-icons">pause</i> Pause
-                  </button>
-                  <button class="btn btn-danger" (click)="stopTimer()">
-                    <i class="material-icons">stop</i> Stop
-                  </button>
-                  <button class="btn btn-secondary" (click)="minimizeTimer()">
-                    <i class="material-icons">minimize</i> Minimize
-                  </button>
-                </div>
-              </ng-container>
-
-              <!-- Paused State: Show countdown with resume -->
-              <ng-container *ngIf="timerState === 'paused'">
-                <div class="reward-icon timer-icon paused">💰</div>
-                <div class="reward-label">Your Reward Bank</div>
-                <div class="timer-display">{{ getTimerDisplay() }}</div>
-                <div class="reward-subtitle">Click Start to use this time</div>
-                <div class="reward-actions">
-                  <button
-                    class="btn btn-success btn-lg"
-                    (click)="resumeTimer()"
-                  >
-                    <i class="material-icons">play_arrow</i> Start Timer
-                  </button>
-                  <button class="btn btn-secondary" (click)="closeReward()">
-                    Close
-                  </button>
-                </div>
-              </ng-container>
-
-              <button class="reward-close" (click)="closeReward()">×</button>
-            </div>
-          </div>
-
-          <div class="search-toggle-container">
-            <button
-              (click)="toggleSearchForm()"
-              matTooltip="{{
-                isSearchFormExpanded ? 'Hide more options' : 'Show more options'
-              }}"
-              class="btn btn-sm btn-link search-toggle-btn"
-              type="button"
+          <div class="todo-badges" *ngIf="savedRewardSeconds > 0">
+            <!-- Timer Badge (when minimized and active) -->
+            <div
+              *ngIf="isMinimized && savedRewardSeconds > 0"
+              class="timer-badge"
+              [class.running]="
+                timerState === 'running' || timerState === 'minimized'
+              "
+              [class.paused]="timerState === 'paused'"
+              (click)="expandTimer()"
+              matTooltip="Click to expand timer"
             >
-              <span class="material-icons">
-                {{ isSearchFormExpanded ? 'expand_less' : 'expand_more' }}
-              </span>
-              <span
-                >{{ isSearchFormExpanded ? 'Hide' : 'Show' }} More Options</span
-              >
-            </button>
-          </div>
+              <i class="material-icons">timer</i>
+              <span>{{ getTimerDisplay() }}</span>
+            </div>
 
-          <form
-            *ngIf="isSearchFormExpanded"
-            (ngSubmit)="searchToDoToDay()"
-            class="form-under-table-header row"
-          >
-            <div class="col-md-4 control-and-btn-container">
-              <button (click)="decreaseDate()" class="btn btn-move">
-                <span class="material-icons">arrow_back_ios</span>
+            <!-- Saved Reward Badge (when timer NOT active) -->
+            <div
+              *ngIf="!isMinimized && savedRewardSeconds > 0"
+              class="saved-reward-badge clickable"
+              (click)="openTimerFromSavedReward()"
+              matTooltip="Click to use your reward time"
+            >
+              <i class="material-icons">account_balance_wallet</i>
+              <span>{{ getSavedRewardDisplay() }}m</span>
+            </div>
+
+            <!-- Reward/Timer Display Overlay -->
+            <div
+              *ngIf="showReward"
+              class="reward-overlay"
+              (click)="closeReward()"
+            >
+              <div class="reward-card" (click)="$event.stopPropagation()">
+                <!-- Initial State: Beautiful reward generation -->
+                <ng-container *ngIf="timerState === 'initial'">
+                  <div class="reward-icon">🎁</div>
+                  <div class="reward-label">You Earned</div>
+                  <div class="reward-value">{{ rewardResult }}</div>
+                  <div class="reward-unit">minutes</div>
+                  <div class="reward-info">
+                    <span
+                      *ngIf="
+                        savedRewardSeconds + rewardResult! * 60 >
+                        MAX_REWARD_SECONDS
+                      "
+                      class="cap-warning"
+                    >
+                      ⚠️ Bank at {{ MAX_REWARD_MINUTES }}m cap - overflow will
+                      be lost
+                    </span>
+                    <span *ngIf="savedRewardSeconds > 0" class="current-bank">
+                      Current bank: {{ getSavedRewardDisplay() }}m
+                    </span>
+                  </div>
+                  <div class="reward-actions">
+                    <button
+                      class="btn btn-success btn-lg"
+                      (click)="addRewardToBank()"
+                    >
+                      <i class="material-icons">account_balance_wallet</i> Add
+                      to Bank
+                    </button>
+                    <button class="btn btn-secondary" (click)="cancelReward()">
+                      <i class="material-icons">close</i> Cancel
+                    </button>
+                  </div>
+                </ng-container>
+
+                <!-- Running State: Show countdown with pause and minimize -->
+                <ng-container *ngIf="timerState === 'running'">
+                  <div class="reward-icon timer-icon">⏱</div>
+                  <div class="reward-label">Reward Time</div>
+                  <div class="timer-display">{{ getTimerDisplay() }}</div>
+                  <div class="reward-actions">
+                    <button class="btn btn-warning" (click)="pauseTimer()">
+                      <i class="material-icons">pause</i> Pause
+                    </button>
+                    <button class="btn btn-danger" (click)="stopTimer()">
+                      <i class="material-icons">stop</i> Stop
+                    </button>
+                    <button class="btn btn-secondary" (click)="minimizeTimer()">
+                      <i class="material-icons">minimize</i> Minimize
+                    </button>
+                  </div>
+                </ng-container>
+
+                <!-- Paused State: Show countdown with resume -->
+                <ng-container *ngIf="timerState === 'paused'">
+                  <div class="reward-icon timer-icon paused">💰</div>
+                  <div class="reward-label">Your Reward Bank</div>
+                  <div class="timer-display">{{ getTimerDisplay() }}</div>
+                  <div class="reward-subtitle">
+                    Click Start to use this time
+                  </div>
+                  <div class="reward-actions">
+                    <button
+                      class="btn btn-success btn-lg"
+                      (click)="resumeTimer()"
+                    >
+                      <i class="material-icons">play_arrow</i> Start Timer
+                    </button>
+                    <button class="btn btn-secondary" (click)="closeReward()">
+                      Close
+                    </button>
+                  </div>
+                </ng-container>
+
+                <button class="reward-close" (click)="closeReward()">×</button>
+              </div>
+            </div>
+
+            <!-- Focus Bar dính đầu: việc quan trọng nhất luôn nhìn thấy. -->
+            <app-todo-focus-bar
+              [focus]="focus"
+              [openCount]="openCount"
+              [doneCount]="doneCount"
+              [totalCount]="data.length"
+              [softCap]="softCap"
+              [disabled]="isLoadingResults"
+              (toggle)="onToggle($event)"
+              (openSettings)="openSettings()"
+            ></app-todo-focus-bar>
+
+            <div class="todo-strip">
+              <button
+                type="button"
+                class="strip-nav"
+                (click)="decreaseDate(); searchToDoToDay()"
+                aria-label="Previous day"
+              >
+                <span class="material-icons">chevron_left</span>
               </button>
-              <mat-form-field class="example-full-width" appearance="fill">
-                <mat-label>Date</mat-label>
-                <input
-                  [matDatepicker]="picker"
-                  [formControl]="searchDate"
-                  matInput
-                  name="date"
-                />
-                <mat-datepicker-toggle
-                  [for]="picker"
-                  matSuffix
-                ></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-              </mat-form-field>
-              <button (click)="increaseDate()" class="btn btn-move">
-                <span class="material-icons">arrow_forward_ios</span>
+              <span class="strip-date">{{ board?.date || 'today' }}</span>
+              <button
+                type="button"
+                class="strip-nav"
+                (click)="increaseDate(); searchToDoToDay()"
+                aria-label="Next day"
+              >
+                <span class="material-icons">chevron_right</span>
+              </button>
+
+              <span class="strip-spacer"></span>
+
+              <span class="strip-chip" *ngIf="overdue.length">
+                {{ overdue.length }} overdue
+              </span>
+              <span class="strip-chip" *ngIf="backlogCount">
+                {{ backlogCount }} backlog
+              </span>
+            </div>
+
+            <!-- Chip quick-add: khoá đã có sẵn từ slice 2, server lấp ở slice 10. -->
+            <div class="todo-chips" *ngIf="board?.quickAdd?.length">
+              <button
+                type="button"
+                class="todo-chip"
+                *ngFor="let chip of board!.quickAdd"
+                [class.is-used]="chip.alreadyToday"
+              >
+                {{ chip.title }}
               </button>
             </div>
-            <!-- search status, default all -->
-            <!-- <div class="col-md-4">
+
+            <div class="card-body todo-body">
+              <app-todo-list
+                [items]="listItems"
+                [disabled]="isLoadingResults"
+                [reorderable]="reorderable"
+                emptyText="Nothing else today"
+                (toggle)="onToggle($event)"
+                (contentChange)="onContentChange($event)"
+                (weightChange)="onWeightChange($event)"
+                (remove)="deleteTDTD($event)"
+                (deferTomorrow)="onDeferTomorrow($event)"
+                (sendToBacklog)="onSendToBacklog($event)"
+                (reorder)="onReorder($event)"
+              ></app-todo-list>
+
+              <button
+                [disabled]="isLoadingResults"
+                (click)="addToDoToDay()"
+                type="button"
+                class="todo-add"
+              >
+                <em class="material-icons">add</em> Add task
+              </button>
+
+              <details class="todo-more" *ngIf="overdue.length">
+                <summary>{{ overdue.length }} overdue</summary>
+                <app-todo-list
+                  [items]="overdue"
+                  [disabled]="isLoadingResults"
+                  [reorderable]="false"
+                  emptyText="Nothing overdue"
+                  (toggle)="onToggle($event)"
+                  (contentChange)="onContentChange($event)"
+                  (weightChange)="onWeightChange($event)"
+                  (remove)="deleteTDTD($event)"
+                  (deferTomorrow)="onDeferTomorrow($event)"
+                  (sendToBacklog)="onSendToBacklog($event)"
+                ></app-todo-list>
+              </details>
+            </div>
+
+            <div class="todo-advanced">
+              <div class="search-toggle-container">
+                <button
+                  (click)="toggleSearchForm()"
+                  matTooltip="{{
+                    isSearchFormExpanded
+                      ? 'Hide more options'
+                      : 'Show more options'
+                  }}"
+                  class="btn btn-sm btn-link search-toggle-btn"
+                  type="button"
+                >
+                  <span class="material-icons">
+                    {{ isSearchFormExpanded ? 'expand_less' : 'expand_more' }}
+                  </span>
+                  <span
+                    >{{ isSearchFormExpanded ? 'Hide' : 'Show' }} More
+                    Options</span
+                  >
+                </button>
+              </div>
+
+              <form
+                *ngIf="isSearchFormExpanded"
+                (ngSubmit)="searchToDoToDay()"
+                class="form-under-table-header row"
+              >
+                <div class="col-md-4 control-and-btn-container">
+                  <button (click)="decreaseDate()" class="btn btn-move">
+                    <span class="material-icons">arrow_back_ios</span>
+                  </button>
+                  <mat-form-field class="example-full-width" appearance="fill">
+                    <mat-label>Date</mat-label>
+                    <input
+                      [matDatepicker]="picker"
+                      [formControl]="searchDate"
+                      matInput
+                      name="date"
+                    />
+                    <mat-datepicker-toggle
+                      [for]="picker"
+                      matSuffix
+                    ></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                  </mat-form-field>
+                  <button (click)="increaseDate()" class="btn btn-move">
+                    <span class="material-icons">arrow_forward_ios</span>
+                  </button>
+                </div>
+                <!-- search status, default all -->
+                <!-- <div class="col-md-4">
 							<mat-form-field class="example-full-width"
 								appearance="fill">
 								<mat-label>Trạng thái</mat-label>
@@ -273,154 +280,56 @@
 								</mat-select>
 							</mat-form-field>
 						</div> -->
-            <!-- Manual minute addition button -->
-            <div class="col-md-4">
-              <button
-                (click)="addManualMinutes(); $event.preventDefault()"
-                type="button"
-                matTooltip="Add 10 minutes manually"
-                class="btn btn-info pull-right btn-w100"
-              >
-                +10 Minutes
-              </button>
-            </div>
-            <div class="col-md-4">
-              <button
-                (click)="minusManualMinutes(); $event.preventDefault()"
-                type="button"
-                matTooltip="Minus 10 minutes manually"
-                class="btn btn-info pull-right btn-w100"
-              >
-                -10 Minutes
-              </button>
-            </div>
-            <!-- button search -->
-            <div class="col-md-4">
-              <button
-                [disabled]="isLoadingResults"
-                type="submit"
-                class="btn btn-info pull-right btn-w100"
-              >
-                <em class="material-icons">search</em>
-                Search
-              </button>
-            </div>
-          </form>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table">
-                <thead class="text-primary">
-                  <th class="status-width">Status</th>
-                  <th class="content-width">
-                    <span (click)="increaseCount()">Content</span>
-                  </th>
-                </thead>
-                <tbody
-                  (mouseleave)="hoveredIndex = undefined"
-                  (cdkDropListDropped)="drop($event)"
-                  cdkDropList
-                >
-                  <tr>
-                    <td colspan="100%" style="padding: 0 0">
-                      <button
-                        [disabled]="isLoadingResults"
-                        (click)="addToDoToDayAtTop()"
-                        type="button"
-                        matTooltip="Add to Top"
-                        class="btn btn-info pull-right btn-w100"
-                      >
-                        <em class="material-icons">add</em>
-                      </button>
-                    </td>
-                  </tr>
-                  <ng-container *ngIf="data && data.length; else noDataBlock">
-                    <tr
-                      *ngFor="let tdtd of data; let index = index"
-                      [style.background-color]="
-                        getCategoryColor(getTaskCategory(tdtd))
-                      "
-                      [ngClass]="{
-                        warning: tdtd.status === TDTD_STATUS.NOT_YET,
-                        success: tdtd.status === TDTD_STATUS.DONE,
-                        primary: tdtd.status === TDTD_STATUS.NEW,
-                        future: tdtd.status === TDTD_STATUS.TOMORROW,
-                        past: tdtd.status === TDTD_STATUS.IN_PAST,
-                        'is-important': index < this.settings.todayCount,
-                      }"
-                      (mouseenter)="hoveredIndex = index"
-                      cdkDrag
-                    >
-                      <td class="status-cell">
-                        <div>
-                          <div class="drag-handle" cdkDragHandle>
-                            <mat-icon>drag_indicator</mat-icon>
-                          </div>
-                          <input
-                            type="checkbox"
-                            class="todo-checkbox"
-                            [ngModelOptions]="{ standalone: true }"
-                            [(ngModel)]="tdtd.checked"
-                            [checked]="tdtd.checked"
-                            (change)="updateStatus(tdtd, index)"
-                          />
-                        </div>
-                      </td>
-                      <td>
-                        <div class="content-wrapper">
-                          <span *ngFor="let icon of tdtd.todoLabel">{{
-                            icon
-                          }}</span>
-                          <textarea
-                            [(ngModel)]="tdtd.content"
-                            [minRows]="1"
-                            [maxRows]="3"
-                            [useImportant]="true"
-                            (blur)="saveItem(tdtd.id!, tdtd, index); (false)"
-                            type="text"
-                            class="editable wd100"
-                            autosize
-                          ></textarea>
-                          <button
-                            [disabled]="isLoadingResults"
-                            (click)="deleteTDTD(tdtd)"
-                            type="button"
-                            matTooltip="Delete"
-                            class="btn-float-in-row pull-right mdc-icon-button material-icons red"
-                          >
-                            <div class="mdc-icon-button__ripple"></div>
-                            delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  </ng-container>
-                  <ng-template #noDataBlock>
-                    <tr class="text-center">
-                      <td colspan="100%" class="text-center">
-                        <app-table-loading (size)="('sm')"></app-table-loading>
-                        No data
-                      </td>
-                    </tr>
-                  </ng-template>
-                  <tr>
-                    <td colspan="100%" style="padding: 0 0">
-                      <button
-                        [disabled]="isLoadingResults"
-                        (click)="addToDoToDay()"
-                        type="button"
-                        matTooltip="Add Empty Row"
-                        class="btn btn-info pull-right btn-w100"
-                      >
-                        <em class="material-icons">add</em>
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                <!-- Manual minute addition button -->
+                <div class="col-md-4">
+                  <button
+                    (click)="addManualMinutes(); $event.preventDefault()"
+                    type="button"
+                    matTooltip="Add 10 minutes manually"
+                    class="btn btn-info pull-right btn-w100"
+                  >
+                    +10 Minutes
+                  </button>
+                </div>
+                <div class="col-md-4">
+                  <button
+                    (click)="minusManualMinutes(); $event.preventDefault()"
+                    type="button"
+                    matTooltip="Minus 10 minutes manually"
+                    class="btn btn-info pull-right btn-w100"
+                  >
+                    -10 Minutes
+                  </button>
+                </div>
+                <!-- button search -->
+                <div class="col-md-4">
+                  <button
+                    [disabled]="isLoadingResults"
+                    type="submit"
+                    class="btn btn-info pull-right btn-w100"
+                  >
+                    <em class="material-icons">search</em>
+                    Search
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <app-todo-settings-sheet
+      [open]="settingsOpen"
+      [settings]="settings"
+      [rewardSettings]="rewardSettings"
+      [isListening]="isListening"
+      [voiceSupported]="!!recognition"
+      (closed)="closeSettings()"
+      (settingsChange)="onSettingsChanged($event)"
+      (rewardSettingsChange)="updateRewardSettings()"
+      (toggleVoice)="toggleVoiceRecognition()"
+      (generateReward)="generateReward()"
+    ></app-todo-settings-sheet>
   </div>
 </div>

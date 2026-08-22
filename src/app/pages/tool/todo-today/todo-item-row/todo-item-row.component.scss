@@ -1,0 +1,171 @@
+// Ngân sách trên màn 360x640: một dòng ~56px. Ba dòng đầu phải nằm trọn dưới
+// Focus Bar mà không phải cuộn (§10.2).
+$row-min-height: 56px;
+$touch-target: 44px;
+
+:host {
+  display: block;
+}
+
+.todo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: $row-min-height;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  // Không bao giờ cho nội dung đẩy ngang ra ngoài — `.table-responsive` cuộn
+  // ngang chính là lỗi mà slice này sinh ra để sửa.
+  max-width: 100%;
+  overflow: hidden;
+
+  &.is-done {
+    .row-content {
+      text-decoration: line-through;
+      opacity: 0.55;
+    }
+  }
+}
+
+button {
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.row-drag {
+  display: none; // bật lại ở desktop, xem media query dưới
+  align-self: center;
+  color: rgba(0, 0, 0, 0.3);
+  cursor: grab;
+}
+
+.row-check {
+  flex: 0 0 auto;
+  width: $touch-target;
+  height: $touch-target;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4caf50;
+
+  mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.row-body {
+  flex: 1 1 auto;
+  min-width: 0; // cho phép textarea co lại thay vì đẩy hàng rộng ra
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.row-labels {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  line-height: 1;
+  font-size: 13px;
+}
+
+.row-repeat {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  color: rgba(0, 0, 0, 0.35);
+}
+
+.row-content {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.35;
+  padding: 2px 0;
+  color: inherit;
+
+  &:focus {
+    outline: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  }
+}
+
+.row-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.row-variant {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60vw;
+}
+
+.row-weight {
+  flex: 0 0 auto;
+  align-self: center;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.row-more {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 32px;
+  height: $touch-target;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.weight-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+::ng-deep .row-danger {
+  color: #d32f2f;
+}
+
+// Kéo-thả là thao tác của chuột: chỉ bật từ tablet trở lên (§10.2).
+@media (min-width: 768px) {
+  .row-drag {
+    display: flex;
+  }
+
+  .todo-row {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .row-content {
+    font-size: 14px;
+  }
+}

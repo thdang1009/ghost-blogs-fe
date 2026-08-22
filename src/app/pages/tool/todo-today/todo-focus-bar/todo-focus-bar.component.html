@@ -1,0 +1,59 @@
+<div class="focus-bar">
+  <div class="focus-head">
+    <span class="focus-progress">{{ doneCount }}/{{ totalCount }} done</span>
+    <button
+      type="button"
+      class="focus-settings"
+      (click)="openSettings.emit()"
+      matTooltip="Settings, voice and reward"
+      aria-label="Open settings"
+    >
+      <mat-icon>more_horiz</mat-icon>
+    </button>
+  </div>
+
+  <ng-container *ngIf="hasFocus; else allClear">
+    <div class="focus-main" [style.background-color]="colorOf(primary!)">
+      <button
+        type="button"
+        class="focus-check"
+        [disabled]="disabled"
+        [attr.aria-label]="
+          isDone(primary!) ? 'Mark as not done' : 'Mark as done'
+        "
+        (click)="toggle.emit(primary!)"
+      >
+        <mat-icon>{{
+          isDone(primary!) ? 'check_circle' : 'radio_button_unchecked'
+        }}</mat-icon>
+      </button>
+
+      <div class="focus-text">
+        <div class="focus-title" [class.is-done]="isDone(primary!)">
+          {{ primary!.content }}
+        </div>
+        <div class="focus-context">{{ contextLine }}</div>
+      </div>
+
+      <span class="focus-weight" [matTooltip]="labelOf(primary!)">{{
+        weightOf(primary!)
+      }}</span>
+    </div>
+
+    <!-- Hạn mức mềm: một dòng nhắc, không bao giờ chặn thao tác nào (§D1). -->
+    <div class="focus-note" *ngIf="softCap?.exceeded">
+      {{ softCap!.high }} items at weight &ge; 4 today &middot; your cap is
+      {{ softCap!.cap }}
+    </div>
+  </ng-container>
+
+  <ng-template #allClear>
+    <div class="focus-main focus-empty">
+      <mat-icon>task_alt</mat-icon>
+      <div class="focus-text">
+        <div class="focus-title">Nothing open today</div>
+        <div class="focus-context">{{ doneCount }} done</div>
+      </div>
+    </div>
+  </ng-template>
+</div>

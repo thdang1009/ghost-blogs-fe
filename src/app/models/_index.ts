@@ -8,6 +8,7 @@ export * from './todo-label';
 export * from './my-file';
 export * from './note';
 export * from './todo-today';
+export * from './todo-board';
 export * from './book';
 export * from './user';
 export * from './coupon';

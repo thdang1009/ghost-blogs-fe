@@ -1,0 +1,30 @@
+<ul
+  class="todo-list"
+  cdkDropList
+  [cdkDropListDisabled]="!reorderable"
+  (cdkDropListDropped)="onDrop($event)"
+>
+  <li
+    *ngFor="let todo of items; trackBy: trackById"
+    class="todo-list-item"
+    cdkDrag
+    [cdkDragDisabled]="!reorderable"
+  >
+    <app-todo-item-row
+      [todo]="todo"
+      [disabled]="disabled"
+      [draggable]="reorderable"
+      (toggle)="toggle.emit($event)"
+      (contentChange)="contentChange.emit($event)"
+      (weightChange)="weightChange.emit($event)"
+      (remove)="remove.emit($event)"
+      (deferTomorrow)="deferTomorrow.emit($event)"
+      (sendToBacklog)="sendToBacklog.emit($event)"
+    ></app-todo-item-row>
+  </li>
+
+  <li *ngIf="!items.length" class="todo-list-empty">
+    <mat-icon>inbox</mat-icon>
+    <span>{{ emptyText }}</span>
+  </li>
+</ul>
