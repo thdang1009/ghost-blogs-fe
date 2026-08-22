@@ -2,15 +2,21 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import {
   TodoBoard,
+  TodoBoardStats,
   TodoLabel,
+  TodoRecurrence,
   TodoSoftCap,
   TodoToday,
+  TriageDecision,
   UserTodoSettings,
 } from '@models/_index';
+import { MatDialog } from '@angular/material/dialog';
+import { TodoRecurrenceDialogComponent } from './todo-recurrence-dialog/todo-recurrence-dialog.component';
 import * as dateFns from 'date-fns';
 import {
   AlertService,
   TodoLabelService,
+  TodoRecurrenceService,
   TodoTodayService,
   UserSettingsService,
   UserRewardService,
@@ -82,6 +88,13 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   backlogCount = 0;
   softCap: TodoSoftCap | null = null;
   settingsOpen = false;
+
+  // --- slice 7 / 10 ---
+  stats: TodoBoardStats | null = null;
+  triageOpen = false;
+  triageMode: 'LEFTOVERS' | 'END_OF_DAY' = 'END_OF_DAY';
+  triageItems: TodoToday[] = [];
+  triageBusy = false;
 
   // Reward settings (stored locally)
   rewardSettings = {
@@ -158,7 +171,9 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     private todoLabelService: TodoLabelService,
     private alertService: AlertService,
     private userSettingsService: UserSettingsService,
-    private userRewardService: UserRewardService
+    private userRewardService: UserRewardService,
+    private todoRecurrenceService: TodoRecurrenceService,
+    private dialog: MatDialog
   ) {
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window) {
@@ -320,6 +335,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         this.backlogCount = board.backlog.count;
         this.data = board.today.map(el => this.decorate(el));
         this.isLoadingResults = false;
+        this.loadStats();
+        this.maybeOpenTriage();
       },
       error: () => {
         this.isLoadingResults = false;
@@ -1127,5 +1144,217 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   getSavedRewardDisplay(): string {
     const minutes = Math.floor(this.savedRewardSeconds / 60);
     return `${minutes}`;
+  }
+
+  // ==========================================================================
+  // Slice 10 — số liệu cho widget
+  // ==========================================================================
+
+  loadStats(): void {
+    // Gọi RIÊNG khỏi /board: đây là truy vấn nặng hơn nhiều và màn hình vẽ
+    // được mà chưa cần nó.
+    this.todoTodayService.getStats(4).subscribe({
+      next: stats => (this.stats = stats),
+      error: () => (this.stats = null),
+    });
+  }
+
+  get office() {
+    return this.stats?.office || null;
+  }
+
+  get staleGroups(): string[] {
+    return this.stats?.workout?.staleGroups || [];
+  }
+
+  /** Thêm MỘT ngày office do chủ nhân chọn. Hệ thống không tự bịa ngày (§9.3). */
+  addOfficeDay(dateValue: string): void {
+    if (!dateValue) return;
+    this.todoTodayService
+      .addTodoToday({
+        content: '🏢 Lên công ty',
+        date: dateValue as unknown as Date,
+        weight: 4,
+        meta: { kind: 'OFFICE' },
+      })
+      .subscribe(() => {
+        this.alertService.showNoti('Office day added', 'success');
+        this.searchToDoToDay();
+      });
+  }
+
+  // ==========================================================================
+  // Slice 7 — bảng triage cuối ngày
+  // ==========================================================================
+
+  private triageStorageKey(): string {
+    return `todoTriage:${this.board?.date || ''}`;
+  }
+
+  /**
+   * Mở bảng theo §10.5:
+   *  1. có việc quá hạn -> mở ngay ở chế độ "Leftovers"
+   *  2. đã tới giờ endOfDayHour và còn việc mở -> mở "End of day", MỘT LẦN/ngày
+   *
+   * Đây là lời nhắc, không phải khoá: đóng được và có nhớ đã hỏi.
+   */
+  maybeOpenTriage(): void {
+    if (this.triageOpen) return;
+
+    if (this.overdue.length) {
+      this.triageMode = 'LEFTOVERS';
+      this.triageItems = this.overdue;
+      this.triageOpen = true;
+      return;
+    }
+
+    const hour = new Date().getHours();
+    if (hour < (this.settings.endOfDayHour || 20)) return;
+    if (!this.openCount) return;
+
+    try {
+      if (localStorage.getItem(this.triageStorageKey())) return;
+      localStorage.setItem(this.triageStorageKey(), '1');
+    } catch {
+      // Trình duyệt chặn storage thì vẫn mở — mất khả năng nhớ, không mất
+      // tính năng.
+    }
+
+    this.triageMode = 'END_OF_DAY';
+    this.triageItems = this.data.filter(el => el.status !== TDTD_STATUS.DONE);
+    this.triageOpen = true;
+  }
+
+  openTriage(): void {
+    this.triageBusy = true;
+    this.todoTodayService.getTriage(this.board?.date).subscribe({
+      next: view => {
+        this.triageBusy = false;
+        this.triageMode = 'END_OF_DAY';
+        this.triageItems = view.items;
+        this.triageOpen = true;
+      },
+      error: () => {
+        this.triageBusy = false;
+        this.alertService.showNoti('Could not load the triage list', 'danger');
+      },
+    });
+  }
+
+  closeTriage(): void {
+    this.triageOpen = false;
+  }
+
+  submitTriage(decisions: TriageDecision[]): void {
+    if (!decisions.length) {
+      this.triageOpen = false;
+      return;
+    }
+    this.triageBusy = true;
+    this.todoTodayService
+      .submitTriage({ date: this.board?.date || '', decisions })
+      .subscribe({
+        next: result => {
+          this.triageBusy = false;
+          this.triageOpen = false;
+          const failed = result.results.filter(r => !r.ok);
+          // Báo cả phần hỏng: lô vẫn áp dụng được phần lành, và im lặng nuốt
+          // vài dòng lỗi là cách nhanh nhất để mất niềm tin vào bảng này.
+          if (failed.length) {
+            this.alertService.showNoti(
+              `Applied ${result.applied}, ${failed.length} failed`,
+              'warning'
+            );
+          } else {
+            this.alertService.showNoti(
+              `Applied ${result.applied} decision(s)`,
+              'success'
+            );
+          }
+          this.searchToDoToDay();
+        },
+        error: () => {
+          this.triageBusy = false;
+          this.alertService.showNoti('Triage failed', 'danger');
+        },
+      });
+  }
+
+  // ==========================================================================
+  // Slice 7 — lịch lặp
+  // ==========================================================================
+
+  openRecurrenceDialog(recurrence?: TodoRecurrence): void {
+    const ref = this.dialog.open(TodoRecurrenceDialogComponent, {
+      data: { recurrence },
+      width: '560px',
+      maxWidth: '100vw',
+      panelClass: 'todo-sheet-dialog',
+    });
+
+    ref.afterClosed().subscribe((result?: TodoRecurrence) => {
+      if (!result) return;
+      const request = result._id
+        ? this.todoRecurrenceService.update(result._id, result)
+        : this.todoRecurrenceService.create(result);
+
+      request.subscribe({
+        next: () => {
+          this.alertService.showNoti('Repeat saved', 'success');
+          this.searchToDoToDay();
+        },
+        error: err => {
+          // Server đặt tên trường trong thông báo lỗi để hiện thẳng ra đây.
+          this.alertService.showNoti(
+            err?.error?.msg || 'Could not save the repeat',
+            'danger'
+          );
+        },
+      });
+    });
+  }
+
+  /**
+   * "Chuyển thành lịch lặp" cho việc còn sót marker `[loop…]` chưa migrate —
+   * mở sẵn hộp thoại với tiêu đề đã làm sạch, thay vì bắt sửa chuỗi bằng tay.
+   */
+  convertToRecurrence(todo: TodoToday): void {
+    const title = (todo.content || '')
+      .replace(/\[loop[^\]]*\]/i, ' ')
+      .replace(/#\d+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const draft = { ...new TodoRecurrence(), title, weight: todo.weight || 3 };
+    draft.pattern = { type: 'DAILY' };
+    this.openRecurrenceDialog(draft);
+  }
+
+  hasLegacyMarker(todo: TodoToday): boolean {
+    return /\[loop/i.test(todo.content || '');
+  }
+
+  get legacyTodos(): TodoToday[] {
+    return this.data.filter(el => this.hasLegacyMarker(el));
+  }
+
+  /** Chip quick-add: recurrence thì spawn, nội dung hay gõ thì tạo việc mới. */
+  useQuickAdd(chip: {
+    recurrenceId?: string;
+    title: string;
+    weight: number;
+  }): void {
+    const request = chip.recurrenceId
+      ? this.todoRecurrenceService.spawn(chip.recurrenceId)
+      : this.todoTodayService.addTodoToday({
+          content: chip.title,
+          weight: chip.weight,
+          date: this.searchDate.value || new Date(),
+        });
+
+    request.subscribe({
+      next: () => this.searchToDoToDay(),
+      error: () =>
+        this.alertService.showNoti('Could not add that task', 'danger'),
+    });
   }
 }

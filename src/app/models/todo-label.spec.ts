@@ -14,7 +14,7 @@ describe('TodoLabel', () => {
       description: 'Test Description',
       imgUrl: 'https://example.com/image.jpg',
       imgAlternative: 'Alt Text',
-      autoDetectKeywords: 'keyword1,keyword2'
+      autoDetectKeywords: 'keyword1,keyword2',
     };
 
     const todoLabel = Object.assign(new TodoLabel(), testData);
@@ -31,7 +31,7 @@ describe('TodoLabel', () => {
   it('should allow partial initialization', () => {
     const partialData = {
       name: 'Test Label',
-      description: 'Test Description'
+      description: 'Test Description',
     };
 
     const todoLabel = Object.assign(new TodoLabel(), partialData);

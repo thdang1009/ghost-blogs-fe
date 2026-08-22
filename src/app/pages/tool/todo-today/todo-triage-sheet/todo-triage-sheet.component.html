@@ -1,0 +1,80 @@
+<div class="tri-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+
+<div
+  class="tri"
+  [class.is-open]="open"
+  role="dialog"
+  aria-label="End of day triage"
+>
+  <div class="tri-head">
+    <div>
+      <h5>{{ title }}</h5>
+      <p>{{ subtitle }}</p>
+    </div>
+    <button
+      type="button"
+      class="tri-close"
+      (click)="closed.emit()"
+      aria-label="Close"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="tri-body">
+    <div
+      class="tri-row"
+      *ngFor="let todo of items; trackBy: trackById"
+      [style.background-color]="colorOf(todo)"
+    >
+      <div class="tri-row-head">
+        <span class="tri-weight">{{ weightOf(todo) }}</span>
+        <span class="tri-content">{{ todo.content }}</span>
+      </div>
+
+      <div class="tri-actions">
+        <button
+          type="button"
+          *ngFor="let action of actions"
+          class="tri-action"
+          [class.is-picked]="isPicked(todo, action.value)"
+          [attr.aria-pressed]="isPicked(todo, action.value)"
+          [title]="action.label"
+          (click)="pick(todo, action.value)"
+        >
+          <mat-icon>{{ action.icon }}</mat-icon>
+          <span>{{ action.label }}</span>
+        </button>
+      </div>
+
+      <input
+        *ngIf="isPicked(todo, 'DEFER_DATE')"
+        class="tri-date"
+        type="date"
+        [(ngModel)]="datePick[todo.id!]"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </div>
+
+    <p class="tri-empty" *ngIf="!items.length">Nothing left to triage.</p>
+  </div>
+
+  <div class="tri-foot" *ngIf="items.length">
+    <button
+      type="button"
+      class="tri-btn ghost"
+      [disabled]="busy || !touchedCount"
+      (click)="applyChosen()"
+    >
+      Apply {{ touchedCount }} chosen
+    </button>
+    <button
+      type="button"
+      class="tri-btn primary"
+      [disabled]="busy"
+      (click)="applyAll()"
+    >
+      Move the rest to tomorrow
+    </button>
+  </div>
+</div>

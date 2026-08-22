@@ -162,6 +162,58 @@
               <span class="strip-chip" *ngIf="backlogCount">
                 {{ backlogCount }} backlog
               </span>
+              <button
+                type="button"
+                class="strip-chip is-action"
+                [disabled]="triageBusy"
+                (click)="openTriage()"
+              >
+                Triage
+              </button>
+            </div>
+
+            <!-- Hạn ngạch office: CHỈ cảnh báo. Không tự thêm ngày (§9.3). -->
+            <div
+              class="office-widget"
+              *ngIf="office"
+              [class.at-risk]="office!.atRisk"
+            >
+              <div class="office-line">
+                <span class="office-count"
+                  >🏢 {{ office!.done }}/{{ office!.quota }} this month</span
+                >
+                <span class="office-sub"
+                  >· {{ office!.workdaysLeft }} workdays left</span
+                >
+              </div>
+              <div class="office-line shortfall" *ngIf="office!.shortfall">
+                Cần thêm {{ office!.shortfall }} ngày ngoài thứ Tư
+              </div>
+              <label class="office-add">
+                <span>Thêm ngày office</span>
+                <input
+                  type="date"
+                  #officeDate
+                  (change)="addOfficeDay(officeDate.value)"
+                />
+              </label>
+            </div>
+
+            <!-- Nhắc MỘT dòng, không cằn nhằn. -->
+            <div class="stale-note" *ngIf="staleGroups.length">
+              Chưa tập {{ staleGroups.join(', ') }} hơn 10 ngày
+            </div>
+
+            <div class="legacy-note" *ngIf="legacyTodos.length">
+              <span
+                >{{ legacyTodos.length }} task(s) still use [loop] text</span
+              >
+              <button
+                type="button"
+                (click)="convertToRecurrence(legacyTodos[0])"
+              >
+                Convert to a repeat
+              </button>
             </div>
 
             <!-- Chip quick-add: khoá đã có sẵn từ slice 2, server lấp ở slice 10. -->
@@ -171,8 +223,18 @@
                 class="todo-chip"
                 *ngFor="let chip of board!.quickAdd"
                 [class.is-used]="chip.alreadyToday"
+                [disabled]="isLoadingResults"
+                (click)="useQuickAdd(chip)"
               >
                 {{ chip.title }}
+              </button>
+              <button
+                type="button"
+                class="todo-chip is-ghost"
+                (click)="openRecurrenceDialog()"
+                title="New repeat"
+              >
+                + Repeat
               </button>
             </div>
 
@@ -318,6 +380,16 @@
         </div>
       </div>
     </div>
+
+    <app-todo-triage-sheet
+      [open]="triageOpen"
+      [items]="triageItems"
+      [date]="board?.date || ''"
+      [mode]="triageMode"
+      [busy]="triageBusy"
+      (closed)="closeTriage()"
+      (submitted)="submitTriage($event)"
+    ></app-todo-triage-sheet>
 
     <app-todo-settings-sheet
       [open]="settingsOpen"

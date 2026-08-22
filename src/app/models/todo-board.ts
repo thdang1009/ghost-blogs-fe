@@ -76,11 +76,33 @@ export interface TodoBoard {
 }
 
 export interface TodoBoardStats {
-  reading?: unknown;
-  workout?: unknown;
-  office?: unknown;
-  roadmap?: unknown;
-  completion?: unknown;
+  reading?: {
+    thisWeekMinutes: number;
+    lastWeekMinutes: number;
+    byWeek: { weekKey: string; minutes: number; pages: number }[];
+    books: { bookTitle: string; minutes: number; cursor: string }[];
+  };
+  workout?: {
+    byGroup: WorkoutGroupStat[];
+    thisWeekCount: number;
+    /** Nhóm cơ quá 10 ngày chưa đụng tới — nhắc MỘT dòng, không cằn nhằn. */
+    staleGroups: string[];
+  };
+  office?: OfficeQuotaStats;
+  roadmap?: {
+    thisWeekSessions: number;
+    floor: number;
+    hitFloor: boolean;
+    streak: number;
+  };
+  completion?: {
+    byWeek: {
+      weekKey: string;
+      created: number;
+      done: number;
+      deferred: number;
+    }[];
+  };
 }
 
 export type TodoDeferTarget = 'TOMORROW' | 'DATE' | 'BACKLOG';
@@ -95,4 +117,68 @@ export interface TodoBacklogPage {
   limit: number;
   offset: number;
   items: TodoToday[];
+}
+
+// --- Triage (§6.3) ---
+
+export type TriageAction =
+  | 'DONE'
+  | 'DEFER_TOMORROW'
+  | 'DEFER_DATE'
+  | 'BACKLOG'
+  | 'DEMOTE'
+  | 'DELETE'
+  | 'SKIP';
+
+export interface TriageView {
+  date: string;
+  items: TodoToday[];
+  defaultAction: TriageAction;
+}
+
+export interface TriageDecision {
+  id: number;
+  action: TriageAction;
+  payload?: { date?: string };
+}
+
+export interface TriagePayload {
+  date: string;
+  decisions: TriageDecision[];
+}
+
+export interface TriageResult {
+  id: number;
+  action: TriageAction;
+  ok: boolean;
+  msg?: string;
+  autoBacklogged?: boolean;
+}
+
+export interface TriageBatchResult {
+  applied: number;
+  results: TriageResult[];
+}
+
+// --- Stats (§6.6) ---
+
+export interface OfficeQuotaStats {
+  month: string;
+  quota: number;
+  done: number;
+  remaining: number;
+  workdaysLeft: number;
+  wednesdaysLeft: number;
+  /** Số ngày chủ nhân còn phải TỰ đặt bằng tay. Hệ thống không bao giờ tự thêm. */
+  shortfall: number;
+  atRisk: boolean;
+  doneDates: string[];
+  scheduledDates: string[];
+}
+
+export interface WorkoutGroupStat {
+  group: string;
+  count: number;
+  lastDoneAt: string | null;
+  daysSince: number | null;
 }

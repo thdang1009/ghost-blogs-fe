@@ -12,7 +12,7 @@ describe('GuestMessage', () => {
       message: 'Test message',
       name: 'John Doe',
       subject: 'Test Subject',
-      email: 'test@example.com'
+      email: 'test@example.com',
     };
 
     const message = Object.assign(new GuestMessage(), testData);
@@ -27,7 +27,7 @@ describe('GuestMessage', () => {
   it('should allow partial initialization of properties', () => {
     const partialData = {
       name: 'John Doe',
-      email: 'test@example.com'
+      email: 'test@example.com',
     };
 
     const message = Object.assign(new GuestMessage(), partialData);

@@ -6,8 +6,12 @@ import {
   TodoApiResponse,
   TodoBacklogPage,
   TodoBoard,
+  TodoBoardStats,
   TodoDeferPayload,
   TodoToday,
+  TriageBatchResult,
+  TriagePayload,
+  TriageView,
 } from '@models/_index';
 import { environment } from '@environments/environment';
 import { buildQueryString, ghostLog, handleError } from '@shared/common';
@@ -135,6 +139,41 @@ export class TodoTodayService {
       .patch<TodoApiResponse<TodoToday>>(`${apiUrl}/${id}/weight`, { weight })
       .pipe(
         tap(() => ghostLog(`set weight tdtd id=${id} -> ${weight}`)),
+        map(res => res.data)
+      );
+  }
+
+  /** Danh sách việc còn mở tính tới hết ngày đó (§6.3). */
+  getTriage(date?: string): Observable<TriageView> {
+    const url = date ? `${apiUrl}/triage?date=${date}` : `${apiUrl}/triage`;
+    return this.http.get<TodoApiResponse<TriageView>>(url).pipe(
+      tap(() => ghostLog('fetched triage list')),
+      map(res => res.data)
+    );
+  }
+
+  /**
+   * Gửi CẢ bảng triage một lượt.
+   *
+   * Server áp dụng từng dòng một và trả `ok` riêng cho mỗi dòng, nên một id
+   * hỏng không vứt bỏ toàn bộ quyết định chủ nhân vừa ngồi bấm.
+   */
+  submitTriage(payload: TriagePayload): Observable<TriageBatchResult> {
+    return this.http
+      .post<TodoApiResponse<TriageBatchResult>>(`${apiUrl}/triage`, payload)
+      .pipe(
+        tap(() =>
+          ghostLog(`submitted ${payload.decisions.length} triage decisions`)
+        ),
+        map(res => res.data)
+      );
+  }
+
+  getStats(weeks = 4): Observable<TodoBoardStats> {
+    return this.http
+      .get<TodoApiResponse<TodoBoardStats>>(`${apiUrl}/stats?weeks=${weeks}`)
+      .pipe(
+        tap(() => ghostLog('fetched todo stats')),
         map(res => res.data)
       );
   }

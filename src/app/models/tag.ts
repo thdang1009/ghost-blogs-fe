@@ -1,8 +1,8 @@
 export class Tag {
-    _id?: string;
-    id?: string;
-    name?: string;
-    description?: string;
-    imgUrl?: string;
-    content?: string;
+  _id?: string;
+  id?: string;
+  name?: string;
+  description?: string;
+  imgUrl?: string;
+  content?: string;
 }

@@ -9,6 +9,8 @@ export * from './my-file';
 export * from './note';
 export * from './todo-today';
 export * from './todo-board';
+export * from './todo-recurrence';
+export * from './reading-book';
 export * from './book';
 export * from './user';
 export * from './coupon';
