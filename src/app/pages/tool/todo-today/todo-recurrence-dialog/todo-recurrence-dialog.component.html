@@ -1,0 +1,233 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit repeat' : 'New repeat' }}</h2>
+
+<mat-dialog-content class="rec-body">
+  <label class="rec-field">
+    <span>Title</span>
+    <input
+      type="text"
+      [(ngModel)]="model.title"
+      [ngModelOptions]="{ standalone: true }"
+    />
+  </label>
+
+  <section class="rec-section">
+    <h6>Repeat</h6>
+    <div class="rec-chips">
+      <button
+        type="button"
+        *ngFor="let p of patterns"
+        class="rec-chip"
+        [class.is-on]="model.pattern.type === p.value"
+        (click)="model.pattern.type = p.value"
+      >
+        {{ p.label }}
+      </button>
+    </div>
+
+    <label class="rec-field" *ngIf="needsInterval">
+      <span>Every N days</span>
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="model.pattern.interval"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+
+    <div class="rec-days" *ngIf="needsDays">
+      <button
+        type="button"
+        *ngFor="let d of weekdays"
+        class="rec-day"
+        [class.is-on]="isDayOn(d.iso)"
+        (click)="toggleDay(d.iso)"
+      >
+        {{ d.label }}
+      </button>
+    </div>
+
+    <label class="rec-field" *ngIf="needsDayOfMonth">
+      <span>Day of month <small>31 clamps to month end</small></span>
+      <input
+        type="number"
+        min="1"
+        max="31"
+        [(ngModel)]="model.pattern.dayOfMonth"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+
+    <label class="rec-field" *ngIf="needsQuota">
+      <span>Minimum per month</span>
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="model.pattern.quotaPerMonth"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+  </section>
+
+  <section class="rec-section">
+    <h6>Variants</h6>
+    <p class="rec-hint">
+      Optional. The two modes behave very differently &mdash; pick deliberately.
+    </p>
+
+    <div class="rec-modes">
+      <button
+        type="button"
+        class="rec-mode"
+        [class.is-on]="isWeekdayMode"
+        (click)="setMode('WEEKDAY')"
+      >
+        <strong>Theo th&#7913;</strong>
+        <small>Calendar decides. A day with no variant is a rest day.</small>
+      </button>
+      <button
+        type="button"
+        class="rec-mode"
+        [class.is-on]="!isWeekdayMode"
+        (click)="setMode('CYCLE')"
+      >
+        <strong>Xoay v&ograve;ng</strong>
+        <small
+          >Advances one at a time. Miss a day and it serves the same one.</small
+        >
+      </button>
+    </div>
+
+    <p class="rec-warn" *ngIf="modeWarning">{{ modeWarning }}</p>
+
+    <div class="rec-variant" *ngFor="let v of model.rotation; let i = index">
+      <div class="rec-variant-head">
+        <input
+          type="text"
+          placeholder="Variant label"
+          [(ngModel)]="v.label"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <button
+          type="button"
+          *ngIf="!isWeekdayMode"
+          (click)="moveVariant(i, -1)"
+          title="Move up"
+        >
+          <mat-icon>north</mat-icon>
+        </button>
+        <button
+          type="button"
+          *ngIf="!isWeekdayMode"
+          (click)="moveVariant(i, 1)"
+          title="Move down"
+        >
+          <mat-icon>south</mat-icon>
+        </button>
+        <button
+          type="button"
+          class="rec-danger"
+          (click)="removeVariant(i)"
+          title="Remove"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="rec-days" *ngIf="isWeekdayMode">
+        <button
+          type="button"
+          *ngFor="let d of weekdays"
+          class="rec-day"
+          [class.is-on]="isVariantDayOn(i, d.iso)"
+          (click)="toggleVariantDay(i, d.iso)"
+        >
+          {{ d.label }}
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="rec-add" (click)="addVariant()">
+      <mat-icon>add</mat-icon> Add variant
+    </button>
+
+    <!-- Dải 7 ngày: gán nhầm phải NHÌN THẤY ĐƯỢC, không phải suy ra. -->
+    <div class="rec-strip" *ngIf="isWeekdayMode && model.rotation.length">
+      <div class="rec-strip-cell" *ngFor="let cell of weekStrip">
+        <span class="rec-strip-day">{{ cell.label }}</span>
+        <span class="rec-strip-variant" [class.is-rest]="cell.isRest">{{
+          cell.variant
+        }}</span>
+      </div>
+    </div>
+
+    <div class="rec-cycle" *ngIf="!isWeekdayMode && model.rotation.length">
+      <label class="rec-field">
+        <span>Advance</span>
+        <select
+          [(ngModel)]="model.rotationAdvance"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option value="ON_DONE">when completed</option>
+          <option value="ON_SPAWN">when spawned</option>
+        </select>
+      </label>
+      <label class="rec-field">
+        <span>Currently at</span>
+        <select
+          [(ngModel)]="model.rotationIndex"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option *ngFor="let v of model.rotation; let i = index" [ngValue]="i">
+            {{ i + 1 }}/{{ model.rotation.length }} &mdash;
+            {{ v.label || '(unnamed)' }}
+          </option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <section class="rec-section">
+    <h6>Options</h6>
+    <label class="rec-field">
+      <span>Weight <small>1&ndash;5</small></span>
+      <input
+        type="number"
+        min="1"
+        max="5"
+        [(ngModel)]="model.weight"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+    <label class="rec-field">
+      <span>Estimate (minutes)</span>
+      <input
+        type="number"
+        min="0"
+        [(ngModel)]="model.estimateMinutes"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+    <label class="rec-toggle">
+      <input
+        type="checkbox"
+        [(ngModel)]="model.pinned"
+        [ngModelOptions]="{ standalone: true }"
+      />
+      <span>Pin to quick add</span>
+    </label>
+  </section>
+
+  <p class="rec-preview">{{ preview }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" class="rec-btn" (click)="cancel()">Cancel</button>
+  <button
+    type="button"
+    class="rec-btn primary"
+    [disabled]="!canSave"
+    (click)="save()"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

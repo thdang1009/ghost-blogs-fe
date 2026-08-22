@@ -13,7 +13,7 @@ describe('Alert', () => {
       message: 'Test message',
       autoClose: true,
       keepAfterRouteChange: false,
-      fade: true
+      fade: true,
     };
 
     const alert = new Alert(testData);
@@ -29,7 +29,7 @@ describe('Alert', () => {
   it('should allow partial initialization', () => {
     const partialData = {
       message: 'Test message',
-      type: AlertType.Warning
+      type: AlertType.Warning,
     };
 
     const alert = new Alert(partialData);
@@ -50,10 +50,16 @@ describe('Alert', () => {
   });
 
   it('should create different types of alerts', () => {
-    const successAlert = new Alert({ type: AlertType.Success, message: 'Success!' });
+    const successAlert = new Alert({
+      type: AlertType.Success,
+      message: 'Success!',
+    });
     const errorAlert = new Alert({ type: AlertType.Error, message: 'Error!' });
     const infoAlert = new Alert({ type: AlertType.Info, message: 'Info!' });
-    const warningAlert = new Alert({ type: AlertType.Warning, message: 'Warning!' });
+    const warningAlert = new Alert({
+      type: AlertType.Warning,
+      message: 'Warning!',
+    });
 
     expect(successAlert.type).toBe(AlertType.Success);
     expect(errorAlert.type).toBe(AlertType.Error);

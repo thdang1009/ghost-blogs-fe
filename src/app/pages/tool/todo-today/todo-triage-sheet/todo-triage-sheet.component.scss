@@ -1,0 +1,199 @@
+.tri-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.tri {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1001;
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 200ms ease-out;
+  visibility: hidden;
+
+  &.is-open {
+    transform: translateY(0);
+    visibility: visible;
+  }
+}
+
+.tri-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+
+  h5 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.tri-close {
+  background: none;
+  border: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.tri-body {
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.tri-row {
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tri-row-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tri-weight {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tri-content {
+  font-size: 14px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tri-actions {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.tri-action {
+  flex: 0 0 auto;
+  min-width: 52px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &.is-picked {
+    background: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+  }
+}
+
+.tri-date {
+  margin-top: 6px;
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+}
+
+.tri-empty {
+  text-align: center;
+  color: rgba(0, 0, 0, 0.4);
+  padding: 24px 0;
+}
+
+.tri-foot {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.tri-btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  cursor: pointer;
+
+  &.ghost {
+    background: #fff;
+  }
+
+  &.primary {
+    background: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+@media (min-width: 768px) {
+  .tri {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    width: 460px;
+    border-radius: 12px;
+    max-height: 78vh;
+  }
+}

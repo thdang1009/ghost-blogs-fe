@@ -74,6 +74,13 @@ export const ROUTES: RouteInfo[] = [
         permission: 'isMember',
       },
       {
+        path: 'tool/reading-list',
+        title: 'Reading List',
+        icon: 'menu_book',
+        class: '',
+        permission: 'isMember',
+      },
+      {
         path: 'tool/guest-message',
         title: 'List Guest Message',
         icon: 'list',

@@ -1,0 +1,123 @@
+<div class="main-content reading-page">
+  <div class="container-fluid">
+    <div class="card">
+      <div class="rl-head">
+        <h4>Reading list</h4>
+        <div class="rl-head-actions">
+          <button type="button" class="rl-btn" (click)="syncRotation()">
+            <mat-icon>sync</mat-icon> Sync reading rotation
+          </button>
+          <button type="button" class="rl-btn primary" (click)="startAdd()">
+            <mat-icon>add</mat-icon> Add book
+          </button>
+        </div>
+      </div>
+
+      <form class="rl-form" *ngIf="isFormOpen" (ngSubmit)="save()">
+        <input
+          type="text"
+          placeholder="Title"
+          [(ngModel)]="draft.title"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <input
+          type="text"
+          placeholder="Author"
+          [(ngModel)]="draft.author"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <input
+          type="url"
+          placeholder="https://link-to-the-book"
+          [(ngModel)]="draft.link"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <input
+          type="number"
+          min="0"
+          placeholder="Estimated hours"
+          [(ngModel)]="draft.estimateHours"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        <select
+          [(ngModel)]="draft.status"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+        </select>
+        <textarea
+          rows="2"
+          placeholder="Note"
+          [(ngModel)]="draft.note"
+          [ngModelOptions]="{ standalone: true }"
+        ></textarea>
+        <div class="rl-form-actions">
+          <button type="button" class="rl-btn" (click)="cancelEdit()">
+            Cancel
+          </button>
+          <button type="submit" class="rl-btn primary">Save</button>
+        </div>
+      </form>
+
+      <div class="rl-columns">
+        <section class="rl-column" *ngFor="let column of columns">
+          <h5>
+            {{ column.title }} <span>({{ column.books.length }})</span>
+          </h5>
+
+          <article
+            class="rl-book"
+            *ngFor="let book of column.books; trackBy: trackById"
+          >
+            <div class="rl-book-head">
+              <strong>{{ book.title }}</strong>
+              <a
+                *ngIf="book.link"
+                [href]="book.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open link"
+              >
+                <mat-icon>open_in_new</mat-icon>
+              </a>
+            </div>
+
+            <div class="rl-book-meta" *ngIf="book.author">
+              {{ book.author }}
+            </div>
+
+            <div class="rl-book-progress">
+              <span>{{ progressOf(book) }}</span>
+              <span class="rl-cursor" *ngIf="book.cursor">{{
+                book.cursor
+              }}</span>
+            </div>
+
+            <div class="rl-book-actions">
+              <button
+                type="button"
+                *ngIf="book.status !== 'READING'"
+                (click)="setStatus(book, 'READING')"
+              >
+                Start
+              </button>
+              <button
+                type="button"
+                *ngIf="book.status === 'READING'"
+                (click)="setStatus(book, 'DONE')"
+              >
+                Finish
+              </button>
+              <button type="button" (click)="startEdit(book)">Edit</button>
+              <button type="button" class="rl-danger" (click)="remove(book)">
+                Delete
+              </button>
+            </div>
+          </article>
+
+          <p class="rl-empty" *ngIf="!column.books.length">Nothing here yet.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

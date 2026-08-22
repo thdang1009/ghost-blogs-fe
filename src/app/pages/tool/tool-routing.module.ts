@@ -8,12 +8,19 @@ import { JournalComponent } from './journal/journal.component';
 import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 import { LearningRoadmapComponent } from './learning-roadmap/learning-roadmap.component';
+import { ReadingListComponent } from './reading-list/reading-list.component';
 
 const routes: Routes = [
   {
     path: 'learning-roadmap',
     title: `Learning Roadmap`,
     component: LearningRoadmapComponent,
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'reading-list',
+    title: `Reading List`,
+    component: ReadingListComponent,
     canActivate: [loginGuard],
   },
   {

@@ -1,0 +1,115 @@
+<div
+  class="todo-row"
+  [class.is-done]="isDone"
+  [style.background-color]="weightMeta.color"
+>
+  <!-- Kéo-thả: chỉ hiện ở desktop. Trên cảm ứng, weight quyết định thứ tự. -->
+  <button
+    *ngIf="draggable"
+    type="button"
+    class="row-drag"
+    cdkDragHandle
+    aria-label="Reorder"
+  >
+    <mat-icon>drag_indicator</mat-icon>
+  </button>
+
+  <!-- Vùng chạm 44x44 tối thiểu: tick việc là thao tác chính của cả màn hình. -->
+  <button
+    type="button"
+    class="row-check"
+    [disabled]="disabled"
+    [attr.aria-pressed]="isDone"
+    [attr.aria-label]="isDone ? 'Mark as not done' : 'Mark as done'"
+    (click)="onToggle()"
+  >
+    <mat-icon>{{
+      isDone ? 'check_circle' : 'radio_button_unchecked'
+    }}</mat-icon>
+  </button>
+
+  <div class="row-body">
+    <div class="row-labels" *ngIf="todo.todoLabel?.length || isRecurring">
+      <span *ngFor="let icon of todo.todoLabel" class="row-label">{{
+        icon
+      }}</span>
+      <mat-icon
+        *ngIf="isRecurring"
+        class="row-repeat"
+        matTooltip="Repeats automatically"
+        >autorenew</mat-icon
+      >
+    </div>
+
+    <textarea
+      class="row-content"
+      [(ngModel)]="todo.content"
+      [ngModelOptions]="{ standalone: true }"
+      [minRows]="1"
+      [maxRows]="3"
+      [useImportant]="true"
+      (blur)="onContentBlur()"
+      autosize
+    ></textarea>
+
+    <div class="row-meta" *ngIf="variantLabel || todo.deferCount">
+      <span class="row-variant" *ngIf="variantLabel">{{ variantLabel }}</span>
+      <span
+        class="row-deferred"
+        *ngIf="todo.deferCount"
+        [matTooltip]="'Deferred ' + todo.deferCount + ' time(s)'"
+        >&#8635; {{ todo.deferCount }}</span
+      >
+    </div>
+  </div>
+
+  <!-- Weight: pill bấm được, mở menu 5 mức. Nhãn thay cho việc đoán theo màu. -->
+  <button
+    type="button"
+    class="row-weight"
+    [disabled]="disabled"
+    [matMenuTriggerFor]="weightMenu"
+    [matTooltip]="'Weight: ' + weightMeta.label"
+  >
+    {{ weight }}
+  </button>
+
+  <mat-menu #weightMenu="matMenu">
+    <button
+      mat-menu-item
+      *ngFor="let option of weightOptions"
+      (click)="pickWeight(option.value)"
+    >
+      <span class="weight-dot" [style.background-color]="option.color"></span>
+      {{ option.value }} &middot; {{ option.label }}
+    </button>
+  </mat-menu>
+
+  <button
+    type="button"
+    class="row-more"
+    [disabled]="disabled"
+    [matMenuTriggerFor]="rowMenu"
+    aria-label="More actions"
+  >
+    <mat-icon>more_vert</mat-icon>
+  </button>
+
+  <mat-menu #rowMenu="matMenu">
+    <button mat-menu-item (click)="deferTomorrow.emit(todo)">
+      <mat-icon>east</mat-icon> Tomorrow
+    </button>
+    <button mat-menu-item (click)="sendToBacklog.emit(todo)">
+      <mat-icon>inbox</mat-icon> Backlog
+    </button>
+    <button mat-menu-item (click)="bumpWeight(-1)" [disabled]="weight <= 1">
+      <mat-icon>south</mat-icon> Lower weight
+    </button>
+    <button mat-menu-item (click)="bumpWeight(1)" [disabled]="weight >= 5">
+      <mat-icon>north</mat-icon> Raise weight
+    </button>
+    <button mat-menu-item class="row-danger" (click)="remove.emit(todo)">
+      <mat-icon>delete</mat-icon> Delete
+    </button>
+  </mat-menu>
+</div>

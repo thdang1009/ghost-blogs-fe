@@ -181,7 +181,7 @@ textarea {
   min-width: 60px;
 
   // Use a wrapper div inside to handle flex layout
-  >div {
+  > div {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -611,7 +611,6 @@ textarea {
 }
 
 @keyframes badgePulse {
-
   0%,
   100% {
     box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
@@ -703,4 +702,234 @@ textarea {
   @media (max-width: 768px) {
     flex-direction: column;
   }
+}
+
+// ===========================================================================
+// Todo Today v2 — khung trang mobile-first (§10.2)
+//
+// Mục tiêu đo được: trên 360x640, dòng việc đầu tiên nhìn thấy TRỌN VẸN mà
+// không cuộn, và KHÔNG có cuộn ngang ở bất kỳ đâu.
+// ===========================================================================
+
+.todo-page {
+  // Cuộn ngang là lỗi chính của bản cũ (`.table-responsive` quanh `<table>`).
+  // Chặn ở gốc trang để không chỗ nào lén mở lại.
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+.todo-card {
+  overflow: visible; // cho Focus Bar sticky hoạt động
+}
+
+.todo-badges {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px 8px 0;
+}
+
+.todo-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.strip-nav {
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+
+  .material-icons {
+    font-size: 20px;
+  }
+}
+
+.strip-date {
+  font-weight: 600;
+  min-width: 84px;
+  text-align: center;
+}
+
+.strip-spacer {
+  flex: 1 1 auto;
+}
+
+.strip-chip {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.06);
+  white-space: nowrap;
+}
+
+.todo-chips {
+  display: flex;
+  gap: 6px;
+  height: 44px;
+  align-items: center;
+  padding: 0 8px;
+  // Chip cuộn NGANG trong dải của chính nó — đây là chỗ duy nhất được phép,
+  // và nó không kéo theo cả trang.
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.todo-chip {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &.is-used {
+    opacity: 0.45;
+  }
+}
+
+.todo-body {
+  padding: 0;
+}
+
+.todo-add {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fafafa;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.todo-more {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+
+  summary {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+  }
+}
+
+// Form ngày/tuỳ chọn cũ: giữ nguyên chức năng nhưng đẩy xuống cuối trang, vì
+// nó không phải thứ cần nhìn thấy mỗi sáng.
+.todo-advanced {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 8px;
+}
+
+// Hạn ngạch office: CHỈ cảnh báo, không bao giờ tự xếp ngày (§9.3).
+.office-widget {
+  margin: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f1f6f9;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  font-size: 13px;
+
+  &.at-risk {
+    background: #fff5e6;
+    border-color: #f0c078;
+  }
+}
+
+.office-line {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+
+  &.shortfall {
+    margin-top: 2px;
+    color: #b26a00;
+    font-weight: 600;
+  }
+}
+
+.office-count {
+  font-weight: 600;
+}
+
+.office-sub {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.office-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+
+  input {
+    height: 32px;
+    padding: 0 6px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+  }
+}
+
+.stale-note,
+.legacy-note {
+  margin: 0 8px 8px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f5f7f8;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.legacy-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  button {
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+    background: #fff;
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+}
+
+.strip-chip.is-action {
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  cursor: pointer;
+}
+
+.todo-chip.is-ghost {
+  border-style: dashed;
+  color: rgba(0, 0, 0, 0.55);
 }
