@@ -158,9 +158,18 @@
             <span class="strip-chip" *ngIf="overdue.length">
               {{ overdue.length }} overdue
             </span>
-            <span class="strip-chip" *ngIf="backlogCount">
+            <button
+              type="button"
+              class="strip-chip is-action"
+              *ngIf="backlogCount"
+              [class.is-open]="backlogOpen"
+              (click)="toggleBacklog()"
+            >
               {{ backlogCount }} backlog
-            </span>
+              <span class="material-icons strip-caret">{{
+                backlogOpen ? 'expand_less' : 'expand_more'
+              }}</span>
+            </button>
             <button
               type="button"
               class="strip-chip is-action"
@@ -169,6 +178,48 @@
             >
               Triage
             </button>
+          </div>
+
+          <!-- Backlog: việc không có ngày. Mở ra để kéo trở lại lịch. -->
+          <div class="backlog-panel" *ngIf="backlogOpen">
+            <div class="backlog-head">
+              <strong>Backlog</strong>
+              <span>{{ backlogCount }} item(s) with no date</span>
+            </div>
+
+            <div class="backlog-row" *ngFor="let item of backlogItems">
+              <span class="backlog-weight">{{ item.weight || 3 }}</span>
+              <span class="backlog-content">{{ item.content }}</span>
+              <button
+                type="button"
+                class="backlog-btn primary"
+                [disabled]="isLoadingResults"
+                (click)="scheduleFromBacklog(item)"
+                title="Put back on this day"
+              >
+                Today
+              </button>
+              <label class="backlog-date" title="Schedule for another day">
+                <span class="material-icons">event</span>
+                <input
+                  type="date"
+                  #pick
+                  (change)="scheduleFromBacklog(item, pick.value)"
+                />
+              </label>
+              <button
+                type="button"
+                class="backlog-btn danger"
+                (click)="deleteFromBacklog(item)"
+                title="Delete"
+              >
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
+
+            <p class="backlog-empty" *ngIf="!backlogItems.length">
+              Nothing in the backlog.
+            </p>
           </div>
 
           <!-- Hạn ngạch office: CHỈ cảnh báo. Không tự thêm ngày (§9.3). -->

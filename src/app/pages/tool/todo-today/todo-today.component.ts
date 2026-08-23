@@ -86,6 +86,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   focus: TodoToday[] = [];
   overdue: TodoToday[] = [];
   backlogCount = 0;
+  backlogItems: TodoToday[] = [];
+  backlogOpen = false;
   softCap: TodoSoftCap | null = null;
   settingsOpen = false;
 
@@ -333,6 +335,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         this.focus = board.focus.map(el => this.decorate(el));
         this.overdue = board.overdue.map(el => this.decorate(el));
         this.backlogCount = board.backlog.count;
+        this.backlogItems = board.backlog.items.map(el => this.decorate(el));
         this.data = board.today.map(el => this.decorate(el));
         this.isLoadingResults = false;
         this.loadStats();
@@ -1355,6 +1358,52 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       next: () => this.searchToDoToDay(),
       error: () =>
         this.alertService.showNoti('Could not add that task', 'danger'),
+    });
+  }
+
+  // ==========================================================================
+  // Backlog — xem và kéo việc trở lại lịch
+  // ==========================================================================
+
+  toggleBacklog(): void {
+    this.backlogOpen = !this.backlogOpen;
+    // /board chỉ trả 20 dòng đầu; mở panel ra thì lấy đủ.
+    if (this.backlogOpen && this.backlogItems.length < this.backlogCount) {
+      this.loadBacklog();
+    }
+  }
+
+  loadBacklog(): void {
+    this.todoTodayService.getBacklog(100, 0).subscribe({
+      next: page => {
+        this.backlogItems = page.items.map(el => this.decorate(el));
+        this.backlogCount = page.count;
+      },
+      error: () =>
+        this.alertService.showNoti('Could not load the backlog', 'danger'),
+    });
+  }
+
+  /** Kéo một việc từ backlog trở lại ngày đang xem. */
+  scheduleFromBacklog(todo: TodoToday, dateValue?: string): void {
+    const date = dateValue || this.boardDateKey;
+    this.todoTodayService.schedule(todo.id!, date).subscribe({
+      next: () => {
+        this.backlogItems = this.backlogItems.filter(el => el.id !== todo.id);
+        this.backlogCount = Math.max(0, this.backlogCount - 1);
+        this.alertService.showNoti(`Scheduled for ${date}`, 'success');
+        this.searchToDoToDay();
+      },
+      error: () =>
+        this.alertService.showNoti('Could not schedule that task', 'danger'),
+    });
+  }
+
+  deleteFromBacklog(todo: TodoToday): void {
+    if (!confirm(`Delete "${todo.content}"?`)) return;
+    this.todoTodayService.deleteTodoToday(todo.id!).subscribe(() => {
+      this.backlogItems = this.backlogItems.filter(el => el.id !== todo.id);
+      this.backlogCount = Math.max(0, this.backlogCount - 1);
     });
   }
 }
