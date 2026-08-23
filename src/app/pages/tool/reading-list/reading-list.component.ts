@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -45,7 +50,12 @@ export class ReadingListComponent implements OnInit {
 
   constructor(
     private readingBookService: ReadingBookService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    // OnPush chỉ kiểm tra lại khi component bị đánh dấu bẩn. Gán thuộc tính
+    // trong callback HTTP KHÔNG đánh dấu gì cả, nên phải tự gọi markForCheck.
+    // Thiếu nó thì sách vẫn tải về đúng mà màn hình trống trơn cho tới khi
+    // bấm một nút bất kỳ — sự kiện mới là thứ đánh dấu bẩn.
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -58,9 +68,11 @@ export class ReadingListComponent implements OnInit {
       next: books => {
         this.books = books;
         this.loading = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.loading = false;
+        this.cdr.markForCheck();
         this.alertService.showNoti('Could not load your books', 'danger');
       },
     });
@@ -160,8 +172,10 @@ export class ReadingListComponent implements OnInit {
 
   syncRotation(): void {
     this.readingBookService.syncRotation().subscribe({
-      next: () =>
-        this.alertService.showNoti('Reading rotation synced', 'success'),
+      next: () => {
+        this.alertService.showNoti('Reading rotation synced', 'success');
+        this.load();
+      },
       error: err =>
         this.alertService.showNoti(
           err?.error?.msg || 'Could not sync the rotation',
