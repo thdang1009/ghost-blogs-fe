@@ -132,6 +132,11 @@
             [disabled]="isLoadingResults"
             (toggle)="onToggle($event)"
             (openSettings)="openSettings()"
+            (contentChange)="onContentChange($event)"
+            (weightChange)="onWeightChange($event)"
+            (remove)="deleteTDTD($event)"
+            (deferTomorrow)="onDeferTomorrow($event)"
+            (sendToBacklog)="onSendToBacklog($event)"
           ></app-todo-focus-bar>
 
           <div class="todo-strip">

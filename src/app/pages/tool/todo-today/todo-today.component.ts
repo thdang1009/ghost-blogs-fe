@@ -31,6 +31,7 @@ import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import * as dateFnsFormat from 'date-fns';
 import { effectiveWeight, sortTodos } from './todo-weight.util';
+import { listBelowFocusBar } from './todo-focus-bar/todo-focus-bar.component';
 
 const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold
 const FINISH_WORDS = ['done', 'xong', 'finish', 'completed', 'đã'];
@@ -337,6 +338,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         this.backlogCount = board.backlog.count;
         this.backlogItems = board.backlog.items.map(el => this.decorate(el));
         this.data = board.today.map(el => this.decorate(el));
+        this.relinkFocus();
         this.isLoadingResults = false;
         this.loadStats();
         this.maybeOpenTriage();
@@ -353,20 +355,24 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // ==========================================================================
 
   /**
-   * Danh sách hiển thị dưới Focus Bar.
-   *
-   * Ở chế độ mặc định (sắp theo weight) thì BỎ các việc đã nằm trên Focus Bar,
-   * vì `focus` là tập con của `today` và render cả hai sẽ hiện việc số 1 hai
-   * lần (§6.1). Ở chế độ kéo-thả thủ công thì render ĐỦ danh sách: việc trên
-   * Focus Bar có thể nằm giữa danh sách, và bỏ nó đi sẽ làm chỉ số kéo-thả
-   * lệch khỏi mảng thật.
+   * Danh sách hiển thị dưới Focus Bar: chỉ bỏ việc mà thẻ THỰC SỰ vẽ — luật
+   * nằm ở `listBelowFocusBar` cạnh chính thẻ đó.
    */
   get listItems(): TodoToday[] {
-    if (!this.settings.sortByWeight) {
-      return this.data;
-    }
-    const focusIds = new Set(this.focus.map(el => el.id));
-    return this.data.filter(el => !focusIds.has(el.id));
+    return listBelowFocusBar(this.data, this.focus, this.settings.sortByWeight);
+  }
+
+  /**
+   * `focus` phải trỏ vào CHÍNH các object trong `data`. Bản cũ giữ bản sao
+   * riêng từ `board.focus`, nên tick việc trên Focus Bar thì `data` đổi mà
+   * thẻ vẫn hiện trạng thái cũ cho tới lần tải sau, và sửa nội dung trên thẻ
+   * thì lưu nhầm bản trong `data`.
+   */
+  private relinkFocus(): void {
+    const byId = new Map(this.data.map(el => [el.id, el]));
+    this.focus = this.focus
+      .map(el => byId.get(el.id))
+      .filter((el): el is TodoToday => !!el);
   }
 
   /** Kéo-thả chỉ có nghĩa khi đang ở thứ tự thủ công. */
@@ -493,6 +499,9 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
   setChangedLineOnly(res: TodoToday, index: number) {
     this.data[index] = { ...res, checked: res.status === TDTD_STATUS.DONE };
+    // Thẻ Focus Bar đang giữ object cũ; không relink thì tick trên thẻ không
+    // hiện ra. KHÔNG sắp lại: việc vừa tick vẫn nằm trên thẻ để bỏ tick được.
+    this.relinkFocus();
   }
   updateStatus(item: TodoToday, index: number) {
     const req = {
@@ -528,6 +537,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       this.todoTodayService.deleteTodoToday(id).subscribe(
         (_: any) => {
           this.data = this.data.filter(el => el.id !== id);
+          // Xoá việc trên Focus Bar thì việc kế tiếp phải lên thay.
+          this.resort();
           this.isLoadingResults = false;
         },
         err => {
