@@ -7,9 +7,23 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { ReadingBook, ReadingBookStatus } from '@models/_index';
-import { AlertService, ReadingBookService } from '@services/_index';
+import { MatDialog } from '@angular/material/dialog';
+import { from, of } from 'rxjs';
+import { concatMap, switchMap, toArray } from 'rxjs/operators';
+import {
+  ReadingBook,
+  ReadingBookStatus,
+  ReadingHabit,
+  ReadingHabitEntry,
+} from '@models/_index';
+import {
+  AlertService,
+  ReadingBookService,
+  TodoRecurrenceService,
+} from '@services/_index';
 import { readingProgress } from '@services/reading-book/reading-book.service';
+import { editRecurrence } from '../todo-today/todo-recurrence-dialog/recurrence-editor';
+import { ReadingHabitPanelComponent } from './reading-habit-panel/reading-habit-panel.component';
 
 interface BookColumn {
   status: ReadingBookStatus;
@@ -26,11 +40,17 @@ interface BookColumn {
  *
  * Đổi trạng thái sang/khỏi READING sẽ tự đồng bộ vòng xoay đọc ở server, nên
  * đọc xong một cuốn là ngày mai vòng xoay đổi mà không phải sửa lịch lặp.
+ * Panel "Reading habit" ở đầu trang làm cơ chế đó NHÌN THẤY ĐƯỢC.
  */
 @Component({
   selector: 'app-reading-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatIconModule,
+    ReadingHabitPanelComponent,
+  ],
   templateUrl: './reading-list.component.html',
   styleUrls: ['./reading-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,6 +60,8 @@ export class ReadingListComponent implements OnInit {
   loading = false;
   editing: ReadingBook | null = null;
   draft: Partial<ReadingBook> = {};
+  habit: ReadingHabit | null = null;
+  habitBusy = false;
 
   readonly statuses: ReadingBookStatus[] = [
     'WISHLIST',
@@ -55,13 +77,16 @@ export class ReadingListComponent implements OnInit {
     // trong callback HTTP KHÔNG đánh dấu gì cả, nên phải tự gọi markForCheck.
     // Thiếu nó thì sách vẫn tải về đúng mà màn hình trống trơn cho tới khi
     // bấm một nút bất kỳ — sự kiện mới là thứ đánh dấu bẩn.
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private recurrenceService: TodoRecurrenceService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
     this.load();
   }
 
+  /** Sách và thói quen đọc luôn tải cùng nhau: đổi sách là đổi vòng đọc. */
   load(): void {
     this.loading = true;
     this.readingBookService.list().subscribe({
@@ -76,6 +101,137 @@ export class ReadingListComponent implements OnInit {
         this.alertService.showNoti('Could not load your books', 'danger');
       },
     });
+    this.loadHabit();
+  }
+
+  // ==========================================================================
+  // Thói quen đọc
+  // ==========================================================================
+
+  loadHabit(): void {
+    this.readingBookService.getHabit().subscribe({
+      next: habit => this.showHabit(habit),
+      error: () =>
+        this.alertService.showNoti(
+          'Could not load the reading habit',
+          'danger'
+        ),
+    });
+  }
+
+  private showHabit(habit: ReadingHabit): void {
+    this.habit = habit;
+    this.habitBusy = false;
+    this.cdr.markForCheck();
+  }
+
+  private habitFailed(fallback: string) {
+    return (err: { error?: { msg?: string } }) => {
+      this.habitBusy = false;
+      this.cdr.markForCheck();
+      this.alertService.showNoti(err?.error?.msg || fallback, 'danger');
+    };
+  }
+
+  createHabit(): void {
+    this.habitBusy = true;
+    this.readingBookService.createHabit().subscribe({
+      next: habit => {
+        this.showHabit(habit);
+        this.alertService.showNoti('Reading habit created', 'success');
+      },
+      error: this.habitFailed('Could not create the reading habit'),
+    });
+  }
+
+  setNext(entry: ReadingHabitEntry): void {
+    if (!entry.readingBookId) return;
+    this.habitBusy = true;
+    this.readingBookService.setNext(entry.readingBookId).subscribe({
+      next: habit => this.showHabit(habit),
+      error: this.habitFailed('Could not change the next book'),
+    });
+  }
+
+  toggleHabitActive(): void {
+    const recurrence = this.habit?.recurrence;
+    if (!recurrence?._id) return;
+    this.habitBusy = true;
+    this.recurrenceService
+      .update(recurrence._id, { active: !recurrence.active })
+      .subscribe({
+        next: () => this.loadHabit(),
+        error: this.habitFailed('Could not update the reading habit'),
+      });
+  }
+
+  /**
+   * Lịch, phút, weight: cùng hộp thoại với mọi lịch lặp. Sau khi lưu thì
+   * dựng lại vòng xoay một lần — bỏ các `targetMinutes` riêng từng cuốn mà
+   * seed đã chép vào, nếu không số phút vừa sửa không có tác dụng.
+   */
+  editSchedule(): void {
+    const recurrence = this.habit?.recurrence;
+    if (!recurrence) return;
+    editRecurrence(this.dialog, this.recurrenceService, recurrence)
+      .pipe(
+        switchMap(saved => {
+          if (!saved) return of(null);
+          return this.readingBookService
+            .syncRotation()
+            .pipe(switchMap(() => this.readingBookService.getHabit()));
+        })
+      )
+      .subscribe({
+        next: habit => {
+          if (!habit) return;
+          this.showHabit(habit);
+          this.alertService.showNoti('Reading habit saved', 'success');
+        },
+        error: this.habitFailed('Could not save the reading habit'),
+      });
+  }
+
+  /**
+   * Đổi chỗ một cuốn trong vòng đọc bằng `order` — vòng xoay dựng theo đúng
+   * trường đó, và server dựng lại mỗi khi nó đổi.
+   *
+   * Xếp lại TRONG dải `order` đang dùng, ép tăng ngặt: sách tạo trước đây
+   * thường cùng `order: 0`, và tráo hai số 0 cho nhau thì không đổi gì. Gửi
+   * TUẦN TỰ: mỗi PUT dựng lại vòng xoay, gửi song song thì hai lần dựng ghi
+   * đè lên nhau.
+   */
+  moveInRotation(event: { entry: ReadingHabitEntry; delta: number }): void {
+    const books = (this.habit?.rotation || [])
+      .map(entry => entry.book)
+      .filter((book): book is ReadingBook => !!book);
+    const at = books.findIndex(book => book._id === event.entry.readingBookId);
+    const to = at + event.delta;
+    if (at === -1 || to < 0 || to >= books.length) return;
+
+    const reordered = [...books];
+    [reordered[at], reordered[to]] = [reordered[to], reordered[at]];
+
+    const slots = books.map(book => book.order || 0).sort((a, b) => a - b);
+    for (let i = 1; i < slots.length; i += 1) {
+      if (slots[i] <= slots[i - 1]) slots[i] = slots[i - 1] + 1;
+    }
+    const updates = reordered
+      .map((book, i) => ({ book, order: slots[i] }))
+      .filter(({ book, order }) => book.order !== order);
+
+    this.habitBusy = true;
+    from(updates)
+      .pipe(
+        concatMap(({ book, order }) =>
+          this.readingBookService.update(book._id!, { order })
+        ),
+        toArray()
+      )
+      .subscribe({
+        next: () => this.load(),
+        error: this.habitFailed('Could not reorder the books'),
+      });
   }
 
   get columns(): BookColumn[] {

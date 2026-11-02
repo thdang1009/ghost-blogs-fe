@@ -1,3 +1,5 @@
+import { TodoRecurrence } from './todo-recurrence';
+
 export type ReadingBookStatus = 'WISHLIST' | 'READING' | 'DONE' | 'DROPPED';
 
 export class ReadingBook {
@@ -20,6 +22,28 @@ export class ReadingBook {
   bookId?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/** Một mục của vòng đọc, đã nối với cuốn sách thật (GET /habit). */
+export interface ReadingHabitEntry {
+  index: number;
+  label: string;
+  readingBookId: string | null;
+  cursor: string;
+  /** null nếu cuốn sách đã bị xoá mà vòng xoay chưa dựng lại. */
+  book: ReadingBook | null;
+}
+
+/**
+ * Thói quen đọc: MỘT TodoRecurrence `meta.kind: 'READING'`, vòng xoay dựng
+ * từ các cuốn READING theo `order`. `recurrence: null` = chưa có thói quen.
+ */
+export interface ReadingHabit {
+  recurrence: TodoRecurrence | null;
+  rotation: ReadingHabitEntry[];
+  /** Cuốn mà lần sinh việc kế tiếp sẽ dùng — cùng phép chọn với cron. */
+  nextIndex: number | null;
+  nextBook: ReadingBook | null;
 }
 
 export interface ReadingBookProgress {

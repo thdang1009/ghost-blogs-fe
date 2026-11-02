@@ -50,7 +50,16 @@
             {{ primary!.content }}
           </div>
         </ng-template>
-        <div class="focus-context">{{ contextLine }}</div>
+        <div class="focus-context">
+          <!-- Cuốn nào hôm nay là do Reading List quyết định. -->
+          <ng-container *ngIf="isReading(primary!)"
+            ><a class="focus-link" routerLink="/admin/tool/reading-list"
+              >📖 Reading List</a
+            >
+            &middot;
+          </ng-container>
+          {{ contextLine }}
+        </div>
       </div>
 
       <span class="focus-weight" [matTooltip]="labelOf(primary!)">{{

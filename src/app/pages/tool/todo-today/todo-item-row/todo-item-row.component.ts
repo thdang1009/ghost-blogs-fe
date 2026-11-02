@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { RouterLink } from '@angular/router';
 import { TodoToday } from '@models/_index';
 import { TDTD_STATUS } from '@shared/enum';
 import {
@@ -39,6 +40,7 @@ import {
     MatMenuModule,
     MatTooltipModule,
     DragDropModule,
+    RouterLink,
   ],
   templateUrl: './todo-item-row.component.html',
   styleUrls: ['./todo-item-row.component.scss'],
@@ -84,6 +86,11 @@ export class TodoItemRowComponent {
 
   get isRecurring(): boolean {
     return !!this.todo.recurrenceId;
+  }
+
+  /** Việc đọc hằng ngày — nhãn của nó dẫn tới Reading List. */
+  get isReading(): boolean {
+    return this.todo.meta?.kind === 'READING';
   }
 
   onToggle(): void {

@@ -184,6 +184,17 @@
   cursor: pointer;
 }
 
+.rec-readonly {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+
+  li {
+    padding: 2px 0;
+  }
+}
+
 .rec-derived {
   margin: 0 0 4px;
   display: flex;

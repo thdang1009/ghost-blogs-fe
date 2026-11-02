@@ -13,6 +13,16 @@
         </div>
       </div>
 
+      <app-reading-habit-panel
+        [habit]="habit"
+        [busy]="habitBusy"
+        (create)="createHabit()"
+        (editSchedule)="editSchedule()"
+        (toggleActive)="toggleHabitActive()"
+        (setNext)="setNext($event)"
+        (move)="moveInRotation($event)"
+      ></app-reading-habit-panel>
+
       <form class="rl-form" *ngIf="isFormOpen" (ngSubmit)="save()">
         <input
           type="text"
@@ -45,6 +55,14 @@
         >
           <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
         </select>
+        <!-- Bookmark sống trên cuốn sách; sửa ở đây là việc đọc ngày mai thấy. -->
+        <input
+          type="text"
+          placeholder="Bookmark (p.142, ch.7…)"
+          aria-label="Bookmark"
+          [(ngModel)]="draft.cursor"
+          [ngModelOptions]="{ standalone: true }"
+        />
         <textarea
           rows="2"
           placeholder="Note"

@@ -37,43 +37,45 @@ export function dayNames(days: number[]): string {
     .join(', ');
 }
 
+/** Chỉ phần "khi nào": 'Every day', 'T2, T4', … — không nhắc tới biến thể. */
+export function scheduleLabel(p: RecurrencePattern): string {
+  switch (p.type) {
+    case 'NONE':
+      return 'Never repeats';
+    case 'DAILY':
+      return 'Every day';
+    case 'EVERY_N_DAYS':
+      return `Every ${p.interval || 1} day(s)`;
+    case 'WEEKDAYS':
+      return 'T2–T6';
+    case 'WEEKENDS':
+      return 'T7, CN';
+    case 'DAYS_OF_WEEK':
+      return dayNames(p.daysOfWeek || []) || '(no day chosen)';
+    case 'MONTHLY_DAY':
+      return `Day ${p.dayOfMonth || '?'} of each month`;
+    case 'MONTHLY_QUOTA':
+      return `${dayNames(p.daysOfWeek || []) || '(no day)'} · at least ${
+        p.quotaPerMonth || '?'
+      }/month`;
+    default:
+      return '';
+  }
+}
+
 /**
- * Câu xem trước bằng tiếng người. Hàm thuần, dùng chung cho hộp thoại sửa
- * và danh sách "Repeats" — hai bản sao sẽ sớm nói hai câu khác nhau về cùng
- * một lịch.
+ * Câu xem trước bằng tiếng người. Hàm thuần, dùng chung cho hộp thoại sửa,
+ * danh sách "Repeats" và panel thói quen đọc — các bản sao sẽ sớm nói những
+ * câu khác nhau về cùng một lịch.
  */
 export function recurrencePreview(rec: TodoRecurrence): string {
   const p = effectivePattern(rec);
   const rotation = rec.rotation || [];
 
-  let when = '';
-  switch (p.type) {
-    case 'NONE':
-      return 'Never repeats — available as a quick-add chip only.';
-    case 'DAILY':
-      when = 'Every day';
-      break;
-    case 'EVERY_N_DAYS':
-      when = `Every ${p.interval || 1} day(s)`;
-      break;
-    case 'WEEKDAYS':
-      when = 'T2–T6';
-      break;
-    case 'WEEKENDS':
-      when = 'T7, CN';
-      break;
-    case 'DAYS_OF_WEEK':
-      when = dayNames(p.daysOfWeek || []) || '(no day chosen)';
-      break;
-    case 'MONTHLY_DAY':
-      when = `Day ${p.dayOfMonth || '?'} of each month`;
-      break;
-    case 'MONTHLY_QUOTA':
-      when = `${dayNames(p.daysOfWeek || []) || '(no day)'} · at least ${
-        p.quotaPerMonth || '?'
-      }/month`;
-      break;
+  if (p.type === 'NONE') {
+    return 'Never repeats — available as a quick-add chip only.';
   }
+  const when = scheduleLabel(p);
 
   if (!rotation.length) return when + '.';
 

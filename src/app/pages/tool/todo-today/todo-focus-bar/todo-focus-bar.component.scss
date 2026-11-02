@@ -110,6 +110,11 @@ $touch-target: 44px;
   text-overflow: ellipsis;
 }
 
+.focus-link {
+  color: #1565c0;
+  text-decoration: none;
+}
+
 .focus-weight {
   flex: 0 0 auto;
   min-width: 26px;

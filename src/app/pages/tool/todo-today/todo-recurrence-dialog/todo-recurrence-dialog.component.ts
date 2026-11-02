@@ -143,11 +143,38 @@ export class TodoRecurrenceDialogComponent {
   }
 
   /**
+   * Thói quen đọc: vòng xoay do Reading List dựng lại từ các cuốn đang đọc
+   * mỗi khi sách đổi. Sửa tay ở đây sẽ bị lần dựng kế tiếp ghi đè trong im
+   * lặng, nên danh sách chỉ đọc và KHÔNG được gửi lên khi lưu.
+   */
+  get isReading(): boolean {
+    return this.model.meta?.['kind'] === 'READING';
+  }
+
+  /**
    * Bài tập sửa được ở mọi biến thể, trừ vòng đọc sách — ở đó biến thể là
    * một cuốn sách, không phải một buổi tập.
    */
   get showsExercises(): boolean {
-    return this.model.meta?.['kind'] !== 'READING';
+    return !this.isReading;
+  }
+
+  /** Số phút một buổi đọc — con số được cộng vào cuốn sách khi tick. */
+  get targetMinutes(): number | null {
+    const value = this.model.meta?.['targetMinutes'];
+    return typeof value === 'number' ? value : null;
+  }
+
+  set targetMinutes(value: number | null) {
+    // Object MỚI: `model.meta` vẫn đang trỏ vào meta của recurrence gốc.
+    const minutes = Number(value);
+    this.model.meta = {
+      ...(this.model.meta || {}),
+      targetMinutes:
+        value === null || !Number.isFinite(minutes) || minutes <= 0
+          ? undefined
+          : minutes,
+    };
   }
 
   exercisesOf(variant: RecurrenceVariant): TodoWorkoutExercise[] {
@@ -284,6 +311,11 @@ export class TodoRecurrenceDialogComponent {
         type: 'DAYS_OF_WEEK',
         daysOfWeek: weekdayUnion(this.model.rotation),
       };
+    }
+    if (this.isReading) {
+      // Không gửi `rotation`: server giữ nguyên bản Reading List đã dựng. Bản
+      // trong hộp thoại có thể đã cũ (một buổi đọc vừa ghi bookmark chẳng hạn).
+      delete (result as Partial<TodoRecurrence>).rotation;
     }
     this.dialogRef.close(result);
   }

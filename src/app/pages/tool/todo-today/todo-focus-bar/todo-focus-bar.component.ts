@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 import { TodoSoftCap, TodoToday } from '@models/_index';
 import { TDTD_STATUS } from '@shared/enum';
 import {
@@ -75,6 +76,7 @@ export function listBelowFocusBar(
     MatIconModule,
     MatMenuModule,
     MatTooltipModule,
+    RouterLink,
   ],
   templateUrl: './todo-focus-bar.component.html',
   styleUrls: ['./todo-focus-bar.component.scss'],
@@ -145,6 +147,10 @@ export class TodoFocusBarComponent {
 
   isDone(todo: TodoToday): boolean {
     return todo.status === TDTD_STATUS.DONE;
+  }
+
+  isReading(todo: TodoToday): boolean {
+    return todo.meta?.kind === 'READING';
   }
 
   /**

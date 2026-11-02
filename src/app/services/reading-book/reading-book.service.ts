@@ -6,6 +6,7 @@ import {
   ReadingBook,
   ReadingBookProgress,
   ReadingBookStatus,
+  ReadingHabit,
   TodoApiResponse,
 } from '@models/_index';
 import { environment } from '@environments/environment';
@@ -61,6 +62,34 @@ export class ReadingBookService {
         tap(() => ghostLog('synced reading rotation')),
         map(res => res.data)
       );
+  }
+
+  // --- thói quen đọc ---
+  // Lịch, phút, weight, bật/tắt đi qua TodoRecurrenceService như mọi lịch lặp
+  // khác; ở đây chỉ có xem, tạo và chọn cuốn kế tiếp.
+
+  getHabit(): Observable<ReadingHabit> {
+    return this.http
+      .get<TodoApiResponse<ReadingHabit>>(`${apiUrl}/habit`)
+      .pipe(map(res => res.data));
+  }
+
+  /** Idempotent: đã có thì server trả lại đúng cái đang có. */
+  createHabit(): Observable<ReadingHabit> {
+    return this.http
+      .post<TodoApiResponse<ReadingHabit>>(`${apiUrl}/habit`, {})
+      .pipe(
+        tap(() => ghostLog('created reading habit')),
+        map(res => res.data)
+      );
+  }
+
+  setNext(readingBookId: string): Observable<ReadingHabit> {
+    return this.http
+      .post<TodoApiResponse<ReadingHabit>>(`${apiUrl}/habit/next`, {
+        readingBookId,
+      })
+      .pipe(map(res => res.data));
   }
 }
 

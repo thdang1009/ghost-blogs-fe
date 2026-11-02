@@ -52,8 +52,18 @@
       autosize
     ></textarea>
 
-    <div class="row-meta" *ngIf="variantLabel || todo.deferCount">
-      <span class="row-variant" *ngIf="variantLabel">{{ variantLabel }}</span>
+    <div class="row-meta" *ngIf="variantLabel || isReading || todo.deferCount">
+      <span class="row-variant" *ngIf="variantLabel && !isReading">{{
+        variantLabel
+      }}</span>
+      <!-- Cuốn nào hôm nay là do Reading List quyết định — dẫn thẳng tới đó. -->
+      <a
+        class="row-variant row-link"
+        *ngIf="isReading"
+        routerLink="/admin/tool/reading-list"
+        matTooltip="Reading List decides which book comes next"
+        >📖 {{ variantLabel || 'Reading List' }}</a
+      >
       <span
         class="row-deferred"
         *ngIf="todo.deferCount"
