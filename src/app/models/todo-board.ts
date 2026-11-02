@@ -22,6 +22,11 @@ export interface UserTodoSettings {
   endOfDayHour: number;
   autoDeferAtNight: boolean;
   maxDeferBeforeBacklog: number;
+  /**
+   * Ngày bắt đầu tháng chấm công (1..28, mặc định 21): kỳ chạy 21 -> 20 tháng
+   * sau, và hạn ngạch office đếm theo kỳ này.
+   */
+  officePeriodStartDay?: number;
 }
 
 /**
@@ -163,7 +168,12 @@ export interface TriageBatchResult {
 // --- Stats (§6.6) ---
 
 export interface OfficeQuotaStats {
+  /** Khoá 'YYYY-MM' của KỲ chấm công (tháng kỳ kết thúc), không phải tháng dương lịch. */
   month: string;
+  /** 'YYYY-MM-DD' ngày đầu / cuối kỳ, và nhãn hiển thị '21/10 – 20/11'. */
+  periodStart?: string;
+  periodEnd?: string;
+  periodLabel?: string;
   quota: number;
   done: number;
   remaining: number;

@@ -80,6 +80,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     endOfDayHour: 20,
     autoDeferAtNight: true,
     maxDeferBeforeBacklog: 3,
+    officePeriodStartDay: 21,
   };
 
   // --- Todo Today v2 ---
@@ -239,6 +240,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   updateSettings() {
     this.userSettingsService.updateTodoSettings(this.settings).subscribe(() => {
       this.alertService.showNoti('Settings updated', 'success');
+      // Đổi ngày đầu kỳ chấm công thì widget office đang đếm theo kỳ cũ.
+      if (this.settings.officePeriodStartDay !== this.statsPeriodStartDay) {
+        this.loadStats();
+      }
     });
   }
 
@@ -1164,9 +1169,13 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // Slice 10 — số liệu cho widget
   // ==========================================================================
 
+  /** Ngày đầu kỳ chấm công mà `stats` hiện tại được tính theo. */
+  private statsPeriodStartDay?: number;
+
   loadStats(): void {
     // Gọi RIÊNG khỏi /board: đây là truy vấn nặng hơn nhiều và màn hình vẽ
     // được mà chưa cần nó.
+    this.statsPeriodStartDay = this.settings.officePeriodStartDay;
     this.todoTodayService.getStats(4).subscribe({
       next: stats => (this.stats = stats),
       error: () => (this.stats = null),

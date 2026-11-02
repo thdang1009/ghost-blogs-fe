@@ -127,6 +127,25 @@
     </section>
 
     <section class="sheet-section">
+      <h6>Office</h6>
+      <p class="sheet-hint">
+        Attendance month runs from this day to the day before it next month (21
+        = 21/10 &ndash; 20/11). 1 = calendar month.
+      </p>
+      <label class="sheet-field">
+        <span>Month starts on day <small>1&ndash;28</small></span>
+        <input
+          type="number"
+          min="1"
+          max="28"
+          [(ngModel)]="settings.officePeriodStartDay"
+          [ngModelOptions]="{ standalone: true }"
+          (change)="onSettingsChange()"
+        />
+      </label>
+    </section>
+
+    <section class="sheet-section">
       <h6>Reward</h6>
       <div class="sheet-inline">
         <label class="sheet-field compact">

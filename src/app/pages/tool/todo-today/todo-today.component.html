@@ -234,8 +234,10 @@
             [class.at-risk]="office!.atRisk"
           >
             <div class="office-line">
+              <!-- Kỳ chấm công 21 -> 20, không phải tháng dương lịch. -->
               <span class="office-count"
-                >🏢 {{ office!.done }}/{{ office!.quota }} this month</span
+                >🏢 {{ office!.done }}/{{ office!.quota }} &middot;
+                {{ office!.periodLabel || 'this month' }}</span
               >
               <span class="office-sub"
                 >· {{ office!.workdaysLeft }} workdays left</span
