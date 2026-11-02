@@ -11,7 +11,8 @@ import {
   UserTodoSettings,
 } from '@models/_index';
 import { MatDialog } from '@angular/material/dialog';
-import { TodoRecurrenceDialogComponent } from './todo-recurrence-dialog/todo-recurrence-dialog.component';
+import { editRecurrence } from './todo-recurrence-dialog/recurrence-editor';
+import { TodoRepeatsDialogComponent } from './todo-repeats-dialog/todo-repeats-dialog.component';
 import * as dateFns from 'date-fns';
 import {
   AlertService,
@@ -1308,32 +1309,61 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // ==========================================================================
 
   openRecurrenceDialog(recurrence?: TodoRecurrence): void {
-    const ref = this.dialog.open(TodoRecurrenceDialogComponent, {
-      data: { recurrence },
-      width: '560px',
-      maxWidth: '100vw',
-      panelClass: 'todo-sheet-dialog',
+    editRecurrence(
+      this.dialog,
+      this.todoRecurrenceService,
+      recurrence
+    ).subscribe({
+      next: saved => {
+        if (!saved) return;
+        this.alertService.showNoti('Repeat saved', 'success');
+        this.searchToDoToDay();
+      },
+      error: err => {
+        // Server đặt tên trường trong thông báo lỗi để hiện thẳng ra đây.
+        this.alertService.showNoti(
+          err?.error?.msg || 'Could not save the repeat',
+          'danger'
+        );
+      },
     });
+  }
 
-    ref.afterClosed().subscribe((result?: TodoRecurrence) => {
-      if (!result) return;
-      const request = result._id
-        ? this.todoRecurrenceService.update(result._id, result)
-        : this.todoRecurrenceService.create(result);
-
-      request.subscribe({
-        next: () => {
-          this.alertService.showNoti('Repeat saved', 'success');
-          this.searchToDoToDay();
-        },
-        error: err => {
-          // Server đặt tên trường trong thông báo lỗi để hiện thẳng ra đây.
-          this.alertService.showNoti(
-            err?.error?.msg || 'Could not save the repeat',
-            'danger'
-          );
-        },
+  /** Danh sách mọi lịch lặp — mở từ bảng cài đặt (`⋯` trên Focus Bar). */
+  openRepeats(): void {
+    this.settingsOpen = false;
+    this.dialog
+      .open(TodoRepeatsDialogComponent, {
+        width: '560px',
+        maxWidth: '100vw',
+        panelClass: 'todo-sheet-dialog',
+        // Component tự đóng khi bấm backdrop / Esc để còn trả `changed`.
+        disableClose: true,
+      })
+      .afterClosed()
+      .subscribe((changed?: boolean) => {
+        if (changed) this.searchToDoToDay();
       });
+  }
+
+  /**
+   * "Edit repeat" trên một việc đã sinh: mở ĐÚNG lịch đã sinh ra nó. Không
+   * có GET theo id, nên lấy cả danh sách — vài chục dòng, một người dùng.
+   */
+  editRepeatOf(todo: TodoToday): void {
+    if (!todo.recurrenceId) return;
+    const id = String(todo.recurrenceId);
+    this.todoRecurrenceService.list().subscribe({
+      next: rows => {
+        const recurrence = rows.find(rec => rec._id === id);
+        if (!recurrence) {
+          this.alertService.showNoti('That repeat no longer exists', 'warning');
+          return;
+        }
+        this.openRecurrenceDialog(recurrence);
+      },
+      error: () =>
+        this.alertService.showNoti('Could not load that repeat', 'danger'),
     });
   }
 

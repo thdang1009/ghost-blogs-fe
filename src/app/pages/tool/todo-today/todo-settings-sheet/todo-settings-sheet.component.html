@@ -49,6 +49,15 @@
       </label>
     </section>
 
+    <!-- Nơi DUY NHẤT sửa được lịch lặp đã có (lịch tập, đọc sách, office…). -->
+    <section class="sheet-section">
+      <h6>Repeats</h6>
+      <p class="sheet-hint">Gym split, reading habit, office days&hellip;</p>
+      <button type="button" class="sheet-action" (click)="openRepeats.emit()">
+        <mat-icon>autorenew</mat-icon> Manage repeats
+      </button>
+    </section>
+
     <section class="sheet-section">
       <h6>Soft caps</h6>
       <p class="sheet-hint">Only used to warn you. Nothing is ever blocked.</p>

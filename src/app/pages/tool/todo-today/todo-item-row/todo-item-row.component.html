@@ -108,6 +108,9 @@
     <button mat-menu-item (click)="bumpWeight(1)" [disabled]="weight >= 5">
       <mat-icon>north</mat-icon> Raise weight
     </button>
+    <button mat-menu-item *ngIf="isRecurring" (click)="editRepeat.emit(todo)">
+      <mat-icon>autorenew</mat-icon> Edit repeat
+    </button>
     <button mat-menu-item class="row-danger" (click)="remove.emit(todo)">
       <mat-icon>delete</mat-icon> Delete
     </button>

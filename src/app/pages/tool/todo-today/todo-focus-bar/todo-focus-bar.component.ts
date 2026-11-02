@@ -100,6 +100,7 @@ export class TodoFocusBarComponent {
   @Output() remove = new EventEmitter<TodoToday>();
   @Output() deferTomorrow = new EventEmitter<TodoToday>();
   @Output() sendToBacklog = new EventEmitter<TodoToday>();
+  @Output() editRepeat = new EventEmitter<TodoToday>();
 
   readonly TDTD_STATUS = TDTD_STATUS;
   readonly weightOptions = WEIGHT_OPTIONS;

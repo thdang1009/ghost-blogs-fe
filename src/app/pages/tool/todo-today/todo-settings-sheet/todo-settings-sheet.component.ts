@@ -44,6 +44,7 @@ export class TodoSettingsSheetComponent {
   @Output() rewardSettingsChange = new EventEmitter<TodoRewardSettings>();
   @Output() toggleVoice = new EventEmitter<void>();
   @Output() generateReward = new EventEmitter<void>();
+  @Output() openRepeats = new EventEmitter<void>();
 
   onSettingsChange(): void {
     this.settingsChange.emit(this.settings);

@@ -9,19 +9,45 @@ import {
 } from '@angular/material/dialog';
 import {
   RecurrencePatternType,
+  RecurrenceVariant,
   RotationMode,
   TodoRecurrence,
+  TodoWorkoutExercise,
 } from '@models/_index';
+import {
+  WEEKDAYS,
+  dayNames,
+  recurrencePreview,
+  weekdayUnion,
+} from './recurrence.util';
 
-const WEEKDAYS = [
-  { iso: 1, label: 'T2' },
-  { iso: 2, label: 'T3' },
-  { iso: 3, label: 'T4' },
-  { iso: 4, label: 'T5' },
-  { iso: 5, label: 'T6' },
-  { iso: 6, label: 'T7' },
-  { iso: 7, label: 'CN' },
-];
+function copyVariantMeta(
+  entry: RecurrenceVariant
+): Record<string, unknown> | undefined {
+  if (!entry.meta) return entry.meta;
+  const meta: Record<string, unknown> = { ...entry.meta };
+  if (Array.isArray(meta['exercises'])) {
+    meta['exercises'] = (meta['exercises'] as TodoWorkoutExercise[]).map(
+      ex => ({ ...ex })
+    );
+  }
+  return meta;
+}
+
+/** Bỏ dòng bài tập chưa có tên — một dòng trống trên thẻ tập là nhiễu. */
+function cleanExercises(entry: RecurrenceVariant): RecurrenceVariant {
+  const list = entry.meta?.['exercises'];
+  if (!Array.isArray(list)) return entry;
+  return {
+    ...entry,
+    meta: {
+      ...entry.meta,
+      exercises: (list as TodoWorkoutExercise[])
+        .map(ex => ({ ...ex, name: (ex.name || '').trim() }))
+        .filter(ex => ex.name),
+    },
+  };
+}
 
 const PATTERNS: { value: RecurrencePatternType; label: string }[] = [
   { value: 'NONE', label: 'Never (template only)' },
@@ -41,6 +67,10 @@ const PATTERNS: { value: RecurrencePatternType; label: string }[] = [
  * Hai chế độ biến thể được hỏi TƯỜNG MINH, vì chúng hành xử rất khác nhau
  * (§D6). Ở chế độ "Theo thứ" có dải 7 ngày bên dưới, ngày trống ghi rõ
  * "nghỉ" — để gán nhầm thành thứ NHÌN THẤY ĐƯỢC, thay vì phải suy ra.
+ *
+ * Ở chế độ "Theo thứ", các thứ của lịch KHÔNG chọn riêng nữa: chúng là hợp
+ * các thứ của biến thể (server cũng tự suy ra như vậy). Hai nơi chọn thứ cho
+ * cùng một lịch là cách chắc chắn để một buổi tập lặng lẽ biến mất.
  */
 @Component({
   selector: 'app-todo-recurrence-dialog',
@@ -62,6 +92,8 @@ export class TodoRecurrenceDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: { recurrence?: TodoRecurrence }
   ) {
     const source = data?.recurrence;
+    // Chép SÂU tới từng bài tập: object truyền vào là bản đang hiện trên màn
+    // hình gọi; sửa nông rồi bấm Huỷ thì bản đó vẫn bị đổi.
     this.model = {
       ...new TodoRecurrence(),
       ...(source || {}),
@@ -69,6 +101,7 @@ export class TodoRecurrenceDialogComponent {
       rotation: (source?.rotation || []).map(entry => ({
         ...entry,
         daysOfWeek: [...(entry.daysOfWeek || [])],
+        meta: copyVariantMeta(entry),
       })),
     };
   }
@@ -102,6 +135,42 @@ export class TodoRecurrenceDialogComponent {
 
   get isWeekdayMode(): boolean {
     return this.model.rotationMode === 'WEEKDAY';
+  }
+
+  /** Thứ của lịch ở chế độ "Theo thứ" — chỉ đọc, suy từ biến thể. */
+  get derivedDaysLabel(): string {
+    return dayNames(weekdayUnion(this.model.rotation)) || '(no day yet)';
+  }
+
+  /**
+   * Bài tập sửa được ở mọi biến thể, trừ vòng đọc sách — ở đó biến thể là
+   * một cuốn sách, không phải một buổi tập.
+   */
+  get showsExercises(): boolean {
+    return this.model.meta?.['kind'] !== 'READING';
+  }
+
+  exercisesOf(variant: RecurrenceVariant): TodoWorkoutExercise[] {
+    const list = variant.meta?.['exercises'];
+    return Array.isArray(list) ? (list as TodoWorkoutExercise[]) : [];
+  }
+
+  addExercise(variant: RecurrenceVariant): void {
+    // Chỉ chạm vào `exercises`; mọi khoá meta khác (targetMinutes…) giữ y.
+    variant.meta = {
+      ...(variant.meta || {}),
+      exercises: [
+        ...this.exercisesOf(variant),
+        { name: '', sets: 3, reps: '' },
+      ],
+    };
+  }
+
+  removeExercise(variant: RecurrenceVariant, index: number): void {
+    variant.meta = {
+      ...(variant.meta || {}),
+      exercises: this.exercisesOf(variant).filter((_, i) => i !== index),
+    };
   }
 
   toggleDay(iso: number): void {
@@ -183,87 +252,40 @@ export class TodoRecurrenceDialogComponent {
     });
   }
 
-  /** Câu xem trước bằng tiếng người, tính từ chính pattern đang chọn. */
+  /** Câu xem trước bằng tiếng người, tính từ chính lịch đang sửa. */
   get preview(): string {
-    const p = this.model.pattern;
-    const dayNames = (days: number[]) =>
-      WEEKDAYS.filter(d => days.includes(d.iso))
-        .map(d => d.label)
-        .join(', ');
-
-    let when = '';
-    switch (p.type) {
-      case 'NONE':
-        return 'Never repeats — available as a quick-add chip only.';
-      case 'DAILY':
-        when = 'Every day';
-        break;
-      case 'EVERY_N_DAYS':
-        when = `Every ${p.interval || 1} day(s)`;
-        break;
-      case 'WEEKDAYS':
-        when = 'T2–T6';
-        break;
-      case 'WEEKENDS':
-        when = 'T7, CN';
-        break;
-      case 'DAYS_OF_WEEK':
-        when = dayNames(p.daysOfWeek || []) || '(no day chosen)';
-        break;
-      case 'MONTHLY_DAY':
-        when = `Day ${p.dayOfMonth || '?'} of each month`;
-        break;
-      case 'MONTHLY_QUOTA':
-        when = `${dayNames(p.daysOfWeek || []) || '(no day)'} · at least ${
-          p.quotaPerMonth || '?'
-        }/month`;
-        break;
-    }
-
-    if (!this.model.rotation.length) return when + '.';
-
-    if (this.isWeekdayMode) {
-      const assigned = this.model.rotation
-        .map(v => `${dayNames(v.daysOfWeek || [])} ${v.label}`.trim())
-        .filter(Boolean)
-        .join(', ');
-      const restDays = WEEKDAYS.filter(
-        d =>
-          !this.model.rotation.some(v => (v.daysOfWeek || []).includes(d.iso))
-      )
-        .map(d => d.label)
-        .join(', ');
-      return `${when} — ${assigned}.${restDays ? ` Nghỉ ${restDays}.` : ''}`;
-    }
-
-    const current = this.model.rotation[this.model.rotationIndex];
-    return (
-      `${when} — cycling ${this.model.rotation.map(v => v.label).join(' → ')}, ` +
-      `advancing ${
-        this.model.rotationAdvance === 'ON_DONE'
-          ? 'when completed'
-          : 'when spawned'
-      }. Next: ${current ? current.label : '—'}.`
-    );
+    return recurrencePreview(this.model);
   }
 
   get canSave(): boolean {
     if (!this.model.title.trim()) return false;
-    if (this.needsDays && !(this.model.pattern.daysOfWeek || []).length) {
-      return false;
-    }
     if (this.model.rotation.some(v => !v.label.trim())) return false;
-    if (
-      this.isWeekdayMode &&
-      this.model.rotation.some(v => !(v.daysOfWeek || []).length)
-    ) {
+    if (this.isWeekdayMode) {
+      // Lịch "Theo thứ" chạy đúng các thứ của biến thể: không biến thể nào
+      // thì không bao giờ chạy, và biến thể không có thứ là biến thể chết.
+      return (
+        this.model.rotation.length > 0 &&
+        this.model.rotation.every(v => (v.daysOfWeek || []).length)
+      );
+    }
+    if (this.needsDays && !(this.model.pattern.daysOfWeek || []).length) {
       return false;
     }
     return true;
   }
 
   save(): void {
-    this.dialogRef.close(this.model);
+    const result: TodoRecurrence = {
+      ...this.model,
+      rotation: this.model.rotation.map(cleanExercises),
+    };
+    if (this.isWeekdayMode) {
+      result.pattern = {
+        type: 'DAYS_OF_WEEK',
+        daysOfWeek: weekdayUnion(this.model.rotation),
+      };
+    }
+    this.dialogRef.close(result);
   }
 
   cancel(): void {

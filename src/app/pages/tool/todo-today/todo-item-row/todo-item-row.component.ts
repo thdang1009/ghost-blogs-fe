@@ -59,6 +59,8 @@ export class TodoItemRowComponent {
   @Output() remove = new EventEmitter<TodoToday>();
   @Output() deferTomorrow = new EventEmitter<TodoToday>();
   @Output() sendToBacklog = new EventEmitter<TodoToday>();
+  /** Việc sinh từ lịch lặp: mở đúng lịch đó để sửa. */
+  @Output() editRepeat = new EventEmitter<TodoToday>();
 
   readonly TDTD_STATUS = TDTD_STATUS;
   readonly weightOptions = WEIGHT_OPTIONS;
