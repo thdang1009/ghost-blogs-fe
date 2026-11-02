@@ -1,0 +1,108 @@
+<section class="rh" [class.is-off]="recurrence && !active">
+  <div class="rh-head">
+    <h5>📖 Reading habit</h5>
+    <span class="rh-state" *ngIf="recurrence">{{ active ? 'On' : 'Off' }}</span>
+    <span class="rh-spacer"></span>
+    <ng-container *ngIf="recurrence">
+      <button
+        type="button"
+        class="rh-btn"
+        [disabled]="busy"
+        (click)="toggleActive.emit()"
+      >
+        <mat-icon>{{ active ? 'pause' : 'play_arrow' }}</mat-icon>
+        {{ active ? 'Pause' : 'Resume' }}
+      </button>
+      <button
+        type="button"
+        class="rh-btn"
+        [disabled]="busy"
+        (click)="editSchedule.emit()"
+      >
+        <mat-icon>edit_calendar</mat-icon> Edit schedule
+      </button>
+    </ng-container>
+  </div>
+
+  <p class="rh-how">
+    Every day there is one task for the next book in the Reading column;
+    finishing it moves the turn to the next book.
+  </p>
+
+  <ng-container *ngIf="recurrence; else noHabit">
+    <div class="rh-facts">
+      <span>{{ schedule }}</span>
+      <span *ngIf="targetMinutes !== null"
+        >&middot; {{ targetMinutes }} min</span
+      >
+      <span>&middot; weight {{ recurrence.weight }}</span>
+    </div>
+
+    <div class="rh-next" *ngIf="nextTitle">
+      Next up: <strong>{{ nextTitle }}</strong>
+    </div>
+
+    <ol class="rh-rotation" *ngIf="habit!.rotation.length; else emptyRotation">
+      <li
+        *ngFor="
+          let entry of habit!.rotation;
+          let first = first;
+          let last = last;
+          trackBy: trackByIndex
+        "
+        [class.is-next]="isNext(entry)"
+      >
+        <span class="rh-title">{{ entry.book?.title || entry.label }}</span>
+        <span class="rh-cursor" *ngIf="entry.cursor">{{ entry.cursor }}</span>
+        <span class="rh-badge" *ngIf="isNext(entry)">next</span>
+        <button
+          type="button"
+          class="rh-link"
+          *ngIf="!isNext(entry) && entry.readingBookId"
+          [disabled]="busy"
+          (click)="setNext.emit(entry)"
+        >
+          Set as next
+        </button>
+        <span class="rh-moves">
+          <button
+            type="button"
+            [disabled]="busy || first || !entry.book"
+            (click)="move.emit({ entry: entry, delta: -1 })"
+            aria-label="Move up"
+          >
+            <mat-icon>north</mat-icon>
+          </button>
+          <button
+            type="button"
+            [disabled]="busy || last || !entry.book"
+            (click)="move.emit({ entry: entry, delta: 1 })"
+            aria-label="Move down"
+          >
+            <mat-icon>south</mat-icon>
+          </button>
+        </span>
+      </li>
+    </ol>
+
+    <ng-template #emptyRotation>
+      <p class="rh-empty">
+        No book is being read. Press <strong>Start</strong> on a book below and
+        it joins the rotation.
+      </p>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #noHabit>
+    <p class="rh-empty" *ngIf="habit">No reading habit yet.</p>
+    <button
+      type="button"
+      class="rh-btn primary"
+      *ngIf="habit"
+      [disabled]="busy"
+      (click)="create.emit()"
+    >
+      <mat-icon>add</mat-icon> Create reading habit
+    </button>
+  </ng-template>
+</section>

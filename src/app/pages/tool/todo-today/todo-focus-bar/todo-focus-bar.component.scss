@@ -110,6 +110,11 @@ $touch-target: 44px;
   text-overflow: ellipsis;
 }
 
+.focus-link {
+  color: #1565c0;
+  text-decoration: none;
+}
+
 .focus-weight {
   flex: 0 0 auto;
   min-width: 26px;
@@ -123,6 +128,47 @@ $touch-target: 44px;
   font-size: 13px;
   font-weight: 700;
   color: rgba(0, 0, 0, 0.7);
+}
+
+.focus-more {
+  flex: 0 0 auto;
+  width: 32px;
+  height: $touch-target;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+// Cùng chỗ, cùng cỡ chữ với tiêu đề — sửa xong thẻ không được cao thêm.
+.focus-edit {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  resize: none;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  padding: 2px 4px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.weight-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .focus-note {

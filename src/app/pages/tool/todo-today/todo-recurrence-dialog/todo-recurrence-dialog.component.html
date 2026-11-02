@@ -12,7 +12,17 @@
 
   <section class="rec-section">
     <h6>Repeat</h6>
-    <div class="rec-chips">
+
+    <!--
+      "Theo thứ": các thứ của lịch là hợp các thứ của biến thể bên dưới, chỉ
+      đọc. Chọn riêng ở đây từng làm lịch và biến thể trôi khỏi nhau.
+    -->
+    <p class="rec-derived" *ngIf="isWeekdayMode">
+      <strong>{{ derivedDaysLabel }}</strong>
+      <small>Set by the variants below &mdash; each variant's days.</small>
+    </p>
+
+    <div class="rec-chips" *ngIf="!isWeekdayMode">
       <button
         type="button"
         *ngFor="let p of patterns"
@@ -24,7 +34,7 @@
       </button>
     </div>
 
-    <label class="rec-field" *ngIf="needsInterval">
+    <label class="rec-field" *ngIf="needsInterval && !isWeekdayMode">
       <span>Every N days</span>
       <input
         type="number"
@@ -34,7 +44,7 @@
       />
     </label>
 
-    <div class="rec-days" *ngIf="needsDays">
+    <div class="rec-days" *ngIf="needsDays && !isWeekdayMode">
       <button
         type="button"
         *ngFor="let d of weekdays"
@@ -46,7 +56,7 @@
       </button>
     </div>
 
-    <label class="rec-field" *ngIf="needsDayOfMonth">
+    <label class="rec-field" *ngIf="needsDayOfMonth && !isWeekdayMode">
       <span>Day of month <small>31 clamps to month end</small></span>
       <input
         type="number"
@@ -57,7 +67,7 @@
       />
     </label>
 
-    <label class="rec-field" *ngIf="needsQuota">
+    <label class="rec-field" *ngIf="needsQuota && !isWeekdayMode">
       <span>Minimum per month</span>
       <input
         type="number"
@@ -70,85 +80,158 @@
 
   <section class="rec-section">
     <h6>Variants</h6>
-    <p class="rec-hint">
-      Optional. The two modes behave very differently &mdash; pick deliberately.
-    </p>
 
-    <div class="rec-modes">
-      <button
-        type="button"
-        class="rec-mode"
-        [class.is-on]="isWeekdayMode"
-        (click)="setMode('WEEKDAY')"
-      >
-        <strong>Theo th&#7913;</strong>
-        <small>Calendar decides. A day with no variant is a rest day.</small>
-      </button>
-      <button
-        type="button"
-        class="rec-mode"
-        [class.is-on]="!isWeekdayMode"
-        (click)="setMode('CYCLE')"
-      >
-        <strong>Xoay v&ograve;ng</strong>
-        <small
-          >Advances one at a time. Miss a day and it serves the same one.</small
-        >
-      </button>
-    </div>
+    <!--
+      Thói quen đọc: vòng xoay do Reading List dựng lại mỗi khi sách đổi. Sửa
+      tay ở đây sẽ bị lần dựng sau ghi đè trong im lặng — nên chỉ đọc.
+    -->
+    <ng-container *ngIf="isReading; else editableVariants">
+      <p class="rec-hint">
+        Managed by the Reading List &mdash; start, finish or reorder books
+        there.
+      </p>
+      <ol class="rec-readonly" *ngIf="model.rotation.length">
+        <li *ngFor="let v of model.rotation">{{ v.label }}</li>
+      </ol>
+      <p class="rec-hint" *ngIf="!model.rotation.length">
+        No book is being read yet.
+      </p>
+    </ng-container>
 
-    <p class="rec-warn" *ngIf="modeWarning">{{ modeWarning }}</p>
+    <ng-template #editableVariants>
+      <p class="rec-hint">
+        Optional. The two modes behave very differently &mdash; pick
+        deliberately.
+      </p>
 
-    <div class="rec-variant" *ngFor="let v of model.rotation; let i = index">
-      <div class="rec-variant-head">
-        <input
-          type="text"
-          placeholder="Variant label"
-          [(ngModel)]="v.label"
-          [ngModelOptions]="{ standalone: true }"
-        />
+      <div class="rec-modes">
         <button
           type="button"
-          *ngIf="!isWeekdayMode"
-          (click)="moveVariant(i, -1)"
-          title="Move up"
+          class="rec-mode"
+          [class.is-on]="isWeekdayMode"
+          (click)="setMode('WEEKDAY')"
         >
-          <mat-icon>north</mat-icon>
+          <strong>Theo th&#7913;</strong>
+          <small>Calendar decides. A day with no variant is a rest day.</small>
         </button>
         <button
           type="button"
-          *ngIf="!isWeekdayMode"
-          (click)="moveVariant(i, 1)"
-          title="Move down"
+          class="rec-mode"
+          [class.is-on]="!isWeekdayMode"
+          (click)="setMode('CYCLE')"
         >
-          <mat-icon>south</mat-icon>
-        </button>
-        <button
-          type="button"
-          class="rec-danger"
-          (click)="removeVariant(i)"
-          title="Remove"
-        >
-          <mat-icon>close</mat-icon>
+          <strong>Xoay v&ograve;ng</strong>
+          <small
+            >Advances one at a time. Miss a day and it serves the same
+            one.</small
+          >
         </button>
       </div>
 
-      <div class="rec-days" *ngIf="isWeekdayMode">
-        <button
-          type="button"
-          *ngFor="let d of weekdays"
-          class="rec-day"
-          [class.is-on]="isVariantDayOn(i, d.iso)"
-          (click)="toggleVariantDay(i, d.iso)"
-        >
-          {{ d.label }}
-        </button>
-      </div>
-    </div>
+      <p class="rec-warn" *ngIf="modeWarning">{{ modeWarning }}</p>
 
-    <button type="button" class="rec-add" (click)="addVariant()">
-      <mat-icon>add</mat-icon> Add variant
-    </button>
+      <!-- Nhắc "chưa tập X hơn 10 ngày" gom theo NHÃN biến thể. -->
+      <p class="rec-hint" *ngIf="isWeekdayMode && model.rotation.length">
+        Renaming a variant starts a fresh history for it: the &ldquo;not trained
+        for 10 days&rdquo; reminder counts by variant name.
+      </p>
+
+      <div class="rec-variant" *ngFor="let v of model.rotation; let i = index">
+        <div class="rec-variant-head">
+          <input
+            type="text"
+            placeholder="Variant label"
+            [(ngModel)]="v.label"
+            [ngModelOptions]="{ standalone: true }"
+          />
+          <button
+            type="button"
+            *ngIf="!isWeekdayMode"
+            (click)="moveVariant(i, -1)"
+            title="Move up"
+          >
+            <mat-icon>north</mat-icon>
+          </button>
+          <button
+            type="button"
+            *ngIf="!isWeekdayMode"
+            (click)="moveVariant(i, 1)"
+            title="Move down"
+          >
+            <mat-icon>south</mat-icon>
+          </button>
+          <button
+            type="button"
+            class="rec-danger"
+            (click)="removeVariant(i)"
+            title="Remove"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="rec-days" *ngIf="isWeekdayMode">
+          <button
+            type="button"
+            *ngFor="let d of weekdays"
+            class="rec-day"
+            [class.is-on]="isVariantDayOn(i, d.iso)"
+            (click)="toggleVariantDay(i, d.iso)"
+          >
+            {{ d.label }}
+          </button>
+        </div>
+
+        <!-- Bài tập ghi vào rotation[i].meta.exercises; khoá meta khác giữ y. -->
+        <details class="rec-exercises" *ngIf="showsExercises">
+          <summary>Exercises ({{ exercisesOf(v).length }})</summary>
+          <div
+            class="rec-exercise"
+            *ngFor="let ex of exercisesOf(v); let j = index"
+          >
+            <input
+              type="text"
+              class="rec-ex-name"
+              placeholder="Exercise"
+              [(ngModel)]="ex.name"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <input
+              type="number"
+              class="rec-ex-sets"
+              min="1"
+              placeholder="Sets"
+              aria-label="Sets"
+              [(ngModel)]="ex.sets"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <input
+              type="text"
+              class="rec-ex-reps"
+              placeholder="Reps"
+              aria-label="Reps"
+              [(ngModel)]="ex.reps"
+              [ngModelOptions]="{ standalone: true }"
+            />
+            <button
+              type="button"
+              class="rec-danger"
+              (click)="removeExercise(v, j)"
+              title="Remove exercise"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <button type="button" class="rec-add" (click)="addExercise(v)">
+            <mat-icon>add</mat-icon> Add exercise
+          </button>
+        </details>
+      </div>
+
+      <button type="button" class="rec-add" (click)="addVariant()">
+        <mat-icon>add</mat-icon> Add variant
+      </button>
+    </ng-template>
 
     <!-- Dải 7 ngày: gán nhầm phải NHÌN THẤY ĐƯỢC, không phải suy ra. -->
     <div class="rec-strip" *ngIf="isWeekdayMode && model.rotation.length">
@@ -195,6 +278,16 @@
         min="1"
         max="5"
         [(ngModel)]="model.weight"
+        [ngModelOptions]="{ standalone: true }"
+      />
+    </label>
+    <!-- Con số được cộng vào cuốn sách mỗi lần tick việc đọc. -->
+    <label class="rec-field" *ngIf="isReading">
+      <span>Target minutes <small>per session</small></span>
+      <input
+        type="number"
+        min="1"
+        [(ngModel)]="targetMinutes"
         [ngModelOptions]="{ standalone: true }"
       />
     </label>

@@ -1,0 +1,108 @@
+$touch-target: 40px;
+
+.rep-body {
+  max-width: 560px;
+}
+
+.rep-hint {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.rep-empty {
+  margin: 12px 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.rep-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.07);
+
+  &.is-off .rep-main {
+    opacity: 0.55;
+  }
+}
+
+.rep-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rep-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rep-pin {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.rep-off {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+// Câu xem trước có thể dài (lịch tập liệt kê cả ba buổi) — cho xuống dòng
+// thay vì cắt, đây là chỗ duy nhất đọc được toàn bộ lịch.
+.rep-preview {
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  overflow-wrap: anywhere;
+}
+
+.rep-actions {
+  flex: 0 0 auto;
+  display: flex;
+
+  button {
+    width: $touch-target;
+    height: $touch-target;
+    background: none;
+    border: 0;
+    color: rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+  }
+
+  .rep-danger {
+    color: #d32f2f;
+  }
+}
+
+.rep-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  &.primary {
+    background: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+  }
+}

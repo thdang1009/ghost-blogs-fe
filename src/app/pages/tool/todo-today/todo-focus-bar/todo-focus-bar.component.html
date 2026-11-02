@@ -29,16 +29,92 @@
       </button>
 
       <div class="focus-text">
-        <div class="focus-title" [class.is-done]="isDone(primary!)">
-          {{ primary!.content }}
+        <textarea
+          #editBox
+          *ngIf="editing; else titleView"
+          class="focus-edit"
+          rows="2"
+          aria-label="Edit task"
+          [(ngModel)]="draft"
+          [ngModelOptions]="{ standalone: true }"
+          (blur)="commitEdit()"
+          (keydown.enter)="$event.preventDefault(); commitEdit()"
+          (keydown.escape)="cancelEdit()"
+        ></textarea>
+        <ng-template #titleView>
+          <div
+            class="focus-title"
+            [class.is-done]="isDone(primary!)"
+            (dblclick)="startEdit()"
+          >
+            {{ primary!.content }}
+          </div>
+        </ng-template>
+        <div class="focus-context">
+          <!-- Cuốn nào hôm nay là do Reading List quyết định. -->
+          <ng-container *ngIf="isReading(primary!)"
+            ><a class="focus-link" routerLink="/admin/tool/reading-list"
+              >📖 Reading List</a
+            >
+            &middot;
+          </ng-container>
+          {{ contextLine }}
         </div>
-        <div class="focus-context">{{ contextLine }}</div>
       </div>
 
       <span class="focus-weight" [matTooltip]="labelOf(primary!)">{{
         weightOf(primary!)
       }}</span>
+
+      <!-- MỘT nút cho mọi thao tác của dòng việc: thẻ phải vừa 150px. -->
+      <button
+        type="button"
+        class="focus-more"
+        [disabled]="disabled"
+        [matMenuTriggerFor]="focusMenu"
+        [matMenuTriggerRestoreFocus]="false"
+        aria-label="More actions"
+      >
+        <mat-icon>more_vert</mat-icon>
+      </button>
     </div>
+
+    <mat-menu #focusMenu="matMenu">
+      <button mat-menu-item (click)="startEdit()">
+        <mat-icon>edit</mat-icon> Edit
+      </button>
+      <button mat-menu-item [matMenuTriggerFor]="focusWeightMenu">
+        <mat-icon>tune</mat-icon> Weight
+      </button>
+      <button mat-menu-item (click)="deferTomorrow.emit(primary!)">
+        <mat-icon>east</mat-icon> Tomorrow
+      </button>
+      <button mat-menu-item (click)="sendToBacklog.emit(primary!)">
+        <mat-icon>inbox</mat-icon> Backlog
+      </button>
+      <button
+        mat-menu-item
+        *ngIf="primary!.recurrenceId"
+        (click)="editRepeat.emit(primary!)"
+      >
+        <mat-icon>autorenew</mat-icon> Edit repeat
+      </button>
+      <button mat-menu-item class="row-danger" (click)="remove.emit(primary!)">
+        <mat-icon>delete</mat-icon> Delete
+      </button>
+    </mat-menu>
+
+    <mat-menu #focusWeightMenu="matMenu">
+      <button
+        mat-menu-item
+        *ngFor="let option of weightOptions"
+        [disabled]="option.value === weightOf(primary!)"
+        (click)="pickWeight(option.value)"
+      >
+        <span class="weight-dot" [style.background-color]="option.color"></span>
+        {{ option.value }} &middot; {{ option.label }}
+      </button>
+    </mat-menu>
 
     <!-- Hạn mức mềm: một dòng nhắc, không bao giờ chặn thao tác nào (§D1). -->
     <div class="focus-note" *ngIf="softCap?.exceeded">

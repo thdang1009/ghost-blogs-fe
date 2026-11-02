@@ -43,6 +43,7 @@ export class TodoListComponent {
   @Output() remove = new EventEmitter<TodoToday>();
   @Output() deferTomorrow = new EventEmitter<TodoToday>();
   @Output() sendToBacklog = new EventEmitter<TodoToday>();
+  @Output() editRepeat = new EventEmitter<TodoToday>();
   @Output() reorder = new EventEmitter<CdkDragDrop<TodoToday[]>>();
 
   trackById(_: number, todo: TodoToday): number | undefined {

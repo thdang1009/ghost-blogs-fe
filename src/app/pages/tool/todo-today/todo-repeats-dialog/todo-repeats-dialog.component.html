@@ -1,0 +1,64 @@
+<h2 mat-dialog-title>Repeats</h2>
+
+<mat-dialog-content class="rep-body">
+  <p class="rep-hint">
+    Everything that creates tasks on its own. Changes apply from the next spawn
+    &mdash; tasks already created (today's too) keep what they had.
+  </p>
+
+  <p class="rep-empty" *ngIf="loading && !rows.length">Loading&hellip;</p>
+  <p class="rep-empty" *ngIf="!loading && !rows.length">No repeats yet.</p>
+
+  <article
+    class="rep-row"
+    *ngFor="let rec of rows; trackBy: trackById"
+    [class.is-off]="!rec.active"
+  >
+    <div class="rep-main">
+      <div class="rep-title">
+        <span>{{ rec.title }}</span>
+        <mat-icon *ngIf="rec.pinned" class="rep-pin" title="Pinned to quick add"
+          >push_pin</mat-icon
+        >
+        <span class="rep-off" *ngIf="!rec.active">Off</span>
+      </div>
+      <div class="rep-preview">{{ previewOf(rec) }}</div>
+    </div>
+
+    <div class="rep-actions">
+      <button
+        type="button"
+        [disabled]="busyId === rec._id"
+        (click)="edit(rec)"
+        title="Edit"
+      >
+        <mat-icon>edit</mat-icon>
+      </button>
+      <button
+        type="button"
+        [disabled]="busyId === rec._id"
+        (click)="toggleActive(rec)"
+        [title]="rec.active ? 'Pause' : 'Resume'"
+      >
+        <mat-icon>{{ rec.active ? 'pause' : 'play_arrow' }}</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="rep-danger"
+        *ngIf="rec.active"
+        [disabled]="busyId === rec._id"
+        (click)="remove(rec)"
+        title="Delete"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </article>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button type="button" class="rep-btn" (click)="edit()">
+    <mat-icon>add</mat-icon> New repeat
+  </button>
+  <button type="button" class="rep-btn primary" (click)="close()">Done</button>
+</mat-dialog-actions>

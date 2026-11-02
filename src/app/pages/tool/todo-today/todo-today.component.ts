@@ -11,7 +11,8 @@ import {
   UserTodoSettings,
 } from '@models/_index';
 import { MatDialog } from '@angular/material/dialog';
-import { TodoRecurrenceDialogComponent } from './todo-recurrence-dialog/todo-recurrence-dialog.component';
+import { editRecurrence } from './todo-recurrence-dialog/recurrence-editor';
+import { TodoRepeatsDialogComponent } from './todo-repeats-dialog/todo-repeats-dialog.component';
 import * as dateFns from 'date-fns';
 import {
   AlertService,
@@ -31,6 +32,7 @@ import { TDTD_STATUS } from '@shared/enum';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import * as dateFnsFormat from 'date-fns';
 import { effectiveWeight, sortTodos } from './todo-weight.util';
+import { listBelowFocusBar } from './todo-focus-bar/todo-focus-bar.component';
 
 const SIMILARITY_THRESHOLD = 80; // 80% similarity threshold
 const FINISH_WORDS = ['done', 'xong', 'finish', 'completed', 'đã'];
@@ -79,6 +81,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
     endOfDayHour: 20,
     autoDeferAtNight: true,
     maxDeferBeforeBacklog: 3,
+    officePeriodStartDay: 21,
   };
 
   // --- Todo Today v2 ---
@@ -238,6 +241,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   updateSettings() {
     this.userSettingsService.updateTodoSettings(this.settings).subscribe(() => {
       this.alertService.showNoti('Settings updated', 'success');
+      // Đổi ngày đầu kỳ chấm công thì widget office đang đếm theo kỳ cũ.
+      if (this.settings.officePeriodStartDay !== this.statsPeriodStartDay) {
+        this.loadStats();
+      }
     });
   }
 
@@ -337,6 +344,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
         this.backlogCount = board.backlog.count;
         this.backlogItems = board.backlog.items.map(el => this.decorate(el));
         this.data = board.today.map(el => this.decorate(el));
+        this.relinkFocus();
         this.isLoadingResults = false;
         this.loadStats();
         this.maybeOpenTriage();
@@ -353,20 +361,24 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // ==========================================================================
 
   /**
-   * Danh sách hiển thị dưới Focus Bar.
-   *
-   * Ở chế độ mặc định (sắp theo weight) thì BỎ các việc đã nằm trên Focus Bar,
-   * vì `focus` là tập con của `today` và render cả hai sẽ hiện việc số 1 hai
-   * lần (§6.1). Ở chế độ kéo-thả thủ công thì render ĐỦ danh sách: việc trên
-   * Focus Bar có thể nằm giữa danh sách, và bỏ nó đi sẽ làm chỉ số kéo-thả
-   * lệch khỏi mảng thật.
+   * Danh sách hiển thị dưới Focus Bar: chỉ bỏ việc mà thẻ THỰC SỰ vẽ — luật
+   * nằm ở `listBelowFocusBar` cạnh chính thẻ đó.
    */
   get listItems(): TodoToday[] {
-    if (!this.settings.sortByWeight) {
-      return this.data;
-    }
-    const focusIds = new Set(this.focus.map(el => el.id));
-    return this.data.filter(el => !focusIds.has(el.id));
+    return listBelowFocusBar(this.data, this.focus, this.settings.sortByWeight);
+  }
+
+  /**
+   * `focus` phải trỏ vào CHÍNH các object trong `data`. Bản cũ giữ bản sao
+   * riêng từ `board.focus`, nên tick việc trên Focus Bar thì `data` đổi mà
+   * thẻ vẫn hiện trạng thái cũ cho tới lần tải sau, và sửa nội dung trên thẻ
+   * thì lưu nhầm bản trong `data`.
+   */
+  private relinkFocus(): void {
+    const byId = new Map(this.data.map(el => [el.id, el]));
+    this.focus = this.focus
+      .map(el => byId.get(el.id))
+      .filter((el): el is TodoToday => !!el);
   }
 
   /** Kéo-thả chỉ có nghĩa khi đang ở thứ tự thủ công. */
@@ -493,6 +505,9 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
   setChangedLineOnly(res: TodoToday, index: number) {
     this.data[index] = { ...res, checked: res.status === TDTD_STATUS.DONE };
+    // Thẻ Focus Bar đang giữ object cũ; không relink thì tick trên thẻ không
+    // hiện ra. KHÔNG sắp lại: việc vừa tick vẫn nằm trên thẻ để bỏ tick được.
+    this.relinkFocus();
   }
   updateStatus(item: TodoToday, index: number) {
     const req = {
@@ -528,6 +543,8 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       this.todoTodayService.deleteTodoToday(id).subscribe(
         (_: any) => {
           this.data = this.data.filter(el => el.id !== id);
+          // Xoá việc trên Focus Bar thì việc kế tiếp phải lên thay.
+          this.resort();
           this.isLoadingResults = false;
         },
         err => {
@@ -1153,9 +1170,13 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // Slice 10 — số liệu cho widget
   // ==========================================================================
 
+  /** Ngày đầu kỳ chấm công mà `stats` hiện tại được tính theo. */
+  private statsPeriodStartDay?: number;
+
   loadStats(): void {
     // Gọi RIÊNG khỏi /board: đây là truy vấn nặng hơn nhiều và màn hình vẽ
     // được mà chưa cần nó.
+    this.statsPeriodStartDay = this.settings.officePeriodStartDay;
     this.todoTodayService.getStats(4).subscribe({
       next: stats => (this.stats = stats),
       error: () => (this.stats = null),
@@ -1288,32 +1309,61 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   // ==========================================================================
 
   openRecurrenceDialog(recurrence?: TodoRecurrence): void {
-    const ref = this.dialog.open(TodoRecurrenceDialogComponent, {
-      data: { recurrence },
-      width: '560px',
-      maxWidth: '100vw',
-      panelClass: 'todo-sheet-dialog',
+    editRecurrence(
+      this.dialog,
+      this.todoRecurrenceService,
+      recurrence
+    ).subscribe({
+      next: saved => {
+        if (!saved) return;
+        this.alertService.showNoti('Repeat saved', 'success');
+        this.searchToDoToDay();
+      },
+      error: err => {
+        // Server đặt tên trường trong thông báo lỗi để hiện thẳng ra đây.
+        this.alertService.showNoti(
+          err?.error?.msg || 'Could not save the repeat',
+          'danger'
+        );
+      },
     });
+  }
 
-    ref.afterClosed().subscribe((result?: TodoRecurrence) => {
-      if (!result) return;
-      const request = result._id
-        ? this.todoRecurrenceService.update(result._id, result)
-        : this.todoRecurrenceService.create(result);
-
-      request.subscribe({
-        next: () => {
-          this.alertService.showNoti('Repeat saved', 'success');
-          this.searchToDoToDay();
-        },
-        error: err => {
-          // Server đặt tên trường trong thông báo lỗi để hiện thẳng ra đây.
-          this.alertService.showNoti(
-            err?.error?.msg || 'Could not save the repeat',
-            'danger'
-          );
-        },
+  /** Danh sách mọi lịch lặp — mở từ bảng cài đặt (`⋯` trên Focus Bar). */
+  openRepeats(): void {
+    this.settingsOpen = false;
+    this.dialog
+      .open(TodoRepeatsDialogComponent, {
+        width: '560px',
+        maxWidth: '100vw',
+        panelClass: 'todo-sheet-dialog',
+        // Component tự đóng khi bấm backdrop / Esc để còn trả `changed`.
+        disableClose: true,
+      })
+      .afterClosed()
+      .subscribe((changed?: boolean) => {
+        if (changed) this.searchToDoToDay();
       });
+  }
+
+  /**
+   * "Edit repeat" trên một việc đã sinh: mở ĐÚNG lịch đã sinh ra nó. Không
+   * có GET theo id, nên lấy cả danh sách — vài chục dòng, một người dùng.
+   */
+  editRepeatOf(todo: TodoToday): void {
+    if (!todo.recurrenceId) return;
+    const id = String(todo.recurrenceId);
+    this.todoRecurrenceService.list().subscribe({
+      next: rows => {
+        const recurrence = rows.find(rec => rec._id === id);
+        if (!recurrence) {
+          this.alertService.showNoti('That repeat no longer exists', 'warning');
+          return;
+        }
+        this.openRecurrenceDialog(recurrence);
+      },
+      error: () =>
+        this.alertService.showNoti('Could not load that repeat', 'danger'),
     });
   }
 

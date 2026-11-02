@@ -132,6 +132,12 @@
             [disabled]="isLoadingResults"
             (toggle)="onToggle($event)"
             (openSettings)="openSettings()"
+            (contentChange)="onContentChange($event)"
+            (weightChange)="onWeightChange($event)"
+            (remove)="deleteTDTD($event)"
+            (deferTomorrow)="onDeferTomorrow($event)"
+            (sendToBacklog)="onSendToBacklog($event)"
+            (editRepeat)="editRepeatOf($event)"
           ></app-todo-focus-bar>
 
           <div class="todo-strip">
@@ -229,8 +235,10 @@
             [class.at-risk]="office!.atRisk"
           >
             <div class="office-line">
+              <!-- Kỳ chấm công 21 -> 20, không phải tháng dương lịch. -->
               <span class="office-count"
-                >🏢 {{ office!.done }}/{{ office!.quota }} this month</span
+                >🏢 {{ office!.done }}/{{ office!.quota }} &middot;
+                {{ office!.periodLabel || 'this month' }}</span
               >
               <span class="office-sub"
                 >· {{ office!.workdaysLeft }} workdays left</span
@@ -295,6 +303,7 @@
               (remove)="deleteTDTD($event)"
               (deferTomorrow)="onDeferTomorrow($event)"
               (sendToBacklog)="onSendToBacklog($event)"
+              (editRepeat)="editRepeatOf($event)"
               (reorder)="onReorder($event)"
             ></app-todo-list>
 
@@ -320,6 +329,7 @@
                 (remove)="deleteTDTD($event)"
                 (deferTomorrow)="onDeferTomorrow($event)"
                 (sendToBacklog)="onSendToBacklog($event)"
+                (editRepeat)="editRepeatOf($event)"
               ></app-todo-list>
             </details>
           </div>
@@ -446,6 +456,7 @@
       (rewardSettingsChange)="updateRewardSettings()"
       (toggleVoice)="toggleVoiceRecognition()"
       (generateReward)="generateReward()"
+      (openRepeats)="openRepeats()"
     ></app-todo-settings-sheet>
   </div>
 </div>
