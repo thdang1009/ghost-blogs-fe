@@ -38,3 +38,4 @@ export * from './seo/seo.service';
 export * from './todo-recurrence/todo-recurrence.service';
 export * from './reading-book/reading-book.service';
 export * from './novelty/novelty.service';
+export * from './people/people.service';

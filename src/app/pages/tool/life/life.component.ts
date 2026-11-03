@@ -8,6 +8,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoveltyTabComponent } from './novelty-tab/novelty-tab.component';
+import { PeopleTabComponent } from './people-tab/people-tab.component';
 
 export type LifeTab = 'novelty' | 'people';
 
@@ -21,7 +22,7 @@ export type LifeTab = 'novelty' | 'people';
 @Component({
   selector: 'app-life',
   standalone: true,
-  imports: [CommonModule, NoveltyTabComponent],
+  imports: [CommonModule, NoveltyTabComponent, PeopleTabComponent],
   templateUrl: './life.component.html',
   styleUrls: ['./life.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

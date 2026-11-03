@@ -1,0 +1,105 @@
+<div class="pp-toolbar">
+  <span class="pp-muted" *ngIf="dashboard?.upcoming?.length as n">
+    {{ n }} hẹn sắp tới
+  </span>
+  <button type="button" class="lf-btn primary" (click)="startAdd()">
+    <mat-icon>person_add</mat-icon> Thêm người
+  </button>
+</div>
+
+<form class="pp-form" *ngIf="formOpen" (ngSubmit)="save()">
+  <input
+    type="text"
+    name="name"
+    maxlength="120"
+    placeholder="Tên"
+    aria-label="Tên"
+    [(ngModel)]="draft.name"
+  />
+  <select
+    name="relationType"
+    aria-label="Quan hệ"
+    [(ngModel)]="draft.relationType"
+  >
+    <option *ngFor="let r of relations" [value]="r.value">{{ r.label }}</option>
+  </select>
+  <div class="pp-form-actions">
+    <button type="button" class="lf-btn" (click)="formOpen = false">Huỷ</button>
+    <button type="submit" class="lf-btn primary" [disabled]="saving">
+      Lưu
+    </button>
+  </div>
+</form>
+
+<p class="pp-state" *ngIf="loading && !dashboard">Đang tải…</p>
+<div class="pp-state error" *ngIf="loadError">
+  Không tải được danh sách.
+  <button type="button" class="lf-btn" (click)="load()">Thử lại</button>
+</div>
+
+<ng-container *ngIf="dashboard && !loadError">
+  <p class="pp-empty" *ngIf="!dashboard.people.length">
+    Chưa có ai. Thêm những người bạn muốn gặp thường xuyên hơn.
+  </p>
+
+  <ng-container *ngIf="dashboard.people.length">
+    <h5 class="pp-h">Có hẹn ({{ withPlan.length }})</h5>
+    <p class="pp-empty" *ngIf="!withPlan.length">Chưa hẹn ai.</p>
+    <button
+      type="button"
+      class="pp-row"
+      *ngFor="let p of withPlan; trackBy: trackById"
+      (click)="open(p)"
+    >
+      <span class="pp-name">{{ p.name }}</span>
+      <span class="pp-sub">
+        {{ relationLabel(p.relationType) }} · hẹn
+        {{ relativeDay(p.nextMeetingAt) }}
+      </span>
+    </button>
+
+    <h5 class="pp-h">Chưa có hẹn ({{ withoutPlan.length }})</h5>
+    <p class="pp-empty" *ngIf="!withoutPlan.length">Ai cũng đã có hẹn.</p>
+    <button
+      type="button"
+      class="pp-row"
+      *ngFor="let p of withoutPlan; trackBy: trackById"
+      (click)="open(p)"
+    >
+      <span class="pp-name">{{ p.name }}</span>
+      <span class="pp-sub">
+        {{ relationLabel(p.relationType) }} · {{ lastMetLabel(p) }}
+      </span>
+    </button>
+  </ng-container>
+
+  <button
+    type="button"
+    class="pp-toggle"
+    (click)="toggleArchived()"
+    [attr.aria-expanded]="showArchived"
+  >
+    <mat-icon>{{ showArchived ? 'expand_less' : 'expand_more' }}</mat-icon>
+    Đã lưu trữ<ng-container *ngIf="archived">
+      ({{ archived.length }})</ng-container
+    >
+  </button>
+  <ng-container *ngIf="showArchived">
+    <p class="pp-empty" *ngIf="archived && !archived.length">Không có ai.</p>
+    <button
+      type="button"
+      class="pp-row muted"
+      *ngFor="let p of archived || []; trackBy: trackById"
+      (click)="open(p)"
+    >
+      <span class="pp-name">{{ p.name }}</span>
+      <span class="pp-sub">{{ relationLabel(p.relationType) }}</span>
+    </button>
+  </ng-container>
+</ng-container>
+
+<app-person-sheet
+  [person]="selected"
+  (closed)="closeSheet()"
+  (changed)="onSheetChanged()"
+></app-person-sheet>

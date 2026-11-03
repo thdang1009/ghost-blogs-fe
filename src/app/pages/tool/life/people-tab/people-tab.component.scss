@@ -1,0 +1,119 @@
+@use '../life-shared';
+
+:host {
+  display: block;
+  padding: 12px 16px 24px;
+}
+
+.pp-muted {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.pp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+
+  .lf-btn {
+    margin-left: auto;
+  }
+}
+
+.pp-form {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.07);
+
+  input,
+  select {
+    width: 100%;
+    min-height: 38px;
+    padding: 6px 8px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+  }
+}
+
+.pp-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pp-state {
+  padding: 12px 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+
+  &.error {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.pp-h {
+  margin: 16px 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.pp-empty {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.4);
+}
+
+// Cả dòng là một nút: chạm vào đâu cũng mở thẻ. Cao ≥ 48px cho ngón tay.
+.pp-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 48px;
+  margin-bottom: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+
+  &.muted {
+    background: #fafafa;
+  }
+}
+
+.pp-name {
+  font-size: 14px;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.pp-sub {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.pp-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 16px;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}

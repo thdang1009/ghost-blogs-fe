@@ -1,0 +1,340 @@
+<div class="ps-backdrop" *ngIf="person" (click)="closed.emit()"></div>
+
+<div
+  class="ps"
+  [class.is-open]="!!person"
+  role="dialog"
+  [attr.aria-label]="person?.name"
+>
+  <ng-container *ngIf="person as p">
+    <div class="ps-head">
+      <div>
+        <h5>{{ p.name }}</h5>
+        <p>
+          {{ relationLabel(p.relationType) }} · {{ lastMetLabel(p) }}
+          <span *ngIf="p.archived"> · đã lưu trữ</span>
+        </p>
+      </div>
+      <button
+        type="button"
+        class="ps-close"
+        (click)="closed.emit()"
+        aria-label="Đóng"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="ps-body">
+      <!-- Hẹn ---------------------------------------------------------- -->
+      <div class="ps-next">
+        <mat-icon>event</mat-icon>
+        <span *ngIf="p.nextMeetingAt; else noPlan"
+          >Hẹn: {{ relativeDay(p.nextMeetingAt) }} (trên Todo Today)</span
+        >
+        <ng-template #noPlan><span>Chưa có hẹn</span></ng-template>
+      </div>
+
+      <!-- Tần suất: tay và đo được đứng cạnh nhau ----------------------- -->
+      <div class="ps-freq">
+        <div>
+          <span class="ps-k">Bạn ước lượng</span>
+          <span class="ps-v">{{ cadenceLabel(p.cadence) || '—' }}</span>
+        </div>
+        <div>
+          <span class="ps-k">Đo được</span>
+          <span class="ps-v" *ngIf="p.stats.actual; else notEnough">
+            {{ perYearLabel(p.stats.actual.perYear) }}
+            <small
+              >({{ p.stats.actual.meetings }} lần /
+              {{ p.stats.actual.windowDays }} ngày)</small
+            >
+          </span>
+          <ng-template #notEnough>
+            <span class="ps-v ps-muted">Chưa đủ dữ liệu</span>
+          </ng-template>
+        </div>
+        <div>
+          <span class="ps-k">Mong muốn</span>
+          <span class="ps-v">{{ desiredLabel || '—' }}</span>
+        </div>
+      </div>
+      <p class="ps-hint" *ngIf="!p.stats.actual">
+        Số đo được cần ít nhất 3 lần gặp trong 90 ngày.
+      </p>
+
+      <!-- Chỉ ở đây, chỉ khi chủ nhân tự nhập số năm. -->
+      <div class="ps-remaining" *ngIf="remainingLabel(p) as label">
+        <strong>{{ label }}</strong>
+        <small *ngIf="basisLabel">{{ basisLabel }}</small>
+      </div>
+
+      <!-- Hành động nhanh ------------------------------------------------ -->
+      <div class="ps-actions">
+        <button
+          type="button"
+          [class.on]="panel === 'record'"
+          (click)="toggle('record')"
+        >
+          <mat-icon>check</mat-icon> Ghi lần gặp
+        </button>
+        <button
+          type="button"
+          [class.on]="panel === 'schedule'"
+          (click)="toggle('schedule')"
+        >
+          <mat-icon>event</mat-icon> Hẹn gặp
+        </button>
+        <button type="button" [disabled]="busy" (click)="contact()">
+          📞 Nhắn tin
+        </button>
+        <button
+          type="button"
+          [class.on]="panel === 'edit'"
+          (click)="toggle('edit')"
+        >
+          <mat-icon>tune</mat-icon> Nhịp &amp; thông tin
+        </button>
+      </div>
+
+      <form
+        class="ps-panel"
+        *ngIf="panel === 'record'"
+        (ngSubmit)="saveRecord()"
+      >
+        <label>
+          Ngày
+          <input
+            type="date"
+            name="date"
+            [max]="today"
+            [(ngModel)]="record.date"
+          />
+        </label>
+        <label>
+          Bao lâu (phút)
+          <input
+            type="number"
+            name="duration"
+            min="0"
+            max="1440"
+            [(ngModel)]="record.durationMinutes"
+          />
+        </label>
+        <label class="wide">
+          Ghi chú
+          <textarea
+            rows="2"
+            name="note"
+            maxlength="2000"
+            [(ngModel)]="record.note"
+          ></textarea>
+        </label>
+        <div class="ps-panel-actions">
+          <button type="submit" class="primary" [disabled]="busy">Lưu</button>
+        </div>
+      </form>
+
+      <form
+        class="ps-panel"
+        *ngIf="panel === 'schedule'"
+        (ngSubmit)="saveSchedule()"
+      >
+        <label class="wide">
+          Ngày hẹn — thành một việc trên Todo Today
+          <input
+            type="date"
+            name="scheduleDate"
+            [min]="today"
+            [(ngModel)]="scheduleDate"
+          />
+        </label>
+        <div class="ps-panel-actions">
+          <button type="submit" class="primary" [disabled]="busy">
+            Lưu hẹn
+          </button>
+        </div>
+      </form>
+
+      <form
+        class="ps-panel"
+        *ngIf="panel === 'edit' && edit"
+        (ngSubmit)="saveEdit()"
+      >
+        <label class="wide">
+          Tên
+          <input
+            type="text"
+            name="name"
+            maxlength="120"
+            [(ngModel)]="edit.name"
+          />
+        </label>
+        <label class="wide">
+          Quan hệ
+          <select name="relationType" [(ngModel)]="edit.relationType">
+            <option *ngFor="let r of relations" [value]="r.value">
+              {{ r.label }}
+            </option>
+          </select>
+        </label>
+
+        <fieldset class="wide">
+          <legend>Thực tế bạn gặp (ước lượng)</legend>
+          <input
+            type="number"
+            name="cadenceCount"
+            min="0"
+            placeholder="—"
+            aria-label="Số lần"
+            [(ngModel)]="edit.cadence.count"
+          />
+          <span>lần /</span>
+          <select
+            name="cadencePer"
+            aria-label="Mỗi"
+            [(ngModel)]="edit.cadence.per"
+          >
+            <option *ngFor="let o of perOptions" [value]="o.value">
+              {{ o.label }}
+            </option>
+          </select>
+        </fieldset>
+
+        <fieldset class="wide">
+          <legend>Mong muốn</legend>
+          <input
+            type="number"
+            name="desiredCount"
+            min="0"
+            placeholder="—"
+            aria-label="Số lần"
+            [(ngModel)]="edit.desired.count"
+          />
+          <span>lần /</span>
+          <select
+            name="desiredPer"
+            aria-label="Mỗi"
+            [(ngModel)]="edit.desired.per"
+          >
+            <option *ngFor="let o of perOptions" [value]="o.value">
+              {{ o.label }}
+            </option>
+          </select>
+        </fieldset>
+
+        <label class="wide">
+          Số năm còn lại (tuỳ chọn)
+          <input
+            type="number"
+            name="remainingYears"
+            min="0"
+            max="150"
+            placeholder="Để trống nếu không muốn ước tính"
+            [(ngModel)]="edit.remainingYears"
+          />
+          <small
+            >Con số của riêng bạn. App không bao giờ tự đoán hay gợi ý.</small
+          >
+        </label>
+
+        <label class="wide">
+          Ghi chú
+          <textarea
+            rows="2"
+            name="notes"
+            maxlength="2000"
+            [(ngModel)]="edit.notes"
+          ></textarea>
+        </label>
+        <div class="ps-panel-actions">
+          <button type="submit" class="primary" [disabled]="busy">Lưu</button>
+        </div>
+      </form>
+
+      <p class="ps-notes" *ngIf="p.notes && panel !== 'edit'">{{ p.notes }}</p>
+
+      <!-- Lịch sử gặp ---------------------------------------------------- -->
+      <h6 class="ps-h">Những lần gặp ({{ meetings.length }})</h6>
+      <p class="ps-muted" *ngIf="meetingsLoading && !meetings.length">
+        Đang tải…
+      </p>
+      <p class="ps-muted" *ngIf="meetingsError">
+        Không tải được.
+        <button type="button" class="ps-link" (click)="loadMeetings()">
+          Thử lại
+        </button>
+      </p>
+      <p
+        class="ps-muted"
+        *ngIf="!meetingsLoading && !meetingsError && !meetings.length"
+      >
+        Chưa có lần gặp nào được ghi.
+      </p>
+
+      <ul class="ps-meetings">
+        <li *ngFor="let m of meetings; trackBy: trackById">
+          <ng-container *ngIf="editingMeetingId !== m._id; else editRow">
+            <div class="ps-meeting-line">
+              <strong>{{ formatLongDay(m.date) }}</strong>
+              <span *ngIf="m.durationMinutes">· {{ m.durationMinutes }}′</span>
+              <span class="ps-badge" *ngIf="m.source === 'TODO'">từ Todo</span>
+            </div>
+            <p *ngIf="m.note">{{ m.note }}</p>
+            <div class="ps-meeting-actions">
+              <button type="button" (click)="startEditMeeting(m)">Sửa</button>
+              <button
+                type="button"
+                class="ps-danger"
+                (click)="deleteMeeting(m)"
+              >
+                Xoá
+              </button>
+            </div>
+          </ng-container>
+          <ng-template #editRow>
+            <div class="ps-meeting-edit">
+              <input
+                type="date"
+                aria-label="Ngày"
+                [max]="today"
+                [(ngModel)]="meetingDraft.date"
+              />
+              <input
+                type="text"
+                aria-label="Ghi chú"
+                placeholder="Ghi chú"
+                [(ngModel)]="meetingDraft.note"
+              />
+              <button type="button" (click)="editingMeetingId = null">
+                Huỷ
+              </button>
+              <button
+                type="button"
+                class="primary"
+                [disabled]="busy"
+                (click)="saveMeeting(m)"
+              >
+                Lưu
+              </button>
+            </div>
+          </ng-template>
+        </li>
+      </ul>
+    </div>
+
+    <div class="ps-foot">
+      <button type="button" [disabled]="busy" (click)="toggleArchive()">
+        {{ p.archived ? 'Khôi phục' : 'Lưu trữ' }}
+      </button>
+      <button
+        type="button"
+        class="ps-danger"
+        [disabled]="busy"
+        (click)="removeForever()"
+      >
+        Xoá hẳn
+      </button>
+    </div>
+  </ng-container>
+</div>
