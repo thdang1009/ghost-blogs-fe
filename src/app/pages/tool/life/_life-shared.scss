@@ -1,0 +1,32 @@
+// Dùng chung cho các component của trang Life. Style component bị đóng gói
+// (view encapsulation), nên mỗi component `@use` file này thay vì trông vào
+// style của trang cha.
+
+.lf-btn {
+  min-height: 40px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+
+  &.primary {
+    background: #2e7d32;
+    border-color: #2e7d32;
+    color: #fff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
