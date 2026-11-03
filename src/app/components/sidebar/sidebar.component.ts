@@ -81,6 +81,13 @@ export const ROUTES: RouteInfo[] = [
         permission: 'isMember',
       },
       {
+        path: 'tool/life',
+        title: 'Life',
+        icon: 'emoji_people',
+        class: '',
+        permission: 'isMember',
+      },
+      {
         path: 'tool/guest-message',
         title: 'List Guest Message',
         icon: 'list',

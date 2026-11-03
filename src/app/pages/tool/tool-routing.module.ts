@@ -9,6 +9,7 @@ import { TodoTodayComponent } from './todo-today/todo-today.component';
 import { VibeCodingComponent } from './vibe-coding/vibe-coding.component';
 import { LearningRoadmapComponent } from './learning-roadmap/learning-roadmap.component';
 import { ReadingListComponent } from './reading-list/reading-list.component';
+import { LifeComponent } from './life/life.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,12 @@ const routes: Routes = [
     path: 'reading-list',
     title: `Reading List`,
     component: ReadingListComponent,
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'life',
+    title: `Life`,
+    component: LifeComponent,
     canActivate: [loginGuard],
   },
   {

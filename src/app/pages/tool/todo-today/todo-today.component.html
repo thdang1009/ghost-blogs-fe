@@ -334,6 +334,14 @@
             </details>
           </div>
 
+          <!-- Life (ADR 0003): hai dòng DƯỚI danh sách — không tốn gì trên nếp
+               gấp. Widget tự tải dữ liệu; ở đây chỉ nối dây. -->
+          <app-todo-life-widgets
+            [refresh]="lifeRefresh"
+            [toggled]="lifeToggled"
+            (boardChanged)="searchToDoToDay()"
+          ></app-todo-life-widgets>
+
           <div class="todo-advanced">
             <div class="search-toggle-container">
               <button

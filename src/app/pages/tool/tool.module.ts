@@ -24,6 +24,8 @@ import { TodoListComponent } from './todo-today/todo-list/todo-list.component';
 import { TodoSettingsSheetComponent } from './todo-today/todo-settings-sheet/todo-settings-sheet.component';
 import { TodoTriageSheetComponent } from './todo-today/todo-triage-sheet/todo-triage-sheet.component';
 import { ReadingListComponent } from './reading-list/reading-list.component';
+import { LifeComponent } from './life/life.component';
+import { TodoLifeWidgetsComponent } from './todo-today/todo-life-widgets/todo-life-widgets.component';
 @NgModule({
   declarations: [
     NoteComponent,
@@ -49,7 +51,9 @@ import { ReadingListComponent } from './reading-list/reading-list.component';
     TodoListComponent,
     TodoSettingsSheetComponent,
     TodoTriageSheetComponent,
+    TodoLifeWidgetsComponent,
     ReadingListComponent,
+    LifeComponent,
   ],
   providers: [DatePipe],
 })

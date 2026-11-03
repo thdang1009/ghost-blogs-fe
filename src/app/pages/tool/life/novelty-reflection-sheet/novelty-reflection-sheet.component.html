@@ -1,0 +1,102 @@
+<div class="rs-backdrop" *ngIf="open" (click)="closed.emit()"></div>
+
+<div
+  class="rs"
+  [class.is-open]="open"
+  role="dialog"
+  aria-label="Suy ngẫm về trải nghiệm"
+>
+  <div class="rs-head">
+    <div>
+      <h5>✨ {{ title || 'Trải nghiệm' }}</h5>
+      <p>Tuỳ chọn — bỏ trống ô nào cũng được.</p>
+    </div>
+    <button
+      type="button"
+      class="rs-close"
+      (click)="closed.emit()"
+      aria-label="Đóng"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="rs-body" *ngIf="open">
+    <div class="rs-field">
+      <span class="rs-label">Có thật sự mới không?</span>
+      <div class="rs-chips">
+        <button
+          type="button"
+          [class.on]="draft.wasNew === true"
+          (click)="setWasNew(true)"
+        >
+          Có
+        </button>
+        <button
+          type="button"
+          [class.on]="draft.wasNew === false"
+          (click)="setWasNew(false)"
+        >
+          Không hẳn
+        </button>
+      </div>
+    </div>
+
+    <div class="rs-field">
+      <span class="rs-label">Cảm thấy thế nào?</span>
+      <div class="rs-chips">
+        <button
+          type="button"
+          *ngFor="let f of feelings"
+          [class.on]="draft.feeling === f"
+          (click)="setFeeling(f)"
+        >
+          {{ f }}
+        </button>
+      </div>
+      <input
+        type="text"
+        maxlength="200"
+        placeholder="…hoặc tự viết"
+        aria-label="Cảm giác"
+        [(ngModel)]="draft.feeling"
+      />
+    </div>
+
+    <div class="rs-field">
+      <span class="rs-label">Muốn làm lại?</span>
+      <div class="rs-chips">
+        <button
+          type="button"
+          *ngFor="let a of againOptions"
+          [class.on]="draft.again === a.value"
+          (click)="setAgain(a.value)"
+        >
+          {{ a.label }}
+        </button>
+      </div>
+    </div>
+
+    <div class="rs-field">
+      <span class="rs-label">Ghi chú</span>
+      <textarea
+        rows="2"
+        maxlength="2000"
+        aria-label="Ghi chú"
+        [(ngModel)]="draft.note"
+      ></textarea>
+    </div>
+  </div>
+
+  <div class="rs-foot">
+    <button type="button" class="rs-btn" (click)="closed.emit()">Bỏ qua</button>
+    <button
+      type="button"
+      class="rs-btn primary"
+      [disabled]="busy"
+      (click)="save()"
+    >
+      Lưu
+    </button>
+  </div>
+</div>

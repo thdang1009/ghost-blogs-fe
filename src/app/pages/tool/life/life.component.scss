@@ -1,0 +1,37 @@
+.life-page {
+  overflow-x: hidden;
+}
+
+.lf-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+
+  h4 {
+    margin: 0;
+    font-size: 18px;
+  }
+}
+
+// Hai tab chia đôi bề ngang — ở 360px mỗi nút vẫn ~160px, đủ cho nhãn.
+.lf-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+
+  button {
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+    cursor: pointer;
+
+    &.on {
+      border-bottom-color: #2e7d32;
+      color: #1b5e20;
+      font-weight: 600;
+    }
+  }
+}

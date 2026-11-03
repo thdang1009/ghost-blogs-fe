@@ -1,0 +1,25 @@
+<div class="main-content life-page">
+  <div class="container-fluid">
+    <div class="card">
+      <div class="lf-head">
+        <h4>Life</h4>
+      </div>
+
+      <div class="lf-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          *ngFor="let t of tabs"
+          [class.on]="tab === t.value"
+          [attr.aria-selected]="tab === t.value"
+          (click)="select(t.value)"
+        >
+          {{ t.label }}
+        </button>
+      </div>
+
+      <app-novelty-tab *ngIf="tab === 'novelty'"></app-novelty-tab>
+      <app-people-tab *ngIf="tab === 'people'"></app-people-tab>
+    </div>
+  </div>
+</div>

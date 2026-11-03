@@ -11,6 +11,7 @@ export * from './todo-today';
 export * from './todo-board';
 export * from './todo-recurrence';
 export * from './reading-book';
+export * from './life';
 export * from './book';
 export * from './user';
 export * from './coupon';

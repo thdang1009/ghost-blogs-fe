@@ -1,0 +1,222 @@
+<!-- Tuần này ---------------------------------------------------------------->
+<section class="nv-week" *ngIf="summary as s">
+  <div class="nv-week-line">
+    <strong>✨ Tuần này {{ s.week.done }}/{{ s.week.goal }}</strong>
+    <span class="nv-week-planned" *ngIf="s.planned as p">
+      · {{ p.title }} — {{ relativeDay(p.plannedDate) }}
+    </span>
+    <span class="nv-muted" *ngIf="!s.planned && !s.week.met">
+      · chưa có gì trên lịch
+    </span>
+  </div>
+
+  <!-- Dải 8 tuần: trơn, không màu đỏ, không điểm. -->
+  <ol class="nv-strip" aria-label="8 tuần gần nhất">
+    <li
+      *ngFor="let w of s.weeks; let last = last"
+      [class.done]="w.done > 0"
+      [class.current]="last"
+      [attr.title]="'Tuần ' + weekLabel(w) + ': ' + w.done"
+    >
+      <span class="nv-strip-dot">{{ w.done > 1 ? w.done : '' }}</span>
+      <span class="nv-strip-label">{{ weekLabel(w) }}</span>
+    </li>
+  </ol>
+
+  <p class="nv-muted nv-stats">
+    Chuỗi {{ s.streak.current }} tuần · dài nhất {{ s.streak.longest }} · tổng
+    {{ s.total }} trải nghiệm
+  </p>
+
+  <div class="nv-suggest" *ngIf="!s.planned && suggestions.length">
+    <span class="nv-muted">Gợi ý:</span>
+    <button
+      type="button"
+      class="nv-chip"
+      *ngFor="let sg of suggestions"
+      (click)="startAdd(sg)"
+    >
+      + {{ sg.title }}
+    </button>
+  </div>
+</section>
+
+<div class="nv-toolbar">
+  <button type="button" class="lf-btn primary" (click)="startAdd()">
+    <mat-icon>add</mat-icon> Thêm trải nghiệm
+  </button>
+</div>
+
+<!-- Form ---------------------------------------------------------------------->
+<form class="nv-form" *ngIf="formOpen" (ngSubmit)="save()">
+  <input
+    type="text"
+    maxlength="300"
+    placeholder="Ví dụ: Ăn bún mắm ở chợ Bà Chiểu"
+    aria-label="Tiêu đề"
+    name="title"
+    [(ngModel)]="form.title"
+    (ngModelChange)="onTitleChange($event)"
+  />
+  <!-- CHỈ cảnh báo: làm lại một việc có thể là cố ý. -->
+  <p class="nv-warn" *ngIf="duplicate as d" role="status">
+    Bạn đã có "{{ d.matches[0].title }}"
+    <ng-container *ngIf="d.matches[0].doneAt">
+      — làm ngày {{ formatLongDay(d.matches[0].doneAt) }}</ng-container
+    >. Vẫn lưu được.
+  </p>
+  <select name="category" aria-label="Loại" [(ngModel)]="form.category">
+    <option *ngFor="let c of categories" [value]="c.value">
+      {{ c.label }}
+    </option>
+  </select>
+  <label class="nv-check">
+    <input type="checkbox" name="alreadyDone" [(ngModel)]="form.alreadyDone" />
+    Đã làm rồi
+  </label>
+  <input
+    *ngIf="form.alreadyDone"
+    type="date"
+    name="doneDate"
+    aria-label="Ngày đã làm"
+    [max]="today"
+    [(ngModel)]="form.doneDate"
+  />
+  <div class="nv-form-actions">
+    <button type="button" class="lf-btn" (click)="cancelForm()">Huỷ</button>
+    <button type="submit" class="lf-btn primary" [disabled]="saving">
+      Lưu
+    </button>
+  </div>
+</form>
+
+<!-- Trạng thái tải ------------------------------------------------------------>
+<p class="nv-state" *ngIf="loading && !experiences.length">Đang tải…</p>
+<div class="nv-state error" *ngIf="loadError">
+  Không tải được trải nghiệm.
+  <button type="button" class="lf-btn" (click)="load()">Thử lại</button>
+</div>
+
+<ng-container *ngIf="!loadError && (!loading || experiences.length)">
+  <!-- Ý tưởng / đã lên lịch ---------------------------------------------- -->
+  <h5 class="nv-h">Sắp làm ({{ ideas.length }})</h5>
+  <p class="nv-empty" *ngIf="!ideas.length">
+    Chưa có ý tưởng nào. Thêm một việc nhỏ, rẻ, không cần chuẩn bị.
+  </p>
+  <article
+    class="nv-item"
+    *ngFor="let exp of ideas; trackBy: trackById"
+    [class.busy]="busyId === exp._id"
+  >
+    <div class="nv-item-head">
+      <strong>{{ exp.title }}</strong>
+      <span class="nv-tag">{{ categoryLabel(exp.category) }}</span>
+    </div>
+    <div class="nv-item-meta">
+      <ng-container *ngIf="exp.plannedDate; else noDate">
+        <mat-icon>event</mat-icon> {{ relativeDay(exp.plannedDate) }} · trên
+        Todo Today
+      </ng-container>
+      <ng-template #noDate>Chưa có ngày</ng-template>
+    </div>
+    <div class="nv-item-actions">
+      <input
+        type="date"
+        aria-label="Chọn ngày"
+        [min]="today"
+        [ngModel]="planDate[exp._id] || today"
+        (ngModelChange)="planDate[exp._id] = $event"
+        [ngModelOptions]="{ standalone: true }"
+      />
+      <button type="button" (click)="plan(exp)" [disabled]="busyId === exp._id">
+        {{ exp.plannedDate ? 'Dời' : 'Lên lịch' }}
+      </button>
+      <button type="button" *ngIf="exp.plannedDate" (click)="unplan(exp)">
+        Bỏ ngày
+      </button>
+      <button
+        type="button"
+        class="nv-ok"
+        (click)="complete(exp)"
+        [disabled]="busyId === exp._id"
+      >
+        ✓ Đã làm
+      </button>
+      <button type="button" (click)="startEdit(exp)">Sửa</button>
+      <button type="button" (click)="setStatus(exp, 'DROPPED')">Bỏ</button>
+    </div>
+  </article>
+
+  <!-- Lịch sử ---------------------------------------------------------------->
+  <h5 class="nv-h">Đã trải nghiệm ({{ history.length }})</h5>
+  <p class="nv-empty" *ngIf="!history.length">
+    Chưa có gì. Trải nghiệm đầu tiên sẽ xuất hiện ở đây.
+  </p>
+  <article
+    class="nv-item"
+    *ngFor="let exp of history; trackBy: trackById"
+    [class.busy]="busyId === exp._id"
+  >
+    <div class="nv-item-head">
+      <strong>{{ exp.title }}</strong>
+      <span class="nv-tag">{{ categoryLabel(exp.category) }}</span>
+    </div>
+    <div class="nv-item-meta">{{ formatLongDay(exp.doneAt) }}</div>
+    <div class="nv-reflection" *ngIf="hasReflection(exp)">
+      <span *ngIf="exp.reflection.wasNew === true">Thật sự mới</span>
+      <span *ngIf="exp.reflection.wasNew === false">Không hẳn mới</span>
+      <span *ngIf="exp.reflection.feeling">{{ exp.reflection.feeling }}</span>
+      <span *ngIf="exp.reflection.again">{{
+        againLabel(exp.reflection.again)
+      }}</span>
+      <p *ngIf="exp.reflection.note">{{ exp.reflection.note }}</p>
+    </div>
+    <div class="nv-item-actions">
+      <button type="button" (click)="openReflection(exp)">
+        {{ hasReflection(exp) ? 'Sửa suy ngẫm' : 'Suy ngẫm' }}
+      </button>
+      <button type="button" (click)="startEdit(exp)">Sửa</button>
+      <button type="button" class="nv-danger" (click)="remove(exp)">Xoá</button>
+    </div>
+  </article>
+
+  <!-- Đã bỏ ------------------------------------------------------------------>
+  <ng-container *ngIf="dropped.length">
+    <button
+      type="button"
+      class="nv-toggle"
+      (click)="showDropped = !showDropped"
+      [attr.aria-expanded]="showDropped"
+    >
+      <mat-icon>{{ showDropped ? 'expand_less' : 'expand_more' }}</mat-icon>
+      Đã bỏ ({{ dropped.length }})
+    </button>
+    <ng-container *ngIf="showDropped">
+      <article
+        class="nv-item muted"
+        *ngFor="let exp of dropped; trackBy: trackById"
+      >
+        <div class="nv-item-head">
+          <strong>{{ exp.title }}</strong>
+        </div>
+        <div class="nv-item-actions">
+          <button type="button" (click)="setStatus(exp, 'PLANNED')">
+            Khôi phục
+          </button>
+          <button type="button" class="nv-danger" (click)="remove(exp)">
+            Xoá
+          </button>
+        </div>
+      </article>
+    </ng-container>
+  </ng-container>
+</ng-container>
+
+<app-novelty-reflection-sheet
+  [open]="!!reflectionFor"
+  [title]="reflectionFor?.title || ''"
+  [reflection]="reflectionFor?.reflection || null"
+  [busy]="reflectionBusy"
+  (closed)="closeReflection()"
+  (saved)="saveReflection($event)"
+></app-novelty-reflection-sheet>

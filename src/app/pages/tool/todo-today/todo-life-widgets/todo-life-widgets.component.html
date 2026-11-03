@@ -1,0 +1,165 @@
+<section class="lw" aria-label="Life">
+  <!-- ✨ Trải nghiệm mới ---------------------------------------------------->
+  <button
+    type="button"
+    class="lw-line"
+    (click)="noveltyOpen = !noveltyOpen"
+    [attr.aria-expanded]="noveltyOpen"
+  >
+    <span class="lw-text">
+      <ng-container *ngIf="summary as s; else noveltyState">
+        ✨ Tuần này {{ s.week.done }}/{{ s.week.goal }} ·
+        <ng-container *ngIf="s.planned as p; else noPlanned"
+          >{{ p.title }} — {{ relativeDay(p.plannedDate) }}</ng-container
+        >
+        <ng-template #noPlanned>
+          {{ s.week.met ? 'đã xong' : 'Thêm trải nghiệm' }}
+          <span class="lw-muted" *ngIf="!s.week.met && suggestions.length">
+            · gợi ý: {{ suggestions[0].title }}</span
+          >
+        </ng-template>
+      </ng-container>
+      <ng-template #noveltyState>
+        ✨ {{ noveltyError ? 'Không tải được' : '…' }}
+      </ng-template>
+    </span>
+    <mat-icon>{{ noveltyOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </button>
+
+  <div class="lw-panel" *ngIf="noveltyOpen">
+    <button
+      type="button"
+      class="lw-btn"
+      *ngIf="noveltyError"
+      (click)="loadNovelty()"
+    >
+      Thử lại
+    </button>
+
+    <ng-container *ngIf="summary && !summary.planned">
+      <div class="lw-item" *ngFor="let sg of suggestions">
+        <span class="lw-item-text">{{ sg.title }}</span>
+        <button
+          type="button"
+          class="lw-btn"
+          [disabled]="busy"
+          (click)="planSuggestion(sg, today)"
+        >
+          Hôm nay
+        </button>
+        <button
+          type="button"
+          class="lw-btn"
+          [disabled]="busy"
+          (click)="pick(sgDate)"
+        >
+          📅
+        </button>
+        <input
+          #sgDate
+          type="date"
+          class="lw-date"
+          aria-label="Chọn ngày"
+          [min]="today"
+          (change)="planSuggestion(sg, sgDate.value); sgDate.value = ''"
+        />
+      </div>
+      <p class="lw-muted" *ngIf="!suggestions.length && !noveltyError">
+        Không có gợi ý mới.
+      </p>
+    </ng-container>
+
+    <a class="lw-link" routerLink="/admin/tool/life">Mở trang Life →</a>
+  </div>
+
+  <!-- 👥 Người quan trọng --------------------------------------------------->
+  <button
+    type="button"
+    class="lw-line"
+    (click)="peopleOpen = !peopleOpen"
+    [attr.aria-expanded]="peopleOpen"
+  >
+    <span class="lw-text">
+      <ng-container *ngIf="dashboard as d; else peopleState">
+        <ng-container *ngIf="d.people.length; else noPeople">
+          👥
+          <ng-container *ngIf="nextMeeting as m; else noUpcoming"
+            >Hẹn sắp tới: {{ m.name }} {{ relativeDay(m.date) }}</ng-container
+          >
+          <ng-template #noUpcoming>Chưa có hẹn sắp tới</ng-template>
+          <ng-container *ngIf="d.needsAttentionCount">
+            · {{ d.needsAttentionCount }} người chưa có hẹn</ng-container
+          >
+        </ng-container>
+        <ng-template #noPeople>👥 Thêm người quan trọng</ng-template>
+      </ng-container>
+      <ng-template #peopleState>
+        👥 {{ peopleError ? 'Không tải được' : '…' }}
+      </ng-template>
+    </span>
+    <mat-icon>{{ peopleOpen ? 'expand_less' : 'expand_more' }}</mat-icon>
+  </button>
+
+  <div class="lw-panel" *ngIf="peopleOpen">
+    <button
+      type="button"
+      class="lw-btn"
+      *ngIf="peopleError"
+      (click)="loadPeople()"
+    >
+      Thử lại
+    </button>
+
+    <ng-container *ngIf="dashboard as d">
+      <div class="lw-item" *ngFor="let m of d.upcoming.slice(0, 3)">
+        <span class="lw-item-text">{{ m.name }}</span>
+        <span class="lw-muted">{{ relativeDay(m.date) }}</span>
+      </div>
+
+      <div class="lw-item" *ngFor="let p of attention">
+        <span class="lw-item-text"
+          >{{ p.name }}
+          <span class="lw-muted">· {{ lastMetLabel(p) }}</span></span
+        >
+        <button
+          type="button"
+          class="lw-btn"
+          [disabled]="busy"
+          (click)="pick(personDate)"
+        >
+          📅 Hẹn
+        </button>
+        <input
+          #personDate
+          type="date"
+          class="lw-date"
+          aria-label="Ngày hẹn"
+          [min]="today"
+          (change)="schedulePerson(p, personDate.value); personDate.value = ''"
+        />
+      </div>
+
+      <p
+        class="lw-muted"
+        *ngIf="d.people.length && !d.upcoming.length && !attention.length"
+      >
+        Không có ai cần hẹn lúc này.
+      </p>
+    </ng-container>
+
+    <a
+      class="lw-link"
+      routerLink="/admin/tool/life"
+      [queryParams]="{ tab: 'people' }"
+      >Mở trang Life →</a
+    >
+  </div>
+</section>
+
+<app-novelty-reflection-sheet
+  [open]="!!reflectFor"
+  [title]="reflectFor?.title || ''"
+  [busy]="reflectBusy"
+  (closed)="closeReflection()"
+  (saved)="saveReflection($event)"
+></app-novelty-reflection-sheet>
