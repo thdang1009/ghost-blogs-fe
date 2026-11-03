@@ -1,0 +1,111 @@
+// Hai dòng gọn; mỗi dòng ≥ 40px để chạm được, chữ cắt bằng "…" thay vì
+// xuống dòng để không bao giờ cao hơn một dòng khi thu gọn.
+.lw {
+  margin: 8px 12px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 6px;
+}
+
+.lw-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.75);
+  cursor: pointer;
+
+  mat-icon {
+    flex: 0 0 auto;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.35);
+  }
+}
+
+.lw-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.lw-muted {
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 12px;
+}
+
+.lw-panel {
+  position: relative;
+  padding: 4px 4px 10px 26px;
+}
+
+.lw-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  font-size: 13px;
+}
+
+.lw-item-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.lw-btn {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+// Ô ngày ẩn: nút 📅 gọi showPicker() trên nó. Không `display: none` —
+// showPicker cần phần tử đang được render. Trình duyệt không có showPicker
+// thì component thêm `.is-visible` để hiện ô.
+.lw-date {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  pointer-events: none;
+
+  &.is-visible {
+    position: static;
+    width: auto;
+    height: 32px;
+    opacity: 1;
+    pointer-events: auto;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+  }
+}
+
+.lw-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+}

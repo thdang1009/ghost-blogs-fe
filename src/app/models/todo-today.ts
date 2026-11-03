@@ -43,6 +43,15 @@ export interface TodoRoadmapMeta {
   learningSessionId?: string;
 }
 
+/** Module Life (ADR 0003): việc gắn với một trải nghiệm hoặc một người. */
+export interface TodoLifeMeta {
+  kind: 'NOVELTY' | 'MEETING' | 'CONTACT';
+  /** Lần gặp tự ghi khi tick việc MEETING — bỏ tick xoá đúng dòng này. */
+  personMeetingId?: string;
+  /** Việc đã đóng vì chủ nhân ghi tay lần gặp đó trên trang Life. */
+  closedByMeetingId?: string;
+}
+
 /**
  * `meta` là object tự do ở backend; ở đây khai báo union của những hình dạng
  * thực sự được sinh ra, cộng thêm chỉ mục mở để các trường phụ (variantLabel,
@@ -53,6 +62,7 @@ export type TodoMeta = (
   | TodoWorkoutMeta
   | TodoOfficeMeta
   | TodoRoadmapMeta
+  | TodoLifeMeta
   | { kind?: undefined }
 ) & {
   variantLabel?: string;
@@ -60,7 +70,13 @@ export type TodoMeta = (
 };
 
 export type TodoBucket = 'DAY' | 'BACKLOG';
-export type TodoSourceKind = 'MANUAL' | 'RECURRENCE' | 'ROADMAP' | 'TEMPLATE';
+export type TodoSourceKind =
+  | 'MANUAL'
+  | 'RECURRENCE'
+  | 'ROADMAP'
+  | 'TEMPLATE'
+  | 'NOVELTY'
+  | 'PERSON';
 
 export class TodoToday {
   id?: number;

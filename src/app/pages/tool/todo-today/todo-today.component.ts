@@ -101,6 +101,10 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   triageItems: TodoToday[] = [];
   triageBusy = false;
 
+  // --- Life (ADR 0003) — chỉ nối dây cho app-todo-life-widgets ---
+  lifeRefresh = 0;
+  lifeToggled: TodoToday | null = null;
+
   // Reward settings (stored locally)
   rewardSettings = {
     rewardFrom: 15,
@@ -288,6 +292,7 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
   }
 
   async searchToDoToDay() {
+    this.lifeRefresh++;
     await this._getTodoLabel();
     await this._getMyToDoToDay();
   }
@@ -519,6 +524,11 @@ export class TodoTodayComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         this.setChangedLineOnly(res, index);
         this.isLoadingResults = false;
+        // Việc Life: widget tải lại, và mở sheet suy ngẫm (tuỳ chọn) nếu là
+        // một trải nghiệm vừa xong. Việc đã lưu rồi — không chặn gì.
+        if (res.sourceKind === 'NOVELTY' || res.sourceKind === 'PERSON') {
+          this.lifeToggled = res;
+        }
       },
       error: () => {
         this.isLoadingResults = false;
