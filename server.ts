@@ -47,9 +47,7 @@ function httpGetJson(
           try {
             body = text ? JSON.parse(text) : null;
           } catch (e: any) {
-            return rejectP(
-              new Error(`json parse failed: ${e?.message || e}`)
-            );
+            return rejectP(new Error(`json parse failed: ${e?.message || e}`));
           }
           resolveP({ status: res.statusCode || 0, body });
         });
@@ -163,7 +161,12 @@ function injectPostSeo(
   out = setMeta(out, 'name', 'twitter:image:alt', post.title);
   out = setMeta(out, 'property', 'article:author', post.author);
   if (post.publishedTime) {
-    out = setMeta(out, 'property', 'article:published_time', post.publishedTime);
+    out = setMeta(
+      out,
+      'property',
+      'article:published_time',
+      post.publishedTime
+    );
   }
   if (post.modifiedTime) {
     out = setMeta(out, 'property', 'article:modified_time', post.modifiedTime);
@@ -202,7 +205,8 @@ const CACHE_RULES: Array<{ test: RegExp; header: string }> = [
   },
 ];
 
-const PRIVATE_PATHS = /^\/(admin|me|login|logout|register|reset-password|confirm-email|tool|apps|operation|user|file|dashboard)(\/|$|\?)/;
+const PRIVATE_PATHS =
+  /^\/(admin|me|login|logout|register|reset-password|confirm-email|tool|apps|operation|user|file|dashboard)(\/|$|\?)/;
 
 function pickCacheControl(pathname: string): string {
   if (PRIVATE_PATHS.test(pathname)) {
@@ -294,7 +298,9 @@ export function app(): express.Express {
     if (!expected || provided !== expected) {
       return res.status(401).json({ ok: false, error: 'unauthorized' });
     }
-    const path = (req.body?.path as string | undefined) || (req.query['path'] as string | undefined);
+    const path =
+      (req.body?.path as string | undefined) ||
+      (req.query['path'] as string | undefined);
     const cleared = invalidateRenderCache(path);
     return res.json({ ok: true, cleared, path: path ?? '*' });
   });
@@ -316,13 +322,19 @@ export function app(): express.Express {
       // logged-out users with logged-in HTML.
       res.setHeader('Vary', 'Accept-Encoding, Cookie');
 
-      const cached = readRenderCache(pathname);
+      // SECURITY: the render cache is keyed by path only, so a request with a
+      // query string (e.g. /home?tag=x) must neither read nor fill it —
+      // otherwise one visitor's variant is served to everyone as /home.
+      const cacheable = !originalUrl.includes('?');
+      const cached = cacheable ? readRenderCache(pathname) : null;
       if (cached) {
         res.setHeader('X-Render-Cache', 'HIT');
         console.log(`[ssr] HIT ${pathname}`);
         return res.send(cached);
       }
-      console.log(`[ssr] MISS ${pathname} ua="${(req.get('user-agent') || '').slice(0, 40)}"`);
+      console.log(
+        `[ssr] MISS ${pathname} ua="${(req.get('user-agent') || '').slice(0, 40)}"`
+      );
 
       if (req.isBot) {
         res.setTimeout(30000);
@@ -365,7 +377,7 @@ export function app(): express.Express {
         }
       }
 
-      writeRenderCache(pathname, html);
+      if (cacheable) writeRenderCache(pathname, html);
       res.setHeader('X-Render-Cache', 'MISS');
       res.send(html);
     } catch (error) {
