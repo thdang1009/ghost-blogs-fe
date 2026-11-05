@@ -113,7 +113,10 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     // The post is pre-fetched by postResolver so its body, <title>, and
     // OG/Twitter meta tags are present in the initial SSR HTML.
-    const resolved = this.route.snapshot.data['post'] as Post | null | undefined;
+    const resolved = this.route.snapshot.data['post'] as
+      | Post
+      | null
+      | undefined;
 
     if (resolved) {
       this.applyPost(resolved);
@@ -224,15 +227,13 @@ export class PostDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.idDebounce = setTimeout(() => {
       this.postService.clapPost(this.item, this.num).subscribe(_ => {
-        // Preserve series navigation data when updating the post
-        const previousPostId = this.item.previousPostId;
-        const nextPostId = this.item.nextPostId;
-        this.item = _;
-        // Restore series navigation data
-        this.item.previousPostId = previousPostId;
-        this.item.nextPostId = nextPostId;
+        // The API now returns only { id, clapCount } (it no longer echoes the
+        // whole post), so update the counter instead of replacing the post.
         this.num = 0;
-        this.count = _.clapCount || 0;
+        if (_ && typeof _.clapCount === 'number') {
+          this.item.clapCount = _.clapCount;
+          this.count = _.clapCount;
+        }
         clearTimeout(this.idDebounce);
       });
     }, 500);
